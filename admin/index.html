@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yönetim Paneli — İlk Adım Akademi</title>
+  <meta name="robots" content="noindex,nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+
+  <div id="adminBar"></div>
+  <div id="adminIcerik"></div>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    const icerik = document.getElementById('adminIcerik');
+
+    /* ---------- LOGIN ---------- */
+    const loginGoster = (hata = '') => {
+      icerik.innerHTML = `
+        <div class="admin-giris admin-giris--branded">
+          <div class="admin-giris__sol">
+            <div class="admin-giris__brand">
+              <img src="/assets/img/logo/logo-large.png" alt="İlk Adım Akademi">
+              <p class="admin-giris__slogan">Geleceğe Atılan İlk Adım</p>
+            </div>
+            <p class="admin-giris__alt">
+              Yönetim paneli üzerinden site içeriğini, duyurularınızı, başvuru
+              formlarınızı ve daha fazlasını yönetebilirsiniz.
+            </p>
+          </div>
+
+          <div class="admin-giris__kart">
+            <h1 style="font-size: var(--yazi-2xl); margin-bottom: var(--bosluk-2);">Hoş geldiniz</h1>
+            <p style="color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-6);">Devam etmek için giriş yapın.</p>
+
+            ${hata ? `<div class="admin-giris__hata">${ADMIN.escHtml(hata)}</div>` : ''}
+
+            <form id="loginForm" novalidate>
+              <div class="form-grup">
+                <label class="form-etiket" for="kadi">Kullanıcı Adı veya E-posta</label>
+                <input class="form-girdi" type="text" id="kadi" name="kadi" required autofocus autocomplete="username" placeholder="admin">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="sifre">Şifre</label>
+                <input class="form-girdi" type="password" id="sifre" name="sifre" required autocomplete="current-password" placeholder="••••••••">
+              </div>
+              <button type="submit" class="dugme dugme--birincil dugme--blok dugme--buyuk" id="loginDugme">
+                Giriş Yap
+              </button>
+            </form>
+
+            <p style="margin-top: var(--bosluk-6); padding-top: var(--bosluk-5); border-top: 1px solid var(--renk-cizgi); font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); text-align: center;">
+              Şifrenizi unuttuysanız sistem yöneticinizden yardım isteyin.
+            </p>
+            <p style="text-align: center; margin-top: var(--bosluk-3);">
+              <a href="/" style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk);">← Siteye dön</a>
+            </p>
+          </div>
+        </div>
+      `;
+      document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const kadi = document.getElementById('kadi').value.trim();
+        const sifre = document.getElementById('sifre').value;
+        const btn = document.getElementById('loginDugme');
+        btn.disabled = true;
+        btn.textContent = 'Giriş yapılıyor…';
+        try {
+          await API.auth.login(kadi, sifre);
+          location.reload();   // dashboard'ı yeniden başlat
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Giriş Yap';
+          loginGoster(err.message || 'Giriş başarısız.');
+        }
+      });
+    };
+
+    /* ---------- DASHBOARD ---------- */
+    const dashboardGoster = (u) => {
+      // Admin bar
+      const barYer = document.getElementById('adminBar');
+      barYer.id = 'adminBar';
+      ADMIN.adminBarYukle('dashboard');
+
+      const adSoyad = u.adSoyad || u.kullaniciAdi;
+
+      icerik.innerHTML = `
+        <main class="kapsayici">
+          <div class="admin-sayfa-bas">
+            <div class="admin-sayfa-bas__icerik">
+              <div>
+                <h1>Hoş geldiniz, ${ADMIN.escHtml(adSoyad)}</h1>
+                <p>Site içeriğini buradan yönetebilirsiniz.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="dashboard-izgara">
+            <a href="/admin/duyurular.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">📢</div>
+              <h3>Duyurular</h3>
+              <p>Etkinlik, kayıt ve sınav duyuruları (kapak görseli + form bağlama).</p>
+            </a>
+
+            <a href="/admin/programlar.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">📚</div>
+              <h3>Eğitim Programları</h3>
+              <p>LGS, YKS, takviye ve etüt programları.</p>
+            </a>
+
+            <a href="/admin/kadro.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">👨‍🏫</div>
+              <h3>Eğitim Kadrosu</h3>
+              <p>Öğretmenleri ekleyin, fotoğraf yükleyin.</p>
+            </a>
+
+            <a href="/admin/galeri.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">🖼️</div>
+              <h3>Galeri</h3>
+              <p>Kurum, ders ve etkinlik fotoğrafları (albümler).</p>
+            </a>
+
+            <a href="/admin/formlar.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">📝</div>
+              <h3>Formlar</h3>
+              <p>Kendi başvuru / anket formlarınızı tasarlayın.</p>
+            </a>
+
+            <a href="/admin/cevaplar.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">📥</div>
+              <h3>Form Cevapları</h3>
+              <p>Gelen cevapları görüntüleyin, CSV/PDF/JSON olarak indirin.</p>
+            </a>
+
+            <a href="/admin/bildirimler.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">🔔</div>
+              <h3>Bildirimler</h3>
+              <p>Yeni form gönderimleri ve sistem olayları.</p>
+            </a>
+
+            <a href="/admin/blog.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">✍️</div>
+              <h3>Blog</h3>
+              <p>Yazı oluşturun, görsel ve alıntı ekleyin. Modülü aç/kapat.</p>
+            </a>
+
+            ${u.rol === 'admin' ? `
+              <a href="/admin/kullanicilar.html" class="dashboard-kart">
+                <div class="dashboard-kart__ikon" aria-hidden="true">👤</div>
+                <h3>Kullanıcılar</h3>
+                <p>Admin/editör hesaplarını yönetin.</p>
+              </a>
+            ` : `
+              <a href="/admin/kullanicilar.html" class="dashboard-kart">
+                <div class="dashboard-kart__ikon" aria-hidden="true">👤</div>
+                <h3>Profil Ayarlarım</h3>
+                <p>Kişisel bilgilerinizi ve şifrenizi güncelleyin.</p>
+              </a>
+            `}
+
+            <a href="/admin/ayarlar.html" class="dashboard-kart">
+              <div class="dashboard-kart__ikon" aria-hidden="true">⚙️</div>
+              <h3>Site Ayarları</h3>
+              <p>Telefon, adres, sosyal medya, çalışma saatleri.</p>
+            </a>
+
+            <a href="/admin/yardim.html" class="dashboard-kart" style="background: linear-gradient(135deg, #eaf3fb, #fdf8ee); border-color: var(--renk-birincil-acik);">
+              <div class="dashboard-kart__ikon" aria-hidden="true">📖</div>
+              <h3>Yardım Rehberi</h3>
+              <p>Adım adım kullanım kılavuzu. Yeni başlayanlar mutlaka göz atsın.</p>
+            </a>
+          </div>
+        </main>
+      `;
+    };
+
+    /* ---------- BAŞLAT ---------- */
+    (async () => {
+      const u = await ADMIN.kullaniciAl();
+      if (u) dashboardGoster(u);
+      else loginGoster();
+    })();
+  })();
+  </script>
+</body>
+</html>

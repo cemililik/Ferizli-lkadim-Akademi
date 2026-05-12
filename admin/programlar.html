@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Programlar — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Eğitim Programları</h1>
+          <p>LGS, YKS, takviye ve etüt programlarını yönetin.</p>
+        </div>
+        <button type="button" class="dugme dugme--vurgu dugme--kucuk" id="dgYeni">+ Yeni Program</button>
+      </div>
+    </div>
+
+    <div class="yonetim-duzen">
+      <aside class="yonetim-liste">
+        <div class="yonetim-liste__ust">
+          <input type="search" class="form-girdi" id="aramaGirdi" placeholder="Programlarda ara...">
+        </div>
+        <div class="yonetim-liste__icerik" id="liste"><p style="padding: var(--bosluk-6); text-align: center; color: var(--renk-yazi-soluk); font-size: var(--yazi-sm);">Yükleniyor…</p></div>
+      </aside>
+
+      <section class="yonetim-icerik" id="form">
+        <div class="yonetim-icerik__bos" id="bosDurum">
+          <p style="font-size: 3rem; margin-bottom: var(--bosluk-3);">📚</p>
+          <h3 style="margin-bottom: var(--bosluk-2);">Düzenlemek için bir program seçin</h3>
+          <p style="color: var(--renk-yazi-soluk);">veya yeni program ekleyin.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('programlar');
+
+    let liste = [];
+    let secilenId = null;
+    let aramaTerimi = '';
+
+    const $liste = document.getElementById('liste');
+    const $form = document.getElementById('form');
+    const $bos = document.getElementById('bosDurum');
+
+    const yukle = async () => {
+      try {
+        const r = await API.programlar.liste(true);
+        liste = r.programlar || [];
+        listeRender();
+        if (secilenId) formRender();
+      } catch (e) {
+        $liste.innerHTML = `<div style="padding: var(--bosluk-4); color: var(--renk-hata);">${ADMIN.escHtml(e.message)}</div>`;
+      }
+    };
+
+    const listeRender = () => {
+      const t = aramaTerimi.toLocaleLowerCase('tr-TR');
+      const filt = liste.filter(p => !t || (p.ad || '').toLocaleLowerCase('tr-TR').includes(t));
+      if (filt.length === 0) {
+        $liste.innerHTML = `<div style="padding:var(--bosluk-6);text-align:center;color:var(--renk-yazi-soluk);font-size:var(--yazi-sm);">${aramaTerimi ? 'Eşleşme yok.' : 'Henüz program yok.'}</div>`;
+        return;
+      }
+      $liste.innerHTML = filt.map(p => `
+        <a href="#" class="yonetim-liste__oge${p.id === secilenId ? ' aktif' : ''}" data-id="${ADMIN.escHtml(p.id)}">
+          <h4>${ADMIN.escHtml(p.ikon || '📘')} ${ADMIN.escHtml(p.ad || '(adsız)')}</h4>
+          <div class="yonetim-liste__oge-meta">
+            <span>${ADMIN.escHtml(p.hedefKitle || '—')}</span>
+            <span>${(p.ozellikler || []).length} özellik</span>
+          </div>
+        </a>
+      `).join('');
+      $liste.querySelectorAll('[data-id]').forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          secilenId = a.dataset.id;
+          listeRender();
+          formRender();
+        });
+      });
+    };
+
+    const formRender = () => {
+      if (!secilenId) { $form.innerHTML = ''; $form.appendChild($bos); return; }
+      const p = liste.find(x => x.id === secilenId);
+      if (!p) { secilenId = null; formRender(); return; }
+
+      const ozellikSatirlari = (p.ozellikler || []).map((o, i) => `
+        <div class="ozellik-satir" data-index="${i}" style="display: flex; gap: var(--bosluk-2); margin-bottom: var(--bosluk-2); align-items: center;">
+          <input type="text" class="form-girdi" data-ozellik-input value="${ADMIN.escHtml(o)}" placeholder="Özellik metni" style="flex: 1;">
+          <button type="button" class="dugme dugme--tehlike dugme--kucuk" data-ozellik-sil>×</button>
+        </div>
+      `).join('');
+
+      $form.innerHTML = `
+        <form id="ftn">
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="a-ikon">İkon (emoji)</label>
+              <input class="form-girdi" type="text" id="a-ikon" value="${ADMIN.escHtml(p.ikon || '📘')}" maxlength="4">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="a-sira">Sıra</label>
+              <input class="form-girdi" type="number" id="a-sira" value="${p.sira || 0}">
+            </div>
+          </div>
+
+          <div class="form-grup">
+            <label class="form-etiket" for="a-ad">Program Adı *</label>
+            <input class="form-girdi" type="text" id="a-ad" required value="${ADMIN.escHtml(p.ad || '')}">
+          </div>
+
+          <div class="form-grup">
+            <label class="form-etiket" for="a-kitle">Hedef Kitle</label>
+            <input class="form-girdi" type="text" id="a-kitle" value="${ADMIN.escHtml(p.hedefKitle || '')}" placeholder="Örn: 8. sınıf öğrencileri">
+          </div>
+
+          <div class="form-grup">
+            <label class="form-etiket" for="a-aciklama">Kısa Açıklama</label>
+            <textarea class="form-alani" id="a-aciklama" rows="3">${ADMIN.escHtml(p.kisaAciklama || '')}</textarea>
+          </div>
+
+          <div class="form-grup">
+            <label class="form-etiket">Program Özellikleri</label>
+            <div id="ozellikler">${ozellikSatirlari}</div>
+            <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="ozellikEkle" style="margin-top: var(--bosluk-2);">+ Özellik Ekle</button>
+          </div>
+
+          <div class="form-grup">
+            <label style="display: flex; gap: var(--bosluk-2); align-items: center;">
+              <input type="checkbox" id="a-yayinda" ${p.yayinda !== false ? 'checked' : ''}>
+              <span><strong>Yayında</strong></span>
+            </label>
+          </div>
+
+          <div class="admin-form__dugmeler">
+            <div class="admin-form__dugmeler-sol">
+              <button type="button" class="dugme dugme--tehlike" id="silDugme">🗑 Sil</button>
+            </div>
+            <button type="button" class="dugme dugme--cerceve" id="iptalDugme">İptal</button>
+            <button type="submit" class="dugme dugme--birincil">Kaydet</button>
+          </div>
+        </form>
+      `;
+
+      document.getElementById('ftn').addEventListener('submit', (e) => { e.preventDefault(); kaydet(); });
+      document.getElementById('silDugme').addEventListener('click', sil);
+      document.getElementById('iptalDugme').addEventListener('click', () => { secilenId = null; listeRender(); formRender(); });
+      document.getElementById('ozellikEkle').addEventListener('click', () => {
+        p.ozellikler = p.ozellikler || [];
+        p.ozellikler.push('');
+        formRender();
+        setTimeout(() => {
+          const sonInput = $form.querySelectorAll('[data-ozellik-input]');
+          sonInput[sonInput.length - 1]?.focus();
+        }, 50);
+      });
+      $form.querySelectorAll('[data-ozellik-sil]').forEach(b => {
+        b.addEventListener('click', (e) => {
+          const idx = Number(e.target.closest('.ozellik-satir').dataset.index);
+          p.ozellikler.splice(idx, 1);
+          formRender();
+        });
+      });
+    };
+
+    const yeni = async () => {
+      try {
+        const r = await API.programlar.olustur({ ad: 'Yeni Program', ikon: '📘', sira: liste.length, yayinda: true, ozellikler: [] });
+        await yukle();
+        secilenId = r.id;
+        listeRender();
+        formRender();
+        ADMIN.toast('Yeni program oluşturuldu', 'basari');
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    const kaydet = async () => {
+      const ozellikler = Array.from($form.querySelectorAll('[data-ozellik-input]'))
+        .map(i => i.value.trim()).filter(Boolean);
+      const btn = document.querySelector('#ftn button[type="submit"]');
+      const veri = {
+        ad: document.getElementById('a-ad').value.trim(),
+        hedefKitle: document.getElementById('a-kitle').value.trim(),
+        kisaAciklama: document.getElementById('a-aciklama').value.trim(),
+        ikon: document.getElementById('a-ikon').value.trim() || '📘',
+        sira: Number(document.getElementById('a-sira').value) || 0,
+        yayinda: document.getElementById('a-yayinda').checked,
+        ozellikler,
+      };
+      if (btn) btn.disabled = true;
+      try {
+        await API.programlar.guncelle(secilenId, veri);
+        ADMIN.toast('Kaydedildi', 'basari');
+        await yukle();
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    };
+
+    const sil = async () => {
+      if (!confirm('Bu programı silmek istediğinize emin misiniz?')) return;
+      try {
+        await API.programlar.sil(secilenId);
+        secilenId = null;
+        await yukle();
+        formRender();
+        ADMIN.toast('Program silindi', 'basari');
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    document.getElementById('dgYeni').addEventListener('click', yeni);
+    document.getElementById('aramaGirdi').addEventListener('input', (e) => { aramaTerimi = e.target.value; listeRender(); });
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

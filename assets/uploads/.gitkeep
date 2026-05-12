@@ -1,0 +1,5 @@
+# Yüklenen görseller bu klasöre yazılır.
+# Alt klasör yapısı: /assets/uploads/{klasor}/{YIL}/{AY}/{rastgele}.jpg
+# Örn: /assets/uploads/duyurular/2026/05/abcd1234.jpg
+#
+# Bu .gitkeep dosyası boş klasörün git'te tutulmasını sağlar.

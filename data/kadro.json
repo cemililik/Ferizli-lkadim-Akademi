@@ -1,0 +1,34 @@
+{
+  "kadro": [
+    {
+      "id": "ogretmen-1",
+      "ad": "İsim Soyisim",
+      "brans": "Matematik",
+      "unvan": "Branş Öğretmeni",
+      "mezuniyet": "—",
+      "deneyimYil": null,
+      "motto": "",
+      "foto": ""
+    },
+    {
+      "id": "ogretmen-2",
+      "ad": "İsim Soyisim",
+      "brans": "Türkçe / Türk Dili ve Edebiyatı",
+      "unvan": "Branş Öğretmeni",
+      "mezuniyet": "—",
+      "deneyimYil": null,
+      "motto": "",
+      "foto": ""
+    },
+    {
+      "id": "ogretmen-3",
+      "ad": "İsim Soyisim",
+      "brans": "Fen Bilimleri / Fizik",
+      "unvan": "Branş Öğretmeni",
+      "mezuniyet": "—",
+      "deneyimYil": null,
+      "motto": "",
+      "foto": ""
+    }
+  ]
+}

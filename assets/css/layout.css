@@ -1,0 +1,530 @@
+/* ============================================
+   LAYOUT — header, footer, navigasyon, floating icons, grid
+   ============================================ */
+
+/* ---------- Partial yer tutucuları (CLS önleme) ---------- */
+/* Header partial fetch ile yükleniyor; alanını önceden rezerve etmezsek
+   içerik yukarıdan iter, kullanıcı CLS yaşar. */
+#siteHeaderYer {
+  display: block;
+  min-height: 96px;
+  background: #ffffff;
+  border-bottom: 1px solid var(--renk-cizgi);
+}
+@media (max-width: 960px) {
+  #siteHeaderYer { min-height: 80px; }
+}
+#siteFooterYer { display: block; min-height: 300px; }
+
+/* ---------- Site Header ---------- */
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: #ffffff;
+  border-bottom: 1px solid var(--renk-cizgi);
+  transition: box-shadow var(--gecis);
+}
+.site-header.scrolled { box-shadow: var(--golge); }
+
+.site-header__icerik {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 96px;
+  gap: var(--bosluk-4);
+}
+
+.site-logo {
+  display: flex;
+  align-items: center;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.site-logo__img {
+  height: 72px;
+  width: auto;
+  display: block;
+  transition: opacity var(--gecis-hizli);
+}
+.site-logo:hover .site-logo__img { opacity: 0.85; }
+
+/* Mobil: logo'yu ortala, hamburger'ı sola al */
+@media (max-width: 960px) {
+  .site-header__icerik {
+    display: grid;
+    grid-template-columns: 44px 1fr 44px;
+    height: 80px;
+    gap: var(--bosluk-3);
+  }
+  .site-logo {
+    grid-column: 2;
+    justify-self: center;
+  }
+  .site-logo__img { height: 56px; }
+}
+@media (max-width: 380px) {
+  .site-logo__img { height: 48px; }
+}
+
+/* Ana navigasyon */
+.site-nav { display: flex; align-items: center; }
+.site-nav__liste {
+  display: flex;
+  gap: var(--bosluk-1);
+  align-items: center;
+}
+.site-nav__link {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: var(--bosluk-2) var(--bosluk-3);
+  color: var(--renk-yazi);
+  font-weight: 500;
+  font-size: var(--yazi-sm);
+  border-radius: var(--yuvarlak);
+  transition: all var(--gecis-hizli);
+  position: relative;
+}
+.site-nav__link:hover {
+  color: var(--renk-birincil);
+  background: var(--renk-arka-yumusak);
+}
+.site-nav__link.aktif {
+  color: var(--renk-birincil);
+  font-weight: 700;
+}
+/* Aktif sayfa göstergesi — alt çizgi */
+.site-nav__link.aktif::after {
+  content: "";
+  position: absolute;
+  bottom: -2px;
+  left: var(--bosluk-3);
+  right: var(--bosluk-3);
+  height: 3px;
+  background: var(--renk-vurgu);
+  border-radius: 2px;
+}
+@media (max-width: 960px) {
+  .site-nav__link.aktif::after { display: none; }
+}
+
+.site-header__cta {
+  margin-left: var(--bosluk-3);
+}
+
+/* Nav içindeki CTA sadece mobilde — desktop'ta site-header__cta zaten gösteriliyor */
+.site-nav__cta { display: none; }
+
+/* Mobil menü düğmesi */
+.menu-dugmesi {
+  display: none;
+  width: 44px; height: 44px;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--yuvarlak);
+  color: var(--renk-yazi);
+  transition: background var(--gecis-hizli);
+}
+.menu-dugmesi:hover { background: var(--renk-arka-yumusak); }
+.menu-dugmesi__cizgi {
+  display: block;
+  width: 22px; height: 2px;
+  background: currentColor;
+  position: relative;
+  transition: all var(--gecis);
+}
+.menu-dugmesi__cizgi::before,
+.menu-dugmesi__cizgi::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  width: 100%; height: 2px;
+  background: currentColor;
+  transition: all var(--gecis);
+}
+.menu-dugmesi__cizgi::before { top: -7px; }
+.menu-dugmesi__cizgi::after { top: 7px; }
+
+.menu-acik .menu-dugmesi__cizgi { background: transparent; }
+.menu-acik .menu-dugmesi__cizgi::before { top: 0; transform: rotate(45deg); }
+.menu-acik .menu-dugmesi__cizgi::after { top: 0; transform: rotate(-45deg); }
+
+/* ============================================
+   Mobil navigasyon — site-nav JS ile body level'a taşınır
+   (header'ın stacking context'inden çıkmak için)
+   ============================================ */
+@media (max-width: 960px) {
+  .menu-dugmesi {
+    display: inline-flex;
+    grid-column: 1;
+    justify-self: start;
+  }
+  .site-header__cta { display: none; }
+
+  /* Mobile'da nav: SOLDAN kayan drawer (sidebar) */
+  .site-nav--mobil {
+    position: fixed;
+    left: 0;
+    top: 80px;             /* mobil header yüksekliği */
+    bottom: 0;
+    width: min(85vw, 320px);   /* küçük ekranda 85%, büyükçede 320px */
+    z-index: 1000;         /* backdrop'un (999) üstünde */
+    background: #ffffff;
+    display: flex !important;
+    flex-direction: column;
+    align-items: stretch;
+    padding: var(--bosluk-4) 0 var(--bosluk-8);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    box-shadow: 4px 0 24px rgba(21, 30, 60, 0.15);
+
+    /* Soldan slide-in animasyonu */
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s 260ms;
+  }
+  body.menu-acik .site-nav--mobil {
+    transform: translateX(0);
+    visibility: visible;
+    transition: transform 260ms cubic-bezier(0.4, 0, 0.2, 1),
+                visibility 0s;
+  }
+
+  /* Backdrop — sidebar dışı tıklama yakalayıcı */
+  .mobil-menu-backdrop {
+    position: fixed;
+    top: 80px;          /* header altından başlasın */
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 999;       /* sidebar'ın (1000) altında */
+    background: rgba(12, 30, 58, 0.45);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 260ms ease, visibility 0s 260ms;
+    cursor: pointer;
+  }
+  body.menu-acik .mobil-menu-backdrop {
+    opacity: 1;
+    visibility: visible;
+    transition: opacity 260ms ease, visibility 0s;
+  }
+
+  /* Site genelinde scroll'u kilitle */
+  body.menu-acik {
+    overflow: hidden;
+  }
+
+  /* Mobil menü içeriği */
+  .site-nav--mobil .site-nav__liste {
+    flex-direction: column;
+    width: 100%;
+    gap: 0;
+    margin: 0 0 var(--bosluk-4);
+    padding: 0;
+    list-style: none;
+  }
+  .site-nav--mobil .site-nav__link {
+    padding: var(--bosluk-4) var(--bosluk-5);
+    font-size: var(--yazi-lg);
+    font-weight: 500;
+    width: 100%;
+    border-bottom: 1px solid var(--renk-cizgi);
+    border-radius: 0;
+    min-height: 56px;
+    display: flex;
+    align-items: center;
+    color: var(--renk-yazi);
+    text-align: left;
+    position: relative;
+    background: transparent;
+  }
+  .site-nav--mobil .site-nav__link::after { display: none; }
+  .site-nav--mobil .site-nav__link:hover,
+  .site-nav--mobil .site-nav__link:focus {
+    background: var(--pastel-mavi);
+    color: var(--renk-birincil);
+  }
+  .site-nav--mobil .site-nav__link.aktif {
+    color: var(--renk-birincil);
+    font-weight: 700;
+    background: var(--pastel-mavi);
+    border-left: 4px solid var(--renk-birincil);
+    padding-left: calc(var(--bosluk-5) - 4px);
+  }
+  .site-nav--mobil .site-nav__cta {
+    display: inline-flex;
+    width: calc(100% - var(--bosluk-10));
+    margin: var(--bosluk-5) var(--bosluk-5) 0;
+    padding-block: var(--bosluk-4);
+    font-size: var(--yazi-lg);
+    font-weight: 700;
+  }
+}
+
+/* ---------- Floating ikonlar (sağ alt köşe — sabit) ---------- */
+.float-ikonlar {
+  position: fixed;
+  right: var(--bosluk-5);
+  bottom: var(--bosluk-5);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bosluk-3);
+  z-index: 90;
+}
+
+.float-ikon {
+  width: 56px; height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+  box-shadow: var(--golge-lg);
+  transition: all var(--gecis);
+  position: relative;
+}
+.float-ikon:hover {
+  transform: translateY(-4px) scale(1.05);
+  color: white;
+}
+.float-ikon svg { width: 26px; height: 26px; }
+
+.float-ikon--whatsapp { background: var(--renk-whatsapp); }
+.float-ikon--whatsapp:hover { background: #1ebe57; }
+.float-ikon--instagram {
+  background: linear-gradient(135deg, #f09433 0%, #e6683c 25%, #dc2743 50%, #cc2366 75%, #bc1888 100%);
+}
+.float-ikon--telefon { background: var(--renk-telefon); }
+.float-ikon--telefon:hover { background: #1d4ed8; }
+
+/* Tooltip — sadece hover-yapabilen cihazlarda (touch'ta gereksiz/yapılmaz) */
+@media (hover: hover) {
+  .float-ikon::before {
+    content: attr(data-ipucu);
+    position: absolute;
+    right: calc(100% + var(--bosluk-3));
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--renk-arka-koyu);
+    color: white;
+    padding: var(--bosluk-2) var(--bosluk-3);
+    border-radius: var(--yuvarlak);
+    font-size: var(--yazi-sm);
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--gecis-hizli);
+  }
+  .float-ikon:hover::before { opacity: 1; }
+}
+
+/* Sayfada zaten bir WhatsApp / telefon CTA varsa floating ikonunu gizle
+   (iletisim, basvuru, tesekkurler — body[data-sayfa] ile işaretleniyor) */
+body[data-sayfa="iletisim"] .float-ikon--whatsapp,
+body[data-sayfa="iletisim"] .float-ikon--telefon,
+body[data-sayfa="basvuru"] .float-ikon--whatsapp,
+body[data-sayfa="tesekkurler"] .float-ikon--whatsapp {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .float-ikonlar {
+    right: var(--bosluk-4);
+    bottom: var(--bosluk-4);
+    gap: var(--bosluk-2);
+  }
+  .float-ikon { width: 50px; height: 50px; }
+  .float-ikon svg { width: 22px; height: 22px; }
+  .float-ikon::before { display: none; }
+}
+
+/* ---------- Footer ---------- */
+.site-footer {
+  background:
+    linear-gradient(180deg, #102a44 0%, #0c1e3a 100%);
+  color: rgba(255, 255, 255, 0.85);
+  padding-top: var(--bosluk-16);
+  margin-top: var(--bosluk-12);
+  position: relative;
+}
+.site-footer::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--renk-vurgu-acik), transparent);
+  opacity: 0.4;
+}
+
+.site-footer__izgara {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr 1fr;
+  gap: var(--bosluk-10);
+  padding-bottom: var(--bosluk-12);
+}
+
+@media (max-width: 900px) {
+  .site-footer__izgara {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--bosluk-8);
+  }
+}
+@media (max-width: 540px) {
+  .site-footer__izgara { grid-template-columns: 1fr; }
+}
+
+.site-footer h4 {
+  color: white;
+  font-size: var(--yazi-base);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--bosluk-4);
+}
+
+.site-footer__hakkinda p {
+  color: rgba(255, 255, 255, 0.7);
+  margin-bottom: var(--bosluk-4);
+  font-size: var(--yazi-sm);
+}
+
+.site-footer__menu li { margin-bottom: var(--bosluk-2); }
+.site-footer__menu a {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: var(--yazi-sm);
+  transition: color var(--gecis-hizli);
+}
+.site-footer__menu a:hover { color: var(--renk-vurgu); }
+
+.site-footer__iletisim li {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bosluk-3);
+  margin-bottom: var(--bosluk-3);
+  font-size: var(--yazi-sm);
+  color: rgba(255, 255, 255, 0.7);
+}
+.site-footer__iletisim a { color: inherit; font-weight: 500; }
+.site-footer__iletisim a:hover { color: var(--renk-vurgu); }
+@media (max-width: 540px) {
+  .site-footer__iletisim a {
+    display: inline-block;
+    min-height: 44px;
+    padding-block: 6px;
+  }
+}
+.site-footer__iletisim-ikon {
+  flex-shrink: 0;
+  width: 20px; height: 20px;
+  color: var(--renk-vurgu);
+  margin-top: 2px;
+}
+
+.site-footer__sosyal {
+  display: flex;
+  gap: var(--bosluk-2);
+  margin-top: var(--bosluk-3);
+}
+.site-footer__sosyal a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px; height: 40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transition: all var(--gecis);
+}
+.site-footer__sosyal a:hover {
+  background: var(--renk-vurgu);
+  color: white;
+  transform: translateY(-2px);
+}
+.site-footer__sosyal svg { width: 20px; height: 20px; }
+
+.site-footer__alt {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-block: var(--bosluk-5);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--bosluk-3);
+  font-size: var(--yazi-sm);
+  color: rgba(255, 255, 255, 0.5);
+}
+@media (max-width: 540px) {
+  .site-footer__alt {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--bosluk-2);
+  }
+}
+.site-footer__alt a { color: rgba(255, 255, 255, 0.5); }
+.site-footer__alt a:hover { color: var(--renk-vurgu); }
+
+/* ---------- Grid yardımcı ---------- */
+.izgara { display: grid; gap: var(--bosluk-6); }
+.izgara--2 { grid-template-columns: repeat(2, 1fr); }
+.izgara--3 { grid-template-columns: repeat(3, 1fr); }
+.izgara--4 { grid-template-columns: repeat(4, 1fr); }
+
+@media (max-width: 960px) {
+  .izgara--3, .izgara--4 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 640px) {
+  .izgara--2, .izgara--3, .izgara--4 { grid-template-columns: 1fr; }
+}
+
+/* ---------- Sayfa başlığı (alt sayfalar için) ---------- */
+.sayfa-basligi {
+  background:
+    linear-gradient(135deg, #1565c0 0%, #1976d2 60%, #2196f3 100%);
+  color: white;
+  padding: clamp(var(--bosluk-12), 8vw, var(--bosluk-16)) 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.sayfa-basligi::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(circle at 90% 10%, rgba(253,235,236,0.18), transparent 40%),
+    radial-gradient(circle at 10% 90%, rgba(255,255,255,0.10), transparent 40%);
+  pointer-events: none;
+}
+.sayfa-basligi > * { position: relative; }
+.sayfa-basligi h1 { color: white; margin-bottom: var(--bosluk-3); }
+.sayfa-basligi p {
+  color: rgba(255, 255, 255, 0.85);
+  font-size: var(--yazi-lg);
+  max-width: 600px;
+  margin-inline: auto;
+  padding-inline: var(--bosluk-4);
+}
+@media (max-width: 520px) {
+  .sayfa-basligi p { font-size: var(--yazi-base); }
+}
+.kirilma-yolu {
+  display: flex;
+  justify-content: center;
+  gap: var(--bosluk-2);
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-soluk);
+  margin-bottom: var(--bosluk-4);
+  flex-wrap: wrap;
+}
+.kirilma-yolu a {
+  color: var(--renk-yazi-acik);
+  font-weight: 500;
+}
+.kirilma-yolu a:hover { color: var(--renk-birincil); }
+
+/* Koyu hero/banner içindeyse (sayfa başlığında) beyaz tonları kullan */
+.sayfa-basligi .kirilma-yolu { color: rgba(255, 255, 255, 0.75); }
+.sayfa-basligi .kirilma-yolu a { color: rgba(255, 255, 255, 0.92); }
+.sayfa-basligi .kirilma-yolu a:hover { color: white; }

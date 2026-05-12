@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title id="sayfaBaslik">Kullanıcılar — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+
+  <style>
+    .kullanici-tablo {
+      width: 100%; background: white;
+      border: 1px solid var(--renk-cizgi);
+      border-radius: var(--yuvarlak-md);
+      border-collapse: collapse; overflow: hidden;
+    }
+    .kullanici-tablo th, .kullanici-tablo td {
+      padding: var(--bosluk-3) var(--bosluk-4);
+      text-align: left; font-size: var(--yazi-sm);
+      border-bottom: 1px solid var(--renk-cizgi);
+    }
+    .kullanici-tablo th {
+      background: var(--renk-arka-yumusak);
+      font-weight: 600; font-size: var(--yazi-xs);
+      text-transform: uppercase; letter-spacing: 0.05em;
+    }
+    .kullanici-tablo tr:last-child td { border-bottom: 0; }
+    .rol-etiket {
+      display: inline-block; padding: 2px 8px;
+      border-radius: 9999px;
+      font-size: var(--yazi-xs); font-weight: 600; text-transform: uppercase;
+    }
+    .rol-admin { background: #dcfce7; color: #166534; }
+    .rol-editor { background: #dbeafe; color: #1e40af; }
+    .durum-aktif::before { content: "🟢 "; }
+    .durum-pasif::before { content: "🔴 "; }
+
+    .modal-arkaplan {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100;
+      display: flex; align-items: center; justify-content: center;
+      padding: var(--bosluk-4); overflow-y: auto;
+    }
+    .modal-kart {
+      background: white; border-radius: var(--yuvarlak-md);
+      max-width: 500px; width: 100%; padding: var(--bosluk-8);
+    }
+
+    /* Profil sayfası kart düzeni */
+    .profil-izgara {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: var(--bosluk-6);
+      padding-block: var(--bosluk-6);
+    }
+    @media (max-width: 720px) {
+      .profil-izgara { grid-template-columns: 1fr; }
+    }
+    .profil-yan {
+      background: white;
+      border: 1px solid var(--renk-cizgi);
+      border-radius: var(--yuvarlak-md);
+      padding: var(--bosluk-6);
+      text-align: center;
+      height: fit-content;
+    }
+    .profil-avatar {
+      width: 110px; height: 110px;
+      margin: 0 auto var(--bosluk-4);
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--renk-birincil), var(--renk-birincil-acik));
+      color: white;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 2.5rem; font-weight: 700;
+    }
+    .profil-yan h3 { margin: 0 0 4px; font-size: var(--yazi-lg); }
+    .profil-yan p { font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin: 0; }
+    .profil-meta {
+      margin-top: var(--bosluk-5); padding-top: var(--bosluk-5);
+      border-top: 1px solid var(--renk-cizgi);
+      text-align: left;
+    }
+    .profil-meta__satir {
+      display: flex; justify-content: space-between; gap: var(--bosluk-3);
+      font-size: var(--yazi-sm); padding: 4px 0;
+    }
+    .profil-meta__etiket { color: var(--renk-yazi-soluk); }
+    .profil-meta__deger { font-weight: 500; }
+
+    .profil-icerik {
+      background: white;
+      border: 1px solid var(--renk-cizgi);
+      border-radius: var(--yuvarlak-md);
+      padding: var(--bosluk-8);
+    }
+    .profil-icerik h3 {
+      font-size: var(--yazi-lg);
+      margin-bottom: var(--bosluk-2);
+      padding-bottom: var(--bosluk-3);
+      border-bottom: 1px solid var(--renk-cizgi);
+    }
+    .profil-icerik__aciklama {
+      font-size: var(--yazi-sm);
+      color: var(--renk-yazi-acik);
+      margin-bottom: var(--bosluk-5);
+    }
+    .profil-bolum + .profil-bolum {
+      margin-top: var(--bosluk-8);
+      padding-top: var(--bosluk-6);
+      border-top: 1px solid var(--renk-cizgi);
+    }
+  </style>
+</head>
+<body>
+
+  <div id="adminBar"></div>
+  <main class="kapsayici" id="govde">
+    <p style="text-align:center;color:var(--renk-yazi-soluk);padding:var(--bosluk-12);">Yükleniyor…</p>
+  </main>
+  <div id="modalYer"></div>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    let mevcutKullanici = null;
+    let liste = [];
+
+    const $govde = document.getElementById('govde');
+    const $modalYer = document.getElementById('modalYer');
+
+    const tarihTr = (iso) => {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+    };
+
+    // Local escHtml kaldırıldı — ADMIN.escHtml kullanılıyor (admin-core.js).
+    const escHtml = ADMIN.escHtml;
+
+    const harfler = (ad) => (ad || '').split(/\s+/).filter(Boolean).slice(0, 2)
+      .map(p => p.charAt(0).toLocaleUpperCase('tr-TR')).join('') || '?';
+
+    /* =================================================================
+       BAŞLAT — role göre dallandır
+    ================================================================= */
+    const yukle = async () => {
+      try {
+        const meR = await API.auth.me();
+        mevcutKullanici = meR.kullanici;
+        if (!mevcutKullanici) { location.href = '/admin/'; return; }
+
+        if (mevcutKullanici.rol === 'admin') {
+          document.title = 'Kullanıcılar — İlk Adım Akademi Yönetim';
+          ADMIN.adminBarYukle('kullanicilar');
+          await yoneticiGorunumu();
+        } else {
+          document.title = 'Profil Ayarlarım — İlk Adım Akademi';
+          ADMIN.adminBarYukle('kullanicilar');
+          profilGorunumu();
+        }
+      } catch (e) {
+        $govde.innerHTML = `<div style="text-align:center;color:var(--renk-hata);padding:var(--bosluk-8);">${escHtml(e.message)}</div>`;
+      }
+    };
+
+    /* =================================================================
+       PROFİL GÖRÜNÜMÜ — editör/non-admin için
+    ================================================================= */
+    const profilGorunumu = () => {
+      const u = mevcutKullanici;
+      $govde.innerHTML = `
+        <div class="admin-sayfa-bas">
+          <div class="admin-sayfa-bas__icerik">
+            <div>
+              <h1>Profil Ayarlarım</h1>
+              <p>Kendi hesap bilgilerinizi ve şifrenizi buradan güncelleyebilirsiniz.</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="profil-izgara">
+          <aside class="profil-yan">
+            <div class="profil-avatar">${escHtml(harfler(u.adSoyad || u.kullaniciAdi))}</div>
+            <h3 id="profilAdGoster">${escHtml(u.adSoyad || u.kullaniciAdi)}</h3>
+            <p id="profilEpostaGoster">${escHtml(u.eposta || '—')}</p>
+            <div class="profil-meta">
+              <div class="profil-meta__satir">
+                <span class="profil-meta__etiket">Kullanıcı adı</span>
+                <span class="profil-meta__deger">${escHtml(u.kullaniciAdi)}</span>
+              </div>
+              <div class="profil-meta__satir">
+                <span class="profil-meta__etiket">Rol</span>
+                <span class="profil-meta__deger"><span class="rol-etiket rol-${escHtml(u.rol)}">${u.rol === 'admin' ? 'Yönetici' : 'Editör'}</span></span>
+              </div>
+              <div class="profil-meta__satir">
+                <span class="profil-meta__etiket">Son giriş</span>
+                <span class="profil-meta__deger">${tarihTr(u.sonGiris)}</span>
+              </div>
+              <div class="profil-meta__satir">
+                <span class="profil-meta__etiket">Kayıt tarihi</span>
+                <span class="profil-meta__deger">${tarihTr(u.olusturulma)}</span>
+              </div>
+            </div>
+          </aside>
+
+          <section class="profil-icerik">
+            <div class="profil-bolum">
+              <h3>Kişisel Bilgiler</h3>
+              <p class="profil-icerik__aciklama">
+                Kullanıcı adınız değiştirilemez. Ad-soyad ve e-posta bilgilerinizi düzenleyebilirsiniz.
+              </p>
+              <form id="profilForm">
+                <div class="form-grup">
+                  <label class="form-etiket" for="pf-ad">Ad Soyad</label>
+                  <input class="form-girdi" type="text" id="pf-ad" value="${escHtml(u.adSoyad || '')}">
+                </div>
+                <div class="form-grup">
+                  <label class="form-etiket" for="pf-eposta">E-posta</label>
+                  <input class="form-girdi" type="email" id="pf-eposta" value="${escHtml(u.eposta || '')}">
+                </div>
+                <div style="text-align: right;">
+                  <button type="submit" class="dugme dugme--birincil">Bilgileri Kaydet</button>
+                </div>
+              </form>
+            </div>
+
+            <div class="profil-bolum">
+              <h3>Şifre Değiştir</h3>
+              <p class="profil-icerik__aciklama">
+                Şifrenizi düzenli olarak değiştirmenizi öneririz. En az 8 karakter olmalı.
+              </p>
+              <form id="sifreForm">
+                <div class="form-grup">
+                  <label class="form-etiket" for="sf-eski">Mevcut Şifre</label>
+                  <input class="form-girdi" type="password" id="sf-eski" required autocomplete="current-password">
+                </div>
+                <div class="form-grup">
+                  <label class="form-etiket" for="sf-yeni">Yeni Şifre</label>
+                  <input class="form-girdi" type="password" id="sf-yeni" required minlength="8" autocomplete="new-password">
+                </div>
+                <div class="form-grup">
+                  <label class="form-etiket" for="sf-yeni2">Yeni Şifre (tekrar)</label>
+                  <input class="form-girdi" type="password" id="sf-yeni2" required minlength="8" autocomplete="new-password">
+                </div>
+                <div style="text-align: right;">
+                  <button type="submit" class="dugme dugme--birincil">Şifremi Değiştir</button>
+                </div>
+              </form>
+            </div>
+          </section>
+        </div>
+      `;
+
+      document.getElementById('profilForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const veri = {
+          adSoyad: document.getElementById('pf-ad').value.trim(),
+          eposta:  document.getElementById('pf-eposta').value.trim(),
+        };
+        try {
+          await API.kullanicilar.profilGuncelle(veri);
+          mevcutKullanici.adSoyad = veri.adSoyad;
+          mevcutKullanici.eposta = veri.eposta;
+          document.getElementById('profilAdGoster').textContent = veri.adSoyad || mevcutKullanici.kullaniciAdi;
+          document.getElementById('profilEpostaGoster').textContent = veri.eposta || '—';
+          ADMIN.toast('Profil güncellendi', 'basari');
+        } catch (err) {
+          ADMIN.toast(err.message, 'hata');
+        }
+      });
+
+      document.getElementById('sifreForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const eski = document.getElementById('sf-eski').value;
+        const yeni = document.getElementById('sf-yeni').value;
+        const yeni2 = document.getElementById('sf-yeni2').value;
+        if (yeni !== yeni2) { ADMIN.toast('Yeni şifreler uyuşmuyor', 'hata'); return; }
+        try {
+          await API.kullanicilar.sifreDegistir(eski, yeni);
+          e.target.reset();
+          ADMIN.toast('Şifre değiştirildi', 'basari');
+        } catch (err) {
+          ADMIN.toast(err.message, 'hata');
+        }
+      });
+    };
+
+    /* =================================================================
+       YÖNETİCİ GÖRÜNÜMÜ — admin için
+    ================================================================= */
+    const yoneticiGorunumu = async () => {
+      const r = await API.kullanicilar.liste();
+      liste = r.kullanicilar || [];
+
+      $govde.innerHTML = `
+        <div class="admin-sayfa-bas">
+          <div class="admin-sayfa-bas__icerik">
+            <div>
+              <h1>Kullanıcılar</h1>
+              <p>Site yöneticisi ve editör hesaplarını yönetin.</p>
+            </div>
+            <div style="display:flex; gap: var(--bosluk-2); flex-wrap: wrap;">
+              <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgSifreDegistir">🔑 Şifremi Değiştir</button>
+              <button type="button" class="dugme dugme--vurgu dugme--kucuk" id="dgYeni">+ Yeni Kullanıcı</button>
+            </div>
+          </div>
+        </div>
+
+        <div style="overflow-x: auto; margin-top: var(--bosluk-5);">
+          <table class="kullanici-tablo">
+            <thead>
+              <tr>
+                <th>Kullanıcı</th>
+                <th>E-posta</th>
+                <th>Rol</th>
+                <th>Durum</th>
+                <th>Son Giriş</th>
+                <th style="text-align:right;">İşlem</th>
+              </tr>
+            </thead>
+            <tbody id="tabloGovde"></tbody>
+          </table>
+        </div>
+      `;
+
+      tabloRender();
+
+      document.getElementById('dgYeni').addEventListener('click', () => duzenleModal(null));
+      document.getElementById('dgSifreDegistir').addEventListener('click', sifreDegistirModal);
+    };
+
+    const tabloRender = () => {
+      const $t = document.getElementById('tabloGovde');
+      if (liste.length === 0) {
+        $t.innerHTML = '<tr><td colspan="6" style="text-align:center; padding: var(--bosluk-8); color: var(--renk-yazi-soluk);">Henüz kullanıcı yok.</td></tr>';
+        return;
+      }
+      $t.innerHTML = liste.map(u => {
+        const benMi = u.id === mevcutKullanici.id;
+        return `
+          <tr data-id="${u.id}">
+            <td>
+              <strong>${escHtml(u.kullaniciAdi)}</strong>
+              ${benMi ? '<span style="font-size: var(--yazi-xs); color: var(--renk-vurgu); margin-left: 6px;">(siz)</span>' : ''}
+              ${u.adSoyad ? `<br><span style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk);">${escHtml(u.adSoyad)}</span>` : ''}
+            </td>
+            <td>${escHtml(u.eposta || '—')}</td>
+            <td><span class="rol-etiket rol-${escHtml(u.rol)}">${u.rol === 'admin' ? 'Yönetici' : 'Editör'}</span></td>
+            <td><span class="${u.aktif ? 'durum-aktif' : 'durum-pasif'}">${u.aktif ? 'Aktif' : 'Pasif'}</span></td>
+            <td style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk);">${tarihTr(u.sonGiris)}</td>
+            <td style="text-align:right; white-space: nowrap;">
+              <button type="button" class="cevap-tablo__min-dugme" data-aksiyon="duzenle" title="Düzenle">✏️</button>
+              ${benMi ? '' : `<button type="button" class="cevap-tablo__min-dugme cevap-tablo__min-dugme--tehlike" data-aksiyon="sil" title="Sil">🗑</button>`}
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      $t.querySelectorAll('[data-aksiyon="duzenle"]').forEach(b => {
+        b.addEventListener('click', (e) => {
+          const id = +e.target.closest('[data-id]').dataset.id;
+          duzenleModal(liste.find(u => u.id === id));
+        });
+      });
+      $t.querySelectorAll('[data-aksiyon="sil"]').forEach(b => {
+        b.addEventListener('click', (e) => {
+          const id = +e.target.closest('[data-id]').dataset.id;
+          silOnay(liste.find(u => u.id === id));
+        });
+      });
+    };
+
+    const duzenleModal = (u = null) => {
+      const yeni = !u;
+      $modalYer.innerHTML = `
+        <div class="modal-arkaplan" id="modalArka">
+          <div class="modal-kart">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: var(--bosluk-5);">
+              <h2 style="margin:0;">${yeni ? 'Yeni Kullanıcı' : 'Kullanıcıyı Düzenle'}</h2>
+              <button type="button" id="kapa" style="width:32px;height:32px;background:var(--renk-arka-yumusak);border:0;border-radius:50%;cursor:pointer;font-size:18px;">×</button>
+            </div>
+            <form id="kullaniciForm">
+              <div class="form-grup">
+                <label class="form-etiket" for="k-kadi">Kullanıcı Adı *</label>
+                <input class="form-girdi" type="text" id="k-kadi" required pattern="[a-zA-Z0-9_.-]{3,50}"
+                       value="${escHtml(u?.kullaniciAdi || '')}" ${yeni ? '' : 'readonly'}>
+                ${!yeni ? '<p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin-top: 4px;">Kullanıcı adı değiştirilemez.</p>' : ''}
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="k-adSoyad">Ad Soyad</label>
+                <input class="form-girdi" type="text" id="k-adSoyad" value="${escHtml(u?.adSoyad || '')}">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="k-eposta">E-posta</label>
+                <input class="form-girdi" type="email" id="k-eposta" value="${escHtml(u?.eposta || '')}">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="k-rol">Rol *</label>
+                <select class="form-secim" id="k-rol" required>
+                  <option value="editor" ${u?.rol === 'editor' ? 'selected' : ''}>Editör</option>
+                  <option value="admin" ${u?.rol === 'admin' ? 'selected' : ''}>Yönetici</option>
+                </select>
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="k-sifre">${yeni ? 'Şifre *' : 'Yeni Şifre (boş bırakırsanız değişmez)'}</label>
+                <input class="form-girdi" type="password" id="k-sifre" ${yeni ? 'required' : ''} minlength="8" autocomplete="new-password">
+                <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin-top: 4px;">En az 8 karakter.</p>
+              </div>
+              ${yeni ? '' : `
+                <div class="form-grup">
+                  <label style="display:flex; gap: var(--bosluk-2); align-items:center;">
+                    <input type="checkbox" id="k-aktif" ${u?.aktif ? 'checked' : ''}>
+                    <span><strong>Aktif</strong></span>
+                  </label>
+                </div>
+              `}
+              <div style="display:flex; gap: var(--bosluk-2); justify-content: flex-end; margin-top: var(--bosluk-6); padding-top: var(--bosluk-4); border-top: 1px solid var(--renk-cizgi);">
+                <button type="button" class="dugme dugme--cerceve" id="iptal">İptal</button>
+                <button type="submit" class="dugme dugme--birincil">${yeni ? 'Oluştur' : 'Kaydet'}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      const kapat = () => $modalYer.innerHTML = '';
+      document.getElementById('kapa').addEventListener('click', kapat);
+      document.getElementById('iptal').addEventListener('click', kapat);
+      document.getElementById('modalArka').addEventListener('click', (e) => { if (e.target.id === 'modalArka') kapat(); });
+
+      document.getElementById('kullaniciForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const veri = {
+          kullaniciAdi: document.getElementById('k-kadi').value.trim(),
+          adSoyad: document.getElementById('k-adSoyad').value.trim(),
+          eposta: document.getElementById('k-eposta').value.trim(),
+          rol: document.getElementById('k-rol').value,
+        };
+        const sifre = document.getElementById('k-sifre').value;
+        if (yeni) {
+          if (!sifre || sifre.length < 8) { ADMIN.toast('Şifre en az 8 karakter olmalı', 'hata'); return; }
+          veri.sifre = sifre;
+        } else {
+          if (sifre) {
+            if (sifre.length < 8) { ADMIN.toast('Şifre en az 8 karakter olmalı', 'hata'); return; }
+            veri.yeniSifre = sifre;
+          }
+          veri.aktif = document.getElementById('k-aktif').checked;
+        }
+        try {
+          if (yeni) await API.kullanicilar.olustur(veri);
+          else await API.kullanicilar.guncelle(u.id, veri);
+          ADMIN.toast(yeni ? 'Kullanıcı oluşturuldu' : 'Kullanıcı güncellendi', 'basari');
+          kapat();
+          yoneticiGorunumu();
+        } catch (err) {
+          ADMIN.toast(err.message, 'hata');
+        }
+      });
+    };
+
+    const silOnay = (u) => {
+      if (!confirm(`"${u.kullaniciAdi}" kullanıcısını silmek istediğinize emin misiniz?`)) return;
+      API.kullanicilar.sil(u.id)
+        .then(() => { ADMIN.toast('Kullanıcı silindi', 'basari'); yoneticiGorunumu(); })
+        .catch(e => ADMIN.toast(e.message, 'hata'));
+    };
+
+    const sifreDegistirModal = () => {
+      $modalYer.innerHTML = `
+        <div class="modal-arkaplan" id="modalArka">
+          <div class="modal-kart">
+            <h2 style="margin: 0 0 var(--bosluk-5);">Şifremi Değiştir</h2>
+            <form id="sifreForm">
+              <div class="form-grup">
+                <label class="form-etiket" for="sf-eski">Mevcut Şifre</label>
+                <input class="form-girdi" type="password" id="sf-eski" required autocomplete="current-password">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="sf-yeni">Yeni Şifre</label>
+                <input class="form-girdi" type="password" id="sf-yeni" required minlength="8" autocomplete="new-password">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="sf-yeni2">Yeni Şifre (tekrar)</label>
+                <input class="form-girdi" type="password" id="sf-yeni2" required minlength="8" autocomplete="new-password">
+              </div>
+              <div style="display:flex; gap: var(--bosluk-2); justify-content: flex-end; margin-top: var(--bosluk-6); padding-top: var(--bosluk-4); border-top: 1px solid var(--renk-cizgi);">
+                <button type="button" class="dugme dugme--cerceve" id="iptal">İptal</button>
+                <button type="submit" class="dugme dugme--birincil">Şifremi Değiştir</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      `;
+      const kapat = () => $modalYer.innerHTML = '';
+      document.getElementById('iptal').addEventListener('click', kapat);
+      document.getElementById('modalArka').addEventListener('click', (e) => { if (e.target.id === 'modalArka') kapat(); });
+      document.getElementById('sifreForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const eski = document.getElementById('sf-eski').value;
+        const yeni = document.getElementById('sf-yeni').value;
+        const yeni2 = document.getElementById('sf-yeni2').value;
+        if (yeni !== yeni2) { ADMIN.toast('Yeni şifreler uyuşmuyor', 'hata'); return; }
+        try {
+          await API.kullanicilar.sifreDegistir(eski, yeni);
+          ADMIN.toast('Şifre değiştirildi', 'basari');
+          kapat();
+        } catch (err) {
+          ADMIN.toast(err.message, 'hata');
+        }
+      });
+    };
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

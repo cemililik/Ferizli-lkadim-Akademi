@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Galeri — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  <style>
+    .galeri-yonetim { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: var(--bosluk-4); padding-block: var(--bosluk-6); }
+    .galeri-oge-admin { background: white; border-radius: var(--yuvarlak-md); overflow: hidden; border: 1px solid var(--renk-cizgi); display: flex; flex-direction: column; transition: all var(--gecis-hizli); }
+    .galeri-oge-admin:hover { box-shadow: var(--golge-md); }
+    .galeri-oge-admin__gorsel { aspect-ratio: 4/3; background: var(--renk-arka-yumusak); overflow: hidden; }
+    .galeri-oge-admin__gorsel img { width: 100%; height: 100%; object-fit: cover; }
+    .galeri-oge-admin__alt { padding: var(--bosluk-3); display: flex; flex-direction: column; gap: var(--bosluk-2); flex-grow: 1; }
+    .galeri-oge-admin__alt input[type="text"], .galeri-oge-admin__alt select { font-size: var(--yazi-sm); padding: var(--bosluk-2); }
+    .galeri-oge-admin__dugmeler { display: flex; gap: 4px; margin-top: auto; }
+    .galeri-bos-kart { aspect-ratio: 4/3; border: 2px dashed var(--renk-cizgi-koyu); border-radius: var(--yuvarlak-md); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--bosluk-2); color: var(--renk-yazi-soluk); background: white; cursor: pointer; transition: all var(--gecis-hizli); font-size: var(--yazi-sm); }
+    .galeri-bos-kart:hover { border-color: var(--renk-birincil); background: var(--renk-arka-yumusak); color: var(--renk-birincil); }
+    .galeri-bos-kart__ikon { font-size: 2.5rem; }
+  </style>
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Galeri</h1>
+          <p>Kurum, ders ve etkinlik fotoğrafları.</p>
+        </div>
+        <div style="display: flex; gap: var(--bosluk-2); flex-wrap: wrap;">
+          <button type="button" class="dugme dugme--vurgu dugme--kucuk" id="dgYeni">+ Görsel Ekle</button>
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgCoklu">+ Çoklu Ekle</button>
+        </div>
+      </div>
+    </div>
+
+    <div style="padding: var(--bosluk-4) 0; display: flex; gap: var(--bosluk-2); flex-wrap: wrap; align-items: center;">
+      <span style="font-size: var(--yazi-sm); color: var(--renk-yazi-soluk);">Albüm:</span>
+      <div id="albumFiltresi" style="display: flex; gap: var(--bosluk-2); flex-wrap: wrap; flex-grow: 1;"></div>
+      <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="albumYonet">⚙ Albümleri Düzenle</button>
+    </div>
+
+    <div id="galeriYonetim" class="galeri-yonetim"></div>
+
+    <div id="albumModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index: 100; align-items: center; justify-content: center; padding: var(--bosluk-4);">
+      <div style="background: white; border-radius: var(--yuvarlak-md); padding: var(--bosluk-6); max-width: 500px; width: 100%; max-height: 90vh; overflow-y: auto;">
+        <h3 style="margin-bottom: var(--bosluk-5);">Albümleri Düzenle</h3>
+        <div id="albumListesi" style="margin-bottom: var(--bosluk-4);"></div>
+        <form id="albumEkleForm" style="display:flex; gap: var(--bosluk-2); align-items:flex-end; padding: var(--bosluk-3); background: var(--renk-arka-yumusak); border-radius: var(--yuvarlak);">
+          <div class="form-grup" style="flex:1; margin:0;">
+            <label class="form-etiket" for="albumYeniAd" style="font-size:var(--yazi-xs);">Yeni albüm adı</label>
+            <input class="form-girdi" type="text" id="albumYeniAd" maxlength="50" placeholder="Örn: Atölyeler" required>
+          </div>
+          <button type="submit" class="dugme dugme--cerceve dugme--kucuk">+ Ekle</button>
+        </form>
+        <div style="display: flex; gap: var(--bosluk-3); justify-content: flex-end; margin-top: var(--bosluk-6); padding-top: var(--bosluk-4); border-top: 1px solid var(--renk-cizgi);">
+          <button type="button" class="dugme dugme--birincil" id="albumModalKapa">Tamam</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('galeri');
+
+    let albumler = [];
+    let gorseller = [];
+    let aktifAlbum = 'hepsi';
+
+    const $g = document.getElementById('galeriYonetim');
+    const $albumFiltre = document.getElementById('albumFiltresi');
+    const $albumModal = document.getElementById('albumModal');
+
+    const yukle = async () => {
+      try {
+        const r = await API.galeri.al();
+        albumler = r.albumler || [];
+        gorseller = r.gorseller || [];
+        albumFiltreRender();
+        render();
+      } catch (e) {
+        $g.innerHTML = `<div style="padding: var(--bosluk-4); color: var(--renk-hata);">${ADMIN.escHtml(e.message)}</div>`;
+      }
+    };
+
+    const albumFiltreRender = () => {
+      const sayilar = { hepsi: gorseller.length };
+      gorseller.forEach(g => { sayilar[g.album] = (sayilar[g.album] || 0) + 1; });
+      const dugmeler = [{ id: 'hepsi', ad: 'Tümü' }, ...albumler];
+      $albumFiltre.innerHTML = dugmeler.map(a => `
+        <button type="button" class="duyuru-filtre__dugme${aktifAlbum === a.id ? ' aktif' : ''}" data-album="${ADMIN.escHtml(a.id)}">
+          ${ADMIN.escHtml(a.ad)} <span style="opacity:.7;margin-left:2px;">(${sayilar[a.id] || 0})</span>
+        </button>
+      `).join('');
+      $albumFiltre.querySelectorAll('[data-album]').forEach(b => {
+        b.addEventListener('click', () => {
+          aktifAlbum = b.dataset.album;
+          albumFiltreRender();
+          render();
+        });
+      });
+    };
+
+    const render = () => {
+      const liste = gorseller
+        .filter(g => aktifAlbum === 'hepsi' || g.album === aktifAlbum)
+        .sort((a, b) => new Date(b.tarih || 0) - new Date(a.tarih || 0));
+
+      const kartlar = liste.map(g => `
+        <article class="galeri-oge-admin" data-id="${ADMIN.escHtml(g.id)}">
+          <div class="galeri-oge-admin__gorsel">
+            ${g.src ? `<img src="${g.src}" alt="" loading="lazy">` : '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--renk-yazi-soluk);font-size:var(--yazi-sm);">Görsel yok</div>'}
+          </div>
+          <div class="galeri-oge-admin__alt">
+            <input type="text" class="form-girdi" data-baslik value="${ADMIN.escHtml(g.baslik || '')}" placeholder="Başlık (opsiyonel)">
+            <select class="form-secim" data-album style="font-size: var(--yazi-sm); padding: var(--bosluk-2);">
+              ${albumler.map(a => `<option value="${ADMIN.escHtml(a.id)}"${g.album === a.id ? ' selected' : ''}>${ADMIN.escHtml(a.ad)}</option>`).join('')}
+            </select>
+            <div class="galeri-oge-admin__dugmeler">
+              <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-degistir style="flex:1;">📷 Değiştir</button>
+              <button type="button" class="dugme dugme--tehlike dugme--kucuk" data-sil>🗑</button>
+            </div>
+          </div>
+        </article>
+      `).join('');
+
+      const ekleKart = `<div class="galeri-bos-kart" id="ekleKart"><span class="galeri-bos-kart__ikon">＋</span><span>Görsel Ekle</span></div>`;
+      $g.innerHTML = ekleKart + kartlar;
+
+      document.getElementById('ekleKart').addEventListener('click', tekEkle);
+      $g.querySelectorAll('.galeri-oge-admin').forEach(kart => {
+        const id = kart.dataset.id;
+        kart.querySelector('[data-baslik]').addEventListener('change', (e) =>
+          gorselGuncelle(id, { baslik: e.target.value.trim() }));
+        kart.querySelector('[data-album]').addEventListener('change', (e) =>
+          gorselGuncelle(id, { album: e.target.value }));
+        kart.querySelector('[data-degistir]').addEventListener('click', () => degistir(id));
+        kart.querySelector('[data-sil]').addEventListener('click', () => sil(id));
+      });
+    };
+
+    const tekEkle = async () => {
+      try {
+        const r = await ADMIN.gorselSec({ maxGenislik: 1600, maxYukseklik: 1600, klasor: 'galeri' });
+        const album = aktifAlbum !== 'hepsi' ? aktifAlbum : (albumler[0]?.id || 'kurum');
+        if (!albumler.find(a => a.id === album)) {
+          ADMIN.toast('Önce bir albüm oluşturun.', 'hata');
+          return;
+        }
+        await API.galeri.gorselEkle({
+          album, baslik: r.orijinalAd.replace(/\.[^.]+$/, ''),
+          src: r.dataUrl, tarih: ADMIN.bugunISO()
+        });
+        await yukle();
+        ADMIN.toast(`Görsel eklendi (${r.boyutKB} KB)`, 'basari');
+      } catch (e) {
+        if (e.message !== 'İptal edildi') ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    const cokluEkle = async () => {
+      const input = document.createElement('input');
+      input.type = 'file'; input.accept = 'image/*'; input.multiple = true;
+      input.style.display = 'none'; document.body.appendChild(input);
+      input.addEventListener('change', async () => {
+        const dosyalar = Array.from(input.files || []);
+        input.remove();
+        if (dosyalar.length === 0) return;
+        ADMIN.toast(`${dosyalar.length} görsel işleniyor...`, 'bilgi');
+
+        const album = aktifAlbum !== 'hepsi' ? aktifAlbum : (albumler[0]?.id || 'kurum');
+        if (!albumler.find(a => a.id === album)) { ADMIN.toast('Önce bir albüm oluşturun.', 'hata'); return; }
+
+        let basarili = 0;
+        for (const d of dosyalar) {
+          try {
+            const fd = new FormData();
+            fd.append('dosya', d);
+            fd.append('klasor', 'galeri');
+            fd.append('max', '1600');
+            const ur = await fetch('/api/uploads', { method: 'POST', body: fd, credentials: 'include' });
+            const uv = await ur.json();
+            if (!ur.ok) throw new Error(uv.hata || 'Yükleme hatası');
+            await API.galeri.gorselEkle({
+              album, baslik: d.name.replace(/\.[^.]+$/, ''),
+              src: uv.url, tarih: ADMIN.bugunISO()
+            });
+            basarili++;
+          } catch (err) { console.error('Görsel atlandı:', d.name, err); }
+        }
+        await yukle();
+        ADMIN.toast(`${basarili} görsel eklendi`, 'basari');
+      });
+      input.click();
+    };
+
+    const gorselGuncelle = async (id, veri) => {
+      try { await API.galeri.gorselGuncelle(id, veri); await yukle(); }
+      catch (e) { ADMIN.toast(e.message, 'hata'); }
+    };
+
+    const degistir = async (id) => {
+      try {
+        const r = await ADMIN.gorselSec({ maxGenislik: 1600, maxYukseklik: 1600, klasor: 'galeri' });
+        await API.galeri.gorselGuncelle(id, { src: r.dataUrl });
+        await yukle();
+        ADMIN.toast('Görsel değiştirildi', 'basari');
+      } catch (e) {
+        if (e.message !== 'İptal edildi') ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    const sil = async (id) => {
+      if (!confirm('Bu görseli silmek istediğinize emin misiniz?')) return;
+      try { await API.galeri.gorselSil(id); await yukle(); ADMIN.toast('Görsel silindi', 'basari'); }
+      catch (e) { ADMIN.toast(e.message, 'hata'); }
+    };
+
+    /* Albüm modali */
+    const albumModalRender = () => {
+      document.getElementById('albumListesi').innerHTML = albumler.map((a, i) => `
+        <div style="display: flex; gap: var(--bosluk-2); margin-bottom: var(--bosluk-2); align-items: center;" data-i="${i}">
+          <input type="text" class="form-girdi" data-album-ad value="${ADMIN.escHtml(a.ad)}" style="flex: 1;">
+          <code style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); padding: 4px 8px; background: var(--renk-arka-yumusak); border-radius: var(--yuvarlak-sm);">${ADMIN.escHtml(a.id)}</code>
+          <button type="button" class="dugme dugme--tehlike dugme--kucuk" data-album-sil>×</button>
+        </div>
+      `).join('') || '<p style="color:var(--renk-yazi-soluk); font-size: var(--yazi-sm);">Henüz albüm yok.</p>';
+
+      document.querySelectorAll('[data-album-ad]').forEach(inp => {
+        inp.addEventListener('change', async (e) => {
+          const i = Number(e.target.closest('[data-i]').dataset.i);
+          await API.galeri.albumGuncelle(albumler[i].id, { ad: e.target.value.trim() });
+          await yukle();
+          albumModalRender();
+        });
+      });
+      document.querySelectorAll('[data-album-sil]').forEach(b => {
+        b.addEventListener('click', async (e) => {
+          const i = Number(e.target.closest('[data-i]').dataset.i);
+          const a = albumler[i];
+          if (gorseller.some(g => g.album === a.id)) {
+            if (!confirm('Bu albümde görseller var. Albüm silinince görsellerin "albüm" alanı boşalır. Devam?')) return;
+          }
+          await API.galeri.albumSil(a.id);
+          await yukle();
+          albumModalRender();
+        });
+      });
+    };
+
+    document.getElementById('albumYonet').addEventListener('click', () => {
+      $albumModal.style.display = 'flex';
+      albumModalRender();
+    });
+    document.getElementById('albumModalKapa').addEventListener('click', () => {
+      $albumModal.style.display = 'none';
+    });
+    document.getElementById('albumEkleForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const input = document.getElementById('albumYeniAd');
+      const ad = input.value.trim();
+      if (!ad) return;
+      try {
+        await API.galeri.albumEkle({ ad });
+        input.value = '';
+        await yukle();
+        albumModalRender();
+        input.focus();
+      } catch (err) { ADMIN.toast(err.message, 'hata'); }
+    });
+
+    document.getElementById('dgYeni').addEventListener('click', tekEkle);
+    document.getElementById('dgCoklu').addEventListener('click', cokluEkle);
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "kurum": {
+    "ad": "Özel Ferizli İlk Adım Akademi Özel Öğretim Kursu",
+    "kisaAd": "İlk Adım Akademi",
+    "slogan": "Geleceğe Atılan İlk Adım",
+    "kurulusYili": 2023,
+    "mebRuhsatNo": "—",
+    "tanitimVideoId": ""
+  },
+  "iletisim": {
+    "telefon": "+905493556154",
+    "telefonHumanReadable": "0549 355 61 54",
+    "whatsapp": "905493556154",
+    "eposta": "",
+    "adres": "Kemalpaşa Mah., Ferizli / Sakarya",
+    "adresUzun": "Kemalpaşa Mahallesi, 112. Sokak No: 1/A, Ferizli / Sakarya",
+    "calismaSaatleri": {
+      "pazartesi": "Kapalı",
+      "sali": "09:00 – 21:00",
+      "carsamba": "09:00 – 21:00",
+      "persembe": "09:00 – 21:00",
+      "cuma": "10:00 – 19:30 (Deneme günü)",
+      "cumartesi": "09:00 – 18:30",
+      "pazar": "09:00 – 18:30"
+    },
+    "mapsEmbedUrl": "https://www.google.com/maps?q=Kemalpa%C5%9Fa+Mahallesi+112.+Sokak+No+1%2FA+Ferizli+Sakarya&output=embed"
+  },
+  "sosyal": {
+    "instagram": "https://www.instagram.com/ferizliilkadmakademi/",
+    "facebook": "",
+    "youtube": "",
+    "tiktok": "",
+    "twitter": ""
+  },
+  "whatsappMesaj": "Merhaba, web sitesi üzerinden ulaşıyorum. Bilgi almak istiyorum.",
+  "footerNot": "Bu site Özel Ferizli İlk Adım Akademi'nin resmi web sitesidir.",
+  "istatistikler": []
+}

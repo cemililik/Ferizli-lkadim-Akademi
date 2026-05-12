@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yardım Merkezi — İlk Adım Akademi</title>
+  <meta name="robots" content="noindex,nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  <link rel="stylesheet" href="/admin/css/yardim.css">
+
+  <!-- Markdown parser -->
+  <script src="https://cdn.jsdelivr.net/npm/marked@12.0.2/marked.min.js" crossorigin="anonymous"></script>
+  <!-- HTML sanitizer: Markdown'dan render edilen HTML'i temizler -->
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.11/dist/purify.min.js" crossorigin="anonymous"></script>
+  <!-- Mermaid diyagramları (akış şemaları) -->
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+  <div id="adminBar"></div>
+
+  <main>
+    <div class="yardim-mobil-bar">
+      <button type="button" class="yardim-mobil-bar__dugme" id="yardimMobilToggle" aria-label="Konuları aç">
+        ☰ Konular
+      </button>
+      <span style="color: var(--renk-yazi-soluk); font-size: var(--yazi-xs);">
+        Yardım Merkezi
+      </span>
+    </div>
+
+    <div class="yardim-shell">
+      <aside class="yardim-sidebar" id="yardimSidebar" aria-label="Yardım konuları">
+        <!-- yardim.js dolduracak -->
+      </aside>
+
+      <section class="yardim-icerik" id="yardimIcerik" aria-live="polite">
+        <!-- yardim.js dolduracak -->
+        <div class="yardim-bos">
+          <div class="yardim-bos__ikon">📖</div>
+          <p>Yükleniyor…</p>
+        </div>
+      </section>
+
+      <aside class="yardim-toc" id="yardimToc" aria-label="Bu sayfada"></aside>
+    </div>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+    (async () => {
+      'use strict';
+      if (!(await ADMIN.korumaliSayfaKapisi())) return;
+      ADMIN.adminBarYukle('yardim');
+    })();
+  </script>
+  <script src="/admin/js/yardim.js"></script>
+</body>
+</html>

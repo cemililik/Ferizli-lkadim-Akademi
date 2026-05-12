@@ -1,0 +1,66 @@
+{
+  "programlar": [
+    {
+      "id": "lgs",
+      "ad": "LGS Hazırlık",
+      "hedefKitle": "8. sınıf öğrencileri",
+      "kisaAciklama": "LGS sınavına yönelik konu anlatımı, soru çözümü ve düzenli deneme uygulamaları.",
+      "ozellikler": [
+        "Tüm branşlarda konu anlatımı (Matematik, Fen, Türkçe, İngilizce, T.C. İnkılap Tarihi, Din Kültürü)",
+        "Haftalık deneme sınavı ve analiz",
+        "Birebir etüt desteği",
+        "Veli bilgilendirme toplantıları"
+      ],
+      "ikon": "📚"
+    },
+    {
+      "id": "yks",
+      "ad": "YKS Hazırlık (TYT–AYT)",
+      "hedefKitle": "11–12. sınıf ve mezun öğrenciler",
+      "kisaAciklama": "Üniversite sınavlarına TYT, AYT ve YDT seviyesinde sistemli hazırlık programı.",
+      "ozellikler": [
+        "TYT ve AYT için kapsamlı konu anlatımı",
+        "Branş bazlı uzman eğitmen kadrosu",
+        "Düzenli deneme sınavları (TYT + AYT)",
+        "Bireysel hedef takibi ve koçluk"
+      ],
+      "ikon": "🎓"
+    },
+    {
+      "id": "takviye-ortaokul",
+      "ad": "Ortaokul Takviye",
+      "hedefKitle": "5–7. sınıf öğrencileri",
+      "kisaAciklama": "Okul başarısını destekleyen, eksik konuları kapatan haftalık takviye dersleri.",
+      "ozellikler": [
+        "Küçük grup veya birebir ders seçeneği",
+        "Okul müfredatına paralel ilerleme",
+        "Düzenli quiz ve uygulama"
+      ],
+      "ikon": "✏️"
+    },
+    {
+      "id": "takviye-lise",
+      "ad": "Lise Takviye",
+      "hedefKitle": "9–10. sınıf öğrencileri",
+      "kisaAciklama": "Lise temel derslerinde sağlam temel oluşturmaya yönelik takviye programı.",
+      "ozellikler": [
+        "Matematik, Fizik, Kimya, Biyoloji, Türk Dili ve Edebiyatı, İngilizce",
+        "Konu eksiği tespit ve hızlı kapatma",
+        "Sınıf içi rehberlik"
+      ],
+      "ikon": "📐"
+    },
+    {
+      "id": "etut",
+      "ad": "Etüt & Ödev Takip",
+      "hedefKitle": "Ortaokul ve lise öğrencileri",
+      "kisaAciklama": "Okul ödevlerinin disiplinli bir ortamda öğretmen gözetiminde tamamlandığı program.",
+      "ozellikler": [
+        "Sessiz, odaklı çalışma ortamı",
+        "Branş öğretmenlerine soru sorabilme",
+        "Velilere haftalık ilerleme bildirimi"
+      ],
+      "ikon": "📝"
+    }
+  ]
+}

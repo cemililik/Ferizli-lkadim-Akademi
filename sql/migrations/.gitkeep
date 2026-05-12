@@ -1,0 +1,13 @@
+# Bu klasör artımlı SQL migration dosyalarını içerir.
+#
+# Adlandırma: <3 haneli sıra>_<açıklama>.sql
+#   001_blog_etiketler_tablosu.sql
+#   002_kullanicilar_aktif_kolonu.sql
+#
+# api/install/migrate.php çalıştığında:
+#   - Bu klasördeki .sql dosyaları isim sırasına göre uygulanır
+#   - Daha önce uygulanmış olanlar `_migrations` tablosundan kontrol edilip atlanır
+#   - Bir migration hata verirse zincirleme dururlar (rollback'li)
+#
+# İLK KURULUM: bu klasörü BOŞ tutun. sql/schema.sql + sql/seed.sql,
+# migrate.php tarafından bootstrap modunda otomatik uygulanır.

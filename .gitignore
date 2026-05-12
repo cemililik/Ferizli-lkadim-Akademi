@@ -1,0 +1,29 @@
+# PHP backend yapılandırma (asla git'e girmesin)
+api/config.php
+
+# Ortam değişkenleri (DB şifreleri vb.) — sadece .env.example commit edilir
+.env
+.env.local
+
+# Yüklenen görseller (production'da kullanıcı verisi)
+# Üst klasör .gitkeep ile tutulur, alt klasörler yoksayılır
+/assets/uploads/*/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Geçici / log
+/tmp/
+*.log
+
+# Composer (kullanılmıyor ama tedbirden)
+/vendor/
+composer.lock
+
+# Docker
+.docker/

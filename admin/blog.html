@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog — İlkadım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+
+  <!-- Quill rich text editor (CDN) -->
+  <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+
+  <style>
+    .editor-kutusu {
+      background: white;
+      border: 1px solid var(--renk-cizgi);
+      border-radius: var(--yuvarlak);
+      overflow: hidden;
+    }
+    #editor { min-height: 400px; font-size: 16px; line-height: 1.7; }
+    #editor.ql-editor { padding: var(--bosluk-5); }
+    .ql-toolbar.ql-snow { border: 0; border-bottom: 1px solid var(--renk-cizgi); }
+    .ql-container.ql-snow { border: 0; font-family: var(--yazi-aile-govde); }
+    .ql-editor h1 { font-size: 2rem; margin: 1.5rem 0 1rem; }
+    .ql-editor h2 { font-size: 1.5rem; margin: 1.25rem 0 0.75rem; }
+    .ql-editor blockquote {
+      border-left: 4px solid var(--renk-vurgu);
+      background: var(--renk-arka-yumusak);
+      padding: var(--bosluk-4) var(--bosluk-5);
+      margin: var(--bosluk-4) 0;
+      font-style: italic;
+      color: var(--renk-yazi-acik);
+    }
+    .ql-editor img {
+      max-width: 100%;
+      height: auto;
+      border-radius: var(--yuvarlak);
+      margin: var(--bosluk-3) 0;
+    }
+
+    .blog-durum-kutusu {
+      background: linear-gradient(135deg, #eff6ff, #dbeafe);
+      border: 1px solid #93c5fd;
+      border-radius: var(--yuvarlak-md);
+      padding: var(--bosluk-4) var(--bosluk-5);
+      margin-bottom: var(--bosluk-5);
+      display: flex;
+      align-items: center;
+      gap: var(--bosluk-4);
+      flex-wrap: wrap;
+    }
+    .blog-durum-kutusu__bilgi { flex: 1; min-width: 200px; }
+    .blog-durum-kutusu__bilgi h3 {
+      font-size: var(--yazi-base);
+      margin: 0 0 4px;
+      color: #1e3a8a;
+    }
+    .blog-durum-kutusu__bilgi p {
+      font-size: var(--yazi-sm);
+      color: #1e40af;
+      margin: 0;
+    }
+    .toggle {
+      position: relative;
+      display: inline-block;
+      width: 56px; height: 30px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle__slider {
+      position: absolute; cursor: pointer;
+      inset: 0;
+      background: #cbd5e0;
+      border-radius: 30px;
+      transition: 0.3s;
+    }
+    .toggle__slider::before {
+      content: "";
+      position: absolute;
+      width: 24px; height: 24px;
+      left: 3px; top: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.3s;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    }
+    .toggle input:checked + .toggle__slider { background: var(--renk-basari); }
+    .toggle input:checked + .toggle__slider::before { transform: translateX(26px); }
+
+    .liste-onizleme-kapak {
+      width: 80px;
+      height: 60px;
+      object-fit: cover;
+      border-radius: var(--yuvarlak-sm);
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Blog</h1>
+          <p>Eğitim, sınav hazırlığı ve öğrenci gelişimi üzerine yazılar.</p>
+        </div>
+        <div style="display: flex; gap: var(--bosluk-2); flex-wrap: wrap;" id="ustDugmeler">
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgListe">← Liste</button>
+          <button type="button" class="dugme dugme--vurgu dugme--kucuk" id="dgYeni">+ Yeni Yazı</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Blog durumu (aktif/deaktif toggle) -->
+    <div class="blog-durum-kutusu" id="durumKutu" style="display:none;">
+      <div class="blog-durum-kutusu__bilgi">
+        <h3 id="durumBaslik">Blog modülü</h3>
+        <p id="durumMetni">Yükleniyor…</p>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="durumToggle">
+        <span class="toggle__slider"></span>
+      </label>
+    </div>
+
+    <div id="icerik">
+      <p style="text-align:center;color:var(--renk-yazi-soluk);padding:var(--bosluk-12)">Yükleniyor…</p>
+    </div>
+  </main>
+
+  <script src="/admin/js/admin-core.js"></script>
+  <script src="/admin/js/api-client.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dompurify@3.1.6/dist/purify.min.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    if (!ADMIN.korumaliSayfaKapisi()) return;
+    ADMIN.adminBarYukle('blog');
+
+    let gorunum = 'liste';   // 'liste' | 'editor'
+    let acikYaziId = null;
+    let quill = null;
+    let mevcutKullanici = null;
+    let kullaniciListesi = [];   // admin role: yazar seçici için
+
+    const $icerik = document.getElementById('icerik');
+    const $dgListe = document.getElementById('dgListe');
+    const $dgYeni = document.getElementById('dgYeni');
+    const $durumKutu = document.getElementById('durumKutu');
+    const $durumToggle = document.getElementById('durumToggle');
+    const $durumMetni = document.getElementById('durumMetni');
+
+    /* ---------- Blog durumu ---------- */
+    const durumYukle = async () => {
+      try {
+        const r = await API.blog.durumAl();
+        $durumKutu.style.display = 'flex';
+        $durumToggle.checked = !!r.aktif;
+        $durumMetni.textContent = r.aktif
+          ? '🟢 Blog şu anda site menüsünde görünüyor.'
+          : '🔴 Blog henüz site menüsünde görünmüyor. Yayına almak için sağdaki anahtarı açın.';
+      } catch (e) {
+        console.error(e);
+      }
+    };
+    $durumToggle.addEventListener('change', async () => {
+      try {
+        const r = await API.blog.durumDegistir($durumToggle.checked);
+        ADMIN.toast(r.aktif ? 'Blog yayında!' : 'Blog gizlendi.', 'basari');
+        durumYukle();
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+        $durumToggle.checked = !$durumToggle.checked; // revert
+      }
+    });
+
+    /* ---------- Liste görünümü ---------- */
+    const listeyiGoster = async () => {
+      gorunum = 'liste';
+      acikYaziId = null;
+      quill = null;
+      $dgListe.style.display = 'none';
+
+      $icerik.innerHTML = '<p style="text-align:center;color:var(--renk-yazi-soluk);padding:var(--bosluk-12)">Yükleniyor…</p>';
+
+      try {
+        const r = await API.blog.listeAdmin();
+        if (r.yazilar.length === 0) {
+          $icerik.innerHTML = `
+            <div class="bos-durum">
+              <div class="bos-durum__ikon">✍️</div>
+              <h3 style="margin-bottom: var(--bosluk-2);">Henüz yazı yok</h3>
+              <p>İlk yazınızı oluşturmak için yukarıdaki <strong>+ Yeni Yazı</strong> düğmesine basın.</p>
+            </div>`;
+          return;
+        }
+        $icerik.innerHTML = `
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            ${r.toplam} yazı
+          </p>
+          <div style="display: flex; flex-direction: column; gap: var(--bosluk-3);">
+            ${r.yazilar.map(y => yaziKartHtml(y)).join('')}
+          </div>`;
+        $icerik.querySelectorAll('[data-yazi-id]').forEach(el => {
+          el.addEventListener('click', (e) => {
+            if (e.target.closest('[data-aksiyon]')) return;
+            editoreGec(el.dataset.yaziId);
+          });
+        });
+        $icerik.querySelectorAll('[data-aksiyon="sil"]').forEach(b => {
+          b.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const id = b.closest('[data-yazi-id]').dataset.yaziId;
+            if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
+            try {
+              await API.blog.sil(id);
+              ADMIN.toast('Yazı silindi', 'basari');
+              listeyiGoster();
+            } catch (err) {
+              ADMIN.toast(err.message, 'hata');
+            }
+          });
+        });
+        $icerik.querySelectorAll('[data-aksiyon="onizle"]').forEach(b => {
+          b.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const slug = b.dataset.slug;
+            window.open(`/blog/yazi.html?slug=${encodeURIComponent(slug)}&onizle=1`, '_blank');
+          });
+        });
+      } catch (e) {
+        $icerik.innerHTML = `<div class="admin-uyari">Yüklenemedi: ${ADMIN.escHtml(e.message)}</div>`;
+      }
+    };
+
+    const yaziKartHtml = (y) => {
+      const tarih = y.yayin_tarihi
+        ? new Date(y.yayin_tarihi).toLocaleDateString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric' })
+        : 'Taslak';
+      const durum = y.yayinda
+        ? '<span class="etiket" style="background:var(--renk-basari);color:white;">🟢 Yayında</span>'
+        : '<span class="etiket etiket--yumusak">📝 Taslak</span>';
+      const ozet = y.ozet ? ADMIN.escHtml(y.ozet.length > 120 ? y.ozet.slice(0, 120) + '…' : y.ozet) : '<em style="color:var(--renk-yazi-soluk)">Özet yok</em>';
+      const yazarBilgi = y.yazar_adi
+        ? `<span style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk);">✍️ ${ADMIN.escHtml(y.yazar_adi)}</span>`
+        : '';
+      return `
+        <article class="kart" data-yazi-id="${ADMIN.escHtml(y.id)}" style="cursor:pointer; padding: var(--bosluk-4) var(--bosluk-5);">
+          <div style="display:flex; gap: var(--bosluk-4); align-items: flex-start;">
+            <div style="flex: 1; min-width: 0;">
+              <div style="display: flex; gap: var(--bosluk-2); align-items: center; margin-bottom: var(--bosluk-2); flex-wrap: wrap;">
+                ${durum}
+                ${y.kategori ? `<span class="etiket etiket--yumusak">${ADMIN.escHtml(y.kategori)}</span>` : ''}
+                <span style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk);">${tarih} • ${y.okunma_sayisi || 0} okunma</span>
+                ${yazarBilgi}
+              </div>
+              <h3 style="font-size: var(--yazi-lg); margin-bottom: 4px;">${ADMIN.escHtml(y.baslik)}</h3>
+              <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin: 0;">${ozet}</p>
+            </div>
+            <div style="display: flex; gap: 4px; flex-shrink: 0;">
+              ${y.yayinda ? `<button type="button" class="cevap-tablo__min-dugme" data-aksiyon="onizle" data-slug="${ADMIN.escHtml(y.slug)}" title="Önizle">👁</button>` : ''}
+              <button type="button" class="cevap-tablo__min-dugme cevap-tablo__min-dugme--tehlike" data-aksiyon="sil" title="Sil">🗑</button>
+            </div>
+          </div>
+        </article>
+      `;
+    };
+
+    /* ---------- Editor görünümü ---------- */
+    const editoreGec = async (yaziId = null) => {
+      // Render öncesi scrollY + focused element id'yi sakla
+      const _eskiScrollY = window.scrollY;
+      const _aktifEl = document.activeElement;
+      const _eskiFocusId = _aktifEl && _aktifEl.id ? _aktifEl.id : null;
+
+      gorunum = 'editor';
+      acikYaziId = yaziId;
+      $dgListe.style.display = 'inline-flex';
+      $durumKutu.style.display = 'none';
+
+      let yazi = {
+        baslik: '', slug: '', ozet: '', icerik: '', kapakGorseli: '',
+        kategori: '', etiketler: [], yayinda: false, oneCikan: false,
+        yazarId: mevcutKullanici ? mevcutKullanici.id : null,
+        yazarAdi: mevcutKullanici ? (mevcutKullanici.adSoyad || mevcutKullanici.kullaniciAdi) : ''
+      };
+
+      if (yaziId) {
+        try {
+          const r = await API.blog.al(yaziId);
+          yazi = {
+            ...yazi, ...r.yazi,
+            kapakGorseli: r.yazi.kapak_gorseli || '',
+            etiketler: Array.isArray(r.yazi.etiketler) ? r.yazi.etiketler : [],
+            oneCikan: r.yazi.one_cikan,
+            yazarId: r.yazi.yazar_id || null,
+            yazarAdi: r.yazi.yazar_adi || ''
+          };
+        } catch (e) {
+          ADMIN.toast(e.message, 'hata');
+          listeyiGoster();
+          return;
+        }
+      }
+
+      $icerik.innerHTML = editorHtml(yazi);
+      quillBaslat(yazi.icerik);
+      bagla(yazi);
+
+      // Render bitince scroll/focus restore
+      if (_eskiFocusId) {
+        const el = document.getElementById(_eskiFocusId);
+        if (el) el.focus();
+      }
+      window.scrollTo(0, _eskiScrollY);
+    };
+
+    const editorHtml = (y) => `
+      <form id="yaziForm">
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="a-baslik">Başlık *</label>
+            <input class="form-girdi" type="text" id="a-baslik" required value="${ADMIN.escHtml(y.baslik)}"
+                   style="font-size: var(--yazi-xl); font-weight: 700;">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="a-slug">URL (slug)</label>
+            <input class="form-girdi" type="text" id="a-slug" value="${ADMIN.escHtml(y.slug)}" placeholder="Otomatik üretilir">
+          </div>
+        </div>
+
+        <div class="form-grup">
+          <label class="form-etiket" for="a-ozet">Özet</label>
+          <textarea class="form-alani" id="a-ozet" rows="2"
+                    placeholder="Liste sayfasında ve sosyal medya paylaşımında görünür.">${ADMIN.escHtml(y.ozet || '')}</textarea>
+        </div>
+
+        <div class="form-grup">
+          <label class="form-etiket">Kapak Görseli</label>
+          <div id="kapakOnizleme">
+            ${ADMIN.gorselOnizleme(y.kapakGorseli, { yukseklik: 200, bos: 'Henüz kapak görseli yok' })}
+          </div>
+          <div style="display: flex; gap: var(--bosluk-2); margin-top: var(--bosluk-3); flex-wrap: wrap;">
+            <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="kapakSec">📷 Görsel Seç</button>
+            ${y.kapakGorseli ? '<button type="button" class="dugme dugme--tehlike dugme--kucuk" id="kapakSil">Kaldır</button>' : ''}
+          </div>
+        </div>
+
+        <div class="form-grup">
+          <label class="form-etiket">İçerik</label>
+          <div class="editor-kutusu">
+            <div id="editor"></div>
+          </div>
+          <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin-top: 4px;">
+            Görsel eklemek için araç çubuğundan <strong>🖼</strong> ikonuna basın. Alıntı için <strong>"</strong> seçin.
+          </p>
+        </div>
+
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="a-kategori">Kategori</label>
+            <input class="form-girdi" type="text" id="a-kategori" value="${ADMIN.escHtml(y.kategori || '')}"
+                   placeholder="Örn: Sınav Hazırlığı, Veli Rehberi">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="a-etiketler">Etiketler (virgülle ayırın)</label>
+            <input class="form-girdi" type="text" id="a-etiketler" value="${ADMIN.escHtml((y.etiketler || []).join(', '))}"
+                   placeholder="LGS, çalışma, motivasyon">
+          </div>
+        </div>
+
+        <div class="form-grup">
+          <label class="form-etiket" for="a-yazar">Yazar</label>
+          ${mevcutKullanici && mevcutKullanici.rol === 'admin' ? `
+            <select class="form-secim" id="a-yazar">
+              ${kullaniciListesi.map(k => `
+                <option value="${k.id}" ${k.id === y.yazarId ? 'selected' : ''}>
+                  ${ADMIN.escHtml(k.adSoyad || k.kullaniciAdi)} (${ADMIN.escHtml(k.kullaniciAdi)})
+                </option>
+              `).join('')}
+            </select>
+            <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin-top: 4px;">
+              Sadece yöneticiler yazarı değiştirebilir.
+            </p>
+          ` : `
+            <input class="form-girdi" type="text" value="${ADMIN.escHtml(y.yazarAdi || '')}" disabled>
+            <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin-top: 4px;">
+              Yazar adınız <a href="/admin/kullanicilar.html">Profilim</a> sayfasından düzenlenebilir.
+            </p>
+          `}
+        </div>
+
+        <div class="admin-form-satir">
+          <label style="display: flex; gap: var(--bosluk-2); align-items: center;">
+            <input type="checkbox" id="a-yayinda" ${y.yayinda ? 'checked' : ''}>
+            <span><strong>Yayında</strong> — ziyaretçiler bu yazıyı görür</span>
+          </label>
+          <label style="display: flex; gap: var(--bosluk-2); align-items: center;">
+            <input type="checkbox" id="a-oneCikan" ${y.oneCikan ? 'checked' : ''}>
+            <span><strong>Öne çıkan</strong> — blog listesinin başında görünür</span>
+          </label>
+        </div>
+
+        <div class="admin-form__dugmeler">
+          <div class="admin-form__dugmeler-sol">
+            ${acikYaziId ? '<button type="button" class="dugme dugme--tehlike" id="silDugme">🗑 Sil</button>' : ''}
+          </div>
+          <button type="button" class="dugme dugme--cerceve" id="iptalDugme">İptal</button>
+          <button type="submit" class="dugme dugme--birincil">${acikYaziId ? 'Güncelle' : 'Oluştur'}</button>
+        </div>
+      </form>
+    `;
+
+    /* ---------- Quill kurulumu (görsel + paste handler) ---------- */
+    const quillBaslat = (icerikHTML) => {
+      quill = new Quill('#editor', {
+        theme: 'snow',
+        placeholder: 'Yazınızı buraya yazın…',
+        modules: {
+          toolbar: {
+            container: [
+              [{ header: [2, 3, false] }],
+              ['bold', 'italic', 'underline'],
+              [{ list: 'ordered' }, { list: 'bullet' }],
+              ['blockquote', 'code-block'],
+              ['link', 'image'],
+              [{ align: [] }],
+              ['clean']
+            ],
+            handlers: { image: gorselEkleHandler }
+          }
+        }
+      });
+      if (icerikHTML) quill.root.innerHTML = icerikHTML;
+
+      // Paste handler: Ctrl+V ile yapıştırılan görsel → upload endpoint
+      // Quill default base64 inline embed ediyor; biz onu yakalayıp dosyaya çeviriyoruz.
+      // yuklemeKilidi: aynı anda birden fazla yükleme tetiklenmesin (yarış koşulu).
+      let yuklemeKilidi = false;
+      quill.root.addEventListener('paste', async (e) => {
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        let gorselVar = false;
+        for (const item of items) {
+          if (item.type && item.type.startsWith('image/')) { gorselVar = true; break; }
+        }
+        if (!gorselVar) return;
+        if (yuklemeKilidi) { e.preventDefault(); ADMIN.toast('Önceki yükleme bitsin…', 'bilgi'); return; }
+
+        for (const item of items) {
+          if (item.type && item.type.startsWith('image/')) {
+            e.preventDefault();
+            const file = item.getAsFile();
+            if (!file) continue;
+            yuklemeKilidi = true;
+            try {
+              ADMIN.toast('Görsel yükleniyor…', 'bilgi');
+              const fd = new FormData();
+              fd.append('dosya', file);
+              fd.append('klasor', 'blog-icerik');
+              fd.append('max', '1400');
+              const r = await fetch('/api/uploads', {
+                method: 'POST', body: fd, credentials: 'include'
+              });
+              const v = await r.json();
+              if (!r.ok) throw new Error(v.hata || 'Yükleme hatası');
+              const range = quill.getSelection(true) || { index: quill.getLength() };
+              quill.insertEmbed(range.index, 'image', v.url, 'user');
+              quill.setSelection(range.index + 1);
+              ADMIN.toast(`Görsel eklendi (${v.boyutKB} KB)`, 'basari');
+            } catch (err) {
+              ADMIN.toast(err.message || 'Görsel yüklenemedi', 'hata');
+            } finally {
+              yuklemeKilidi = false;
+            }
+            return;   // ilk görseli işle, dur
+          }
+        }
+      });
+    };
+
+    const gorselEkleHandler = async () => {
+      try {
+        const r = await ADMIN.gorselSec({ maxGenislik: 1400, maxYukseklik: 1400, klasor: 'blog-icerik' });
+        const range = quill.getSelection(true);
+        quill.insertEmbed(range.index, 'image', r.url, 'user');
+        quill.setSelection(range.index + 1);
+        ADMIN.toast(`Görsel eklendi (${r.boyutKB} KB)`, 'basari');
+      } catch (e) {
+        if (e.message && e.message !== 'İptal edildi') ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    /* ---------- Bağlama ---------- */
+    const bagla = (yazi) => {
+      // Başlık → slug otomatik öner
+      const $baslik = document.getElementById('a-baslik');
+      const $slug = document.getElementById('a-slug');
+      let slugDokundurulduMu = !!yazi.slug;
+      $slug.addEventListener('input', () => slugDokundurulduMu = true);
+      $baslik.addEventListener('input', () => {
+        if (!slugDokundurulduMu) $slug.value = ADMIN.slugify($baslik.value);
+      });
+
+      // Kapak görseli
+      document.getElementById('kapakSec').addEventListener('click', async () => {
+        try {
+          const r = await ADMIN.gorselSec({ maxGenislik: 1600, maxYukseklik: 900, klasor: 'blog' });
+          yazi.kapakGorseli = r.url;
+          document.getElementById('kapakOnizleme').innerHTML =
+            ADMIN.gorselOnizleme(r.dataUrl, { yukseklik: 200 });
+          // Kaldır düğmesi eklemek için form'u baştan render etmek yerine küçük bir set
+          ADMIN.toast(`Kapak eklendi (${r.boyutKB} KB)`, 'basari');
+        } catch (e) {
+          if (e.message && e.message !== 'İptal edildi') ADMIN.toast(e.message, 'hata');
+        }
+      });
+      const kapakSil = document.getElementById('kapakSil');
+      if (kapakSil) {
+        kapakSil.addEventListener('click', () => {
+          yazi.kapakGorseli = '';
+          document.getElementById('kapakOnizleme').innerHTML =
+            ADMIN.gorselOnizleme('', { yukseklik: 200, bos: 'Henüz kapak görseli yok' });
+          kapakSil.style.display = 'none';
+        });
+      }
+
+      // Submit (oluştur / güncelle)
+      document.getElementById('yaziForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const btn = e.target.querySelector('button[type="submit"]');
+        const veri = {
+          baslik: $baslik.value.trim(),
+          slug: $slug.value.trim(),
+          ozet: document.getElementById('a-ozet').value.trim(),
+          icerik: quill.root.innerHTML,
+          kapakGorseli: yazi.kapakGorseli || '',
+          kategori: document.getElementById('a-kategori').value.trim(),
+          etiketler: document.getElementById('a-etiketler').value
+            .split(',').map(s => s.trim()).filter(Boolean),
+          yayinda: document.getElementById('a-yayinda').checked,
+          oneCikan: document.getElementById('a-oneCikan').checked,
+        };
+        // Yazar seçimi sadece admin role için
+        const yazarSecici = document.getElementById('a-yazar');
+        if (yazarSecici && yazarSecici.tagName === 'SELECT') {
+          veri.yazarId = Number(yazarSecici.value) || null;
+        }
+        if (!veri.baslik) {
+          ADMIN.toast('Başlık zorunlu', 'hata');
+          return;
+        }
+        if (btn) btn.disabled = true;
+        try {
+          if (acikYaziId) {
+            await API.blog.guncelle(acikYaziId, veri);
+            ADMIN.toast('Yazı güncellendi', 'basari');
+          } else {
+            const r = await API.blog.olustur(veri);
+            ADMIN.toast('Yazı oluşturuldu', 'basari');
+            acikYaziId = r.id;
+          }
+          listeyiGoster();
+        } catch (err) {
+          ADMIN.toast(err.message, 'hata');
+        } finally {
+          if (btn) btn.disabled = false;
+        }
+      });
+
+      // İptal
+      document.getElementById('iptalDugme').addEventListener('click', () => {
+        if (confirm('Değişiklikler kaybolacak. Listeye dönmek istediğinize emin misiniz?')) {
+          listeyiGoster();
+        }
+      });
+
+      // Sil (düzenleme modunda)
+      const silBtn = document.getElementById('silDugme');
+      if (silBtn) {
+        silBtn.addEventListener('click', async () => {
+          if (!confirm('Bu yazıyı silmek istediğinize emin misiniz?')) return;
+          try {
+            await API.blog.sil(acikYaziId);
+            ADMIN.toast('Yazı silindi', 'basari');
+            listeyiGoster();
+          } catch (err) {
+            ADMIN.toast(err.message, 'hata');
+          }
+        });
+      }
+    };
+
+    /* ---------- Üst düğmeler ---------- */
+    $dgListe.addEventListener('click', listeyiGoster);
+    $dgYeni.addEventListener('click', () => editoreGec(null));
+
+    /* ---------- Başlat ---------- */
+    (async () => {
+      // Mevcut kullanıcıyı al
+      try {
+        const r = await API.auth.me();
+        mevcutKullanici = r.kullanici;
+        // Admin role ise yazar dropdown'u için kullanıcı listesini önceden çek
+        if (mevcutKullanici && mevcutKullanici.rol === 'admin') {
+          try {
+            const k = await API.kullanicilar.liste();
+            kullaniciListesi = (k.kullanicilar || []).filter(x => x.aktif);
+          } catch { kullaniciListesi = []; }
+        }
+      } catch { mevcutKullanici = null; }
+
+      durumYukle();
+      listeyiGoster();
+    })();
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Site Ayarları — İlk Adım Akademi</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Site Ayarları</h1>
+          <p>Telefon, adres, sosyal medya ve çalışma saatleri. Tüm sayfalar buradan beslenir.</p>
+        </div>
+      </div>
+    </div>
+
+    <form id="ayarForm" style="padding-block: var(--bosluk-6);">
+
+      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
+        <h3 style="margin-bottom: var(--bosluk-5);">Kurum Bilgileri</h3>
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="kurum-ad">Resmi Kurum Adı *</label>
+            <input class="form-girdi" type="text" id="kurum-ad" data-yol="kurum.ad" required>
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="kurum-kisaAd">Kısa Ad</label>
+            <input class="form-girdi" type="text" id="kurum-kisaAd" data-yol="kurum.kisaAd">
+          </div>
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="kurum-slogan">Slogan</label>
+          <input class="form-girdi" type="text" id="kurum-slogan" data-yol="kurum.slogan">
+        </div>
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="kurum-yil">Kuruluş Yılı</label>
+            <input class="form-girdi" type="number" id="kurum-yil" data-yol="kurum.kurulusYili" min="1900" max="2100">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="kurum-ruhsat">MEB Ruhsat No</label>
+            <input class="form-girdi" type="text" id="kurum-ruhsat" data-yol="kurum.mebRuhsatNo">
+          </div>
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="kurum-yt">Tanıtım Videosu (YouTube)</label>
+          <input class="form-girdi" type="text" id="kurum-yt" data-yol="kurum.tanitimVideoId" placeholder="Örn: dQw4w9WgXcQ veya https://youtu.be/dQw4w9WgXcQ">
+          <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-acik); margin-top: 4px;">
+            YouTube video ID'sini (11 karakter) veya tam URL'yi yapıştırın. Boş bırakırsanız anasayfadaki video bölümü gizlenir.
+            <strong>Önerilen:</strong> Videoyu YouTube'a yükleyin → adresten ID kısmını alın.
+          </p>
+        </div>
+      </section>
+
+      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
+        <h3 style="margin-bottom: var(--bosluk-5);">İletişim</h3>
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="il-tel">Telefon (+90...) *</label>
+            <input class="form-girdi" type="tel" id="il-tel" data-yol="iletisim.telefon" placeholder="+90 549 355 61 54" required>
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="il-tel-okuma">Telefon (gösterim)</label>
+            <input class="form-girdi" type="text" id="il-tel-okuma" data-yol="iletisim.telefonHumanReadable" placeholder="0549 355 61 54">
+          </div>
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="il-wa">WhatsApp (sadece rakam)</label>
+          <input class="form-girdi" type="text" id="il-wa" data-yol="iletisim.whatsapp" placeholder="905493556154" pattern="[0-9]+">
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="il-mesaj">WhatsApp Hazır Mesaj</label>
+          <input class="form-girdi" type="text" id="il-mesaj" data-yol="whatsappMesaj">
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="il-eposta">E-posta</label>
+          <input class="form-girdi" type="email" id="il-eposta" data-yol="iletisim.eposta">
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="il-adres">Kısa Adres</label>
+          <input class="form-girdi" type="text" id="il-adres" data-yol="iletisim.adres">
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="il-adres-u">Uzun Adres</label>
+          <textarea class="form-alani" id="il-adres-u" data-yol="iletisim.adresUzun" rows="2"></textarea>
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="il-maps">Google Maps Embed URL</label>
+          <input class="form-girdi" type="url" id="il-maps" data-yol="iletisim.mapsEmbedUrl">
+        </div>
+      </section>
+
+      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
+        <h3 style="margin-bottom: var(--bosluk-3);">Çalışma Saatleri</h3>
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-pazartesi">Pazartesi</label>
+            <input class="form-girdi" type="text" id="cs-pazartesi" data-yol="iletisim.calismaSaatleri.pazartesi" placeholder="09:00 – 18:00 veya Kapalı">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-sali">Salı</label>
+            <input class="form-girdi" type="text" id="cs-sali" data-yol="iletisim.calismaSaatleri.sali">
+          </div>
+        </div>
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-carsamba">Çarşamba</label>
+            <input class="form-girdi" type="text" id="cs-carsamba" data-yol="iletisim.calismaSaatleri.carsamba">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-persembe">Perşembe</label>
+            <input class="form-girdi" type="text" id="cs-persembe" data-yol="iletisim.calismaSaatleri.persembe">
+          </div>
+        </div>
+        <div class="admin-form-satir">
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-cuma">Cuma</label>
+            <input class="form-girdi" type="text" id="cs-cuma" data-yol="iletisim.calismaSaatleri.cuma">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-cumartesi">Cumartesi</label>
+            <input class="form-girdi" type="text" id="cs-cumartesi" data-yol="iletisim.calismaSaatleri.cumartesi">
+          </div>
+        </div>
+        <div class="form-grup">
+          <label class="form-etiket" for="cs-pazar">Pazar</label>
+          <input class="form-girdi" type="text" id="cs-pazar" data-yol="iletisim.calismaSaatleri.pazar">
+        </div>
+      </section>
+
+      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
+        <h3 style="margin-bottom: var(--bosluk-3);">İstatistikler</h3>
+        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+          Anasayfa ve Başarılarımız sayfasında gösterilen rakamlar (örn. "2+ Yıl Deneyim").
+          <strong>Boş bırakılan kart gösterilmez; hiçbir kart yoksa bölüm tamamen gizlenir.</strong>
+          Gerçek olmayan/abartılı rakamlar kullanmaktan kaçının — kurumun güvenilirliği için önemlidir.
+        </p>
+        <div id="istatistikListe" style="display:flex; flex-direction:column; gap: var(--bosluk-3);"></div>
+        <button type="button" id="istatistikEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
+          + Yeni İstatistik Ekle
+        </button>
+      </section>
+
+      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
+        <h3 style="margin-bottom: var(--bosluk-5);">Sosyal Medya</h3>
+        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">Boş bıraktığınız hesaplar sitede gösterilmez.</p>
+        <div class="form-grup"><label class="form-etiket" for="sm-ig">Instagram</label><input class="form-girdi" type="url" id="sm-ig" data-yol="sosyal.instagram"></div>
+        <div class="form-grup"><label class="form-etiket" for="sm-fb">Facebook</label><input class="form-girdi" type="url" id="sm-fb" data-yol="sosyal.facebook"></div>
+        <div class="form-grup"><label class="form-etiket" for="sm-yt">YouTube</label><input class="form-girdi" type="url" id="sm-yt" data-yol="sosyal.youtube"></div>
+        <div class="form-grup"><label class="form-etiket" for="sm-tt">TikTok</label><input class="form-girdi" type="url" id="sm-tt" data-yol="sosyal.tiktok"></div>
+        <div class="form-grup"><label class="form-etiket" for="sm-tw">Twitter / X</label><input class="form-girdi" type="url" id="sm-tw" data-yol="sosyal.twitter"></div>
+      </section>
+
+      <div class="admin-form__dugmeler">
+        <button type="submit" class="dugme dugme--birincil dugme--buyuk">Değişiklikleri Kaydet</button>
+      </div>
+    </form>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('ayarlar');
+
+    let mevcut = {};
+    const $form = document.getElementById('ayarForm');
+
+    const al = (obj, yol) => yol.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+    const ayarla = (obj, yol, deger) => {
+      const p = yol.split('.');
+      let o = obj;
+      for (let i = 0; i < p.length - 1; i++) {
+        if (typeof o[p[i]] !== 'object' || o[p[i]] === null) o[p[i]] = {};
+        o = o[p[i]];
+      }
+      o[p[p.length - 1]] = deger;
+    };
+
+    /* --- İstatistikler dinamik liste --- */
+    const $istListe = document.getElementById('istatistikListe');
+    const $istEkle = document.getElementById('istatistikEkle');
+    const escAttr = (s) => String(s == null ? '' : s).replace(/"/g, '&quot;').replace(/&/g, '&amp;');
+
+    const istatistikSatir = (item = {}) => {
+      const div = document.createElement('div');
+      div.className = 'istatistik-satir';
+      div.style.cssText = 'display:grid; grid-template-columns: 80px 110px 1fr auto; gap: var(--bosluk-2); align-items:start; padding: var(--bosluk-3); border:1px solid var(--renk-cizgi); border-radius: var(--yuvarlak);';
+      div.innerHTML = `
+        <div class="form-grup" style="margin:0;">
+          <label class="form-etiket" style="font-size:var(--yazi-xs);">İkon (emoji)</label>
+          <input class="form-girdi" data-ist="ikon" type="text" maxlength="4" value="${escAttr(item.ikon)}" placeholder="🎯">
+        </div>
+        <div class="form-grup" style="margin:0;">
+          <label class="form-etiket" style="font-size:var(--yazi-xs);">Değer *</label>
+          <input class="form-girdi" data-ist="deger" type="text" maxlength="20" value="${escAttr(item.deger)}" placeholder="2+">
+        </div>
+        <div class="form-grup" style="margin:0;">
+          <label class="form-etiket" style="font-size:var(--yazi-xs);">Etiket *</label>
+          <input class="form-girdi" data-ist="etiket" type="text" maxlength="80" value="${escAttr(item.etiket)}" placeholder="Yıl Deneyim">
+        </div>
+        <div style="display:flex; flex-direction:column; gap:4px; padding-top:18px;">
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-ist-tasi="yukari" title="Yukarı taşı" aria-label="Yukarı taşı">↑</button>
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-ist-tasi="asagi" title="Aşağı taşı" aria-label="Aşağı taşı">↓</button>
+          <button type="button" class="dugme dugme--kucuk" data-ist-sil style="background:transparent; color:var(--renk-hata); border:1px solid var(--renk-hata);" title="Kartı sil" aria-label="Kartı sil">Sil</button>
+        </div>
+      `;
+      return div;
+    };
+
+    const istatistikleriYaz = (liste) => {
+      $istListe.innerHTML = '';
+      (Array.isArray(liste) ? liste : []).forEach(item => $istListe.appendChild(istatistikSatir(item)));
+    };
+
+    const istatistikleriOku = () => {
+      return Array.from($istListe.children).map(satir => {
+        const al = (sel) => satir.querySelector(`[data-ist="${sel}"]`)?.value.trim() || '';
+        return { ikon: al('ikon'), deger: al('deger'), etiket: al('etiket') };
+      }).filter(s => s.deger !== '' || s.etiket !== '');
+    };
+
+    $istEkle.addEventListener('click', () => $istListe.appendChild(istatistikSatir()));
+    $istListe.addEventListener('click', (e) => {
+      const satir = e.target.closest('.istatistik-satir');
+      if (!satir) return;
+      if (e.target.matches('[data-ist-sil]')) {
+        satir.remove();
+      } else if (e.target.matches('[data-ist-tasi="yukari"]')) {
+        const onceki = satir.previousElementSibling;
+        if (onceki) $istListe.insertBefore(satir, onceki);
+      } else if (e.target.matches('[data-ist-tasi="asagi"]')) {
+        const sonraki = satir.nextElementSibling;
+        if (sonraki) $istListe.insertBefore(sonraki, satir);
+      }
+    });
+
+    const formaYaz = () => {
+      $form.querySelectorAll('[data-yol]').forEach(el => {
+        const v = al(mevcut, el.dataset.yol);
+        el.value = (v == null) ? '' : v;
+      });
+      istatistikleriYaz(mevcut.istatistikler);
+    };
+
+    const formdanOku = () => {
+      const yeni = {};
+      $form.querySelectorAll('[data-yol]').forEach(el => {
+        let d = el.value;
+        if (el.type === 'number') d = d === '' ? null : Number(d);
+        ayarla(yeni, el.dataset.yol, d);
+      });
+      yeni.istatistikler = istatistikleriOku();
+      return yeni;
+    };
+
+    const yukle = async () => {
+      try {
+        const r = await API.ayarlar.al();
+        mevcut = r.ayarlar || {};
+        formaYaz();
+      } catch (e) {
+        ADMIN.toast('Ayarlar yüklenemedi: ' + e.message, 'hata');
+      }
+    };
+
+    $form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const btn = e.target.querySelector('button[type="submit"]');
+      const yeni = formdanOku();
+      if (btn) btn.disabled = true;
+      try {
+        await API.ayarlar.guncelle(yeni);
+        ADMIN.toast('Ayarlar kaydedildi', 'basari');
+        mevcut = yeni;
+      } catch (err) {
+        ADMIN.toast(err.message, 'hata');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    });
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

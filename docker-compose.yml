@@ -1,0 +1,81 @@
+# ============================================================
+# Ferizli İlk Adım Akademi — Lokal geliştirme ortamı
+# ============================================================
+# Hazırlık:  cp .env.example .env  (ilk kullanımda)
+# Çalıştır:  docker compose up -d
+# phpMyAdmin: docker compose --profile dev up -d
+# Durdur:    docker compose down
+# Sıfırla:   docker compose down -v   (DB'yi de siler!)
+# ============================================================
+
+services:
+  # ---------- Web (Apache + PHP) ----------
+  web:
+    build:
+      context: ./docker
+      dockerfile: Dockerfile
+    container_name: ilkadim-web
+    restart: unless-stopped
+    ports:
+      - "8088:80"
+    volumes:
+      - ./:/var/www/html
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASS: ${DB_PASSWORD}
+      SITE_URL: http://localhost:8088
+      GELISTIRME: "true"
+      # dev | prod — entrypoint hangi php.ini'yi kopyalayacağını buna göre seçer
+      PHP_ENV: ${PHP_ENV:-dev}
+
+  # ---------- Veritabanı (MariaDB) ----------
+  db:
+    image: mariadb:11
+    container_name: ilkadim-db
+    restart: unless-stopped
+    environment:
+      MARIADB_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MARIADB_DATABASE: ${DB_NAME}
+      MARIADB_USER: ${DB_USER}
+      MARIADB_PASSWORD: ${DB_PASSWORD}
+      MARIADB_CHARSET: utf8mb4
+      MARIADB_COLLATE: utf8mb4_unicode_ci
+    volumes:
+      # İlk açılışta sql/ klasöründeki tüm .sql dosyaları otomatik çalışır
+      - ./sql:/docker-entrypoint-initdb.d:ro
+      - db_data:/var/lib/mysql
+    ports:
+      - "3307:3306"   # MAMP 8889'la çakışmamak için 3307
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  # ---------- phpMyAdmin (opsiyonel — DB'yi tarayıcıdan yönet) ----------
+  # Sadece `docker compose --profile dev up -d` ile başlar.
+  phpmyadmin:
+    image: phpmyadmin:5
+    container_name: ilkadim-pma
+    restart: unless-stopped
+    profiles: ["dev"]
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DB_ROOT_PASSWORD}
+      UPLOAD_LIMIT: 64M
+    ports:
+      - "8081:80"
+    depends_on:
+      db:
+        condition: service_healthy
+
+volumes:
+  db_data:

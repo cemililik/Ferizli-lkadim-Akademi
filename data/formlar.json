@@ -1,0 +1,95 @@
+{
+  "formlar": [
+    {
+      "id": "basvuru",
+      "ad": "Ön Kayıt Formu",
+      "aciklama": "Bilgilerinizi bırakın, en kısa sürede sizinle iletişime geçelim.",
+      "tip": "yerli",
+      "tesekkurMesaji": "Başvurunuz alındı. En kısa sürede sizinle iletişime geçeceğiz.",
+      "yayinda": true,
+      "varsayilan": true,
+      "olusturulma": "2026-05-12",
+      "alanlar": [
+        {
+          "id": "ogr-baslik",
+          "tip": "baslik",
+          "etiket": "Öğrenci Bilgileri"
+        },
+        {
+          "id": "ogr-ad",
+          "tip": "text",
+          "etiket": "Öğrenci Ad Soyad",
+          "placeholder": "Adı Soyadı",
+          "zorunlu": true
+        },
+        {
+          "id": "ogr-sinif",
+          "tip": "select",
+          "etiket": "Sınıf / Düzey",
+          "zorunlu": true,
+          "secenekler": [
+            "5. Sınıf",
+            "6. Sınıf",
+            "7. Sınıf",
+            "8. Sınıf (LGS)",
+            "9. Sınıf",
+            "10. Sınıf",
+            "11. Sınıf",
+            "12. Sınıf (YKS)",
+            "Mezun"
+          ]
+        },
+        {
+          "id": "program",
+          "tip": "radio",
+          "etiket": "İlgilendiğiniz Program",
+          "zorunlu": false,
+          "secenekler": [
+            "LGS Hazırlık",
+            "YKS Hazırlık",
+            "Ortaokul Takviye",
+            "Lise Takviye",
+            "Etüt & Ödev Takip",
+            "Belirsiz / Bilgi almak istiyorum"
+          ]
+        },
+        {
+          "id": "veli-baslik",
+          "tip": "baslik",
+          "etiket": "Veli Bilgileri"
+        },
+        {
+          "id": "veli-ad",
+          "tip": "text",
+          "etiket": "Veli Ad Soyad",
+          "zorunlu": true
+        },
+        {
+          "id": "veli-tel",
+          "tip": "tel",
+          "etiket": "Telefon",
+          "placeholder": "05XX XXX XX XX",
+          "zorunlu": true
+        },
+        {
+          "id": "veli-eposta",
+          "tip": "email",
+          "etiket": "E-posta",
+          "zorunlu": false
+        },
+        {
+          "id": "not",
+          "tip": "textarea",
+          "etiket": "Eklemek istediğiniz bir şey var mı?",
+          "zorunlu": false
+        },
+        {
+          "id": "kvkk",
+          "tip": "checkbox-tek",
+          "etiket": "KVKK Aydınlatma Metni'ni okudum ve kişisel verilerimin işlenmesine onay veriyorum.",
+          "zorunlu": true
+        }
+      ]
+    }
+  ]
+}

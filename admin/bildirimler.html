@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bildirimler — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  <style>
+    .bildirim-listesi { padding-block: var(--bosluk-5); }
+    .bildirim-oge { background: white; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak); padding: var(--bosluk-4); margin-bottom: var(--bosluk-2); display: grid; grid-template-columns: auto 1fr auto; gap: var(--bosluk-4); align-items: center; transition: all var(--gecis-hizli); }
+    .bildirim-oge:hover { box-shadow: var(--golge); border-color: var(--renk-birincil-acik); }
+    .bildirim-oge--okunmamis { background: linear-gradient(to right, #eff6ff 0%, white 80px); border-left: 3px solid var(--renk-birincil); }
+    .bildirim-oge__ikon { width: 40px; height: 40px; background: var(--renk-arka-yumusak); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+    .bildirim-oge--okunmamis .bildirim-oge__ikon { background: var(--renk-birincil); color: white; }
+    .bildirim-oge__icerik { min-width: 0; }
+    .bildirim-oge__baslik { font-weight: 600; font-size: var(--yazi-sm); color: var(--renk-yazi); margin: 0 0 2px; }
+    .bildirim-oge--okunmamis .bildirim-oge__baslik { color: var(--renk-birincil); }
+    .bildirim-oge__mesaj { font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin: 0 0 4px; }
+    .bildirim-oge__tarih { font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); }
+    .bildirim-oge__aksiyon { display: flex; gap: 4px; flex-shrink: 0; }
+    .bildirim-oge__dugme { width: 32px; height: 32px; background: transparent; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak-sm); cursor: pointer; font-size: 14px; color: var(--renk-yazi-acik); display: flex; align-items: center; justify-content: center; }
+    .bildirim-oge__dugme:hover { background: var(--renk-arka-yumusak); }
+    .bildirim-oge__dugme--tehlike:hover { color: var(--renk-hata); border-color: var(--renk-hata); }
+    .bildirim-oge__link { text-decoration: none; color: inherit; display: contents; }
+    @media (max-width: 600px) { .bildirim-oge { grid-template-columns: 1fr; } .bildirim-oge__aksiyon { justify-self: end; } }
+  </style>
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Bildirimler</h1>
+          <p>Yeni form gönderimleri ve sistem olayları.</p>
+        </div>
+        <div style="display: flex; gap: var(--bosluk-2); flex-wrap: wrap;">
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgTumuOkundu">✓ Tümünü Okundu</button>
+          <button type="button" class="dugme dugme--tehlike dugme--kucuk" id="dgTumunuSil">🗑 Tümünü Sil</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="bildirim-listesi" id="liste"><p style="text-align:center;color:var(--renk-yazi-soluk);padding:var(--bosluk-12);">Yükleniyor…</p></div>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('bildirimler');
+
+    const $liste = document.getElementById('liste');
+
+    const tipIkonu = (tur) => ({
+      'form-cevap': '📬', 'bilgi': 'ℹ️', 'uyari': '⚠️'
+    }[tur] || '🔔');
+
+    const rolatifTarih = (iso) => {
+      const t = new Date(iso);
+      const fark = (Date.now() - t.getTime()) / 1000;
+      if (fark < 60) return 'Az önce';
+      if (fark < 3600) return `${Math.floor(fark / 60)} dakika önce`;
+      if (fark < 86400) return `${Math.floor(fark / 3600)} saat önce`;
+      if (fark < 604800) return `${Math.floor(fark / 86400)} gün önce`;
+      return t.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short', year: 'numeric' });
+    };
+
+    let liste = [];
+
+    const yukle = async () => {
+      try {
+        const r = await API.bildirimler.liste();
+        liste = r.bildirimler || [];
+        render();
+        ADMIN.bildirimBadgeGuncelle();
+      } catch (e) {
+        $liste.innerHTML = `<div style="text-align:center;color:var(--renk-hata);padding:var(--bosluk-8);">${ADMIN.escHtml(e.message)}</div>`;
+      }
+    };
+
+    const render = () => {
+      if (liste.length === 0) {
+        $liste.innerHTML = `
+          <div class="bos-durum">
+            <div class="bos-durum__ikon">🔕</div>
+            <h3 style="margin-bottom: var(--bosluk-2);">Henüz bildirim yok</h3>
+            <p>Yeni bir form gönderildiğinde burada görünür.</p>
+          </div>`;
+        return;
+      }
+      $liste.innerHTML = liste.map(b => {
+        const okunmamis = !b.okundu;
+        const icerikHtml = `
+          <div class="bildirim-oge__icerik">
+            <h4 class="bildirim-oge__baslik">${ADMIN.escHtml(b.baslik)}</h4>
+            <p class="bildirim-oge__mesaj">${ADMIN.escHtml(b.mesaj)}</p>
+            <span class="bildirim-oge__tarih">${rolatifTarih(b.tarih)}</span>
+          </div>`;
+        return `
+          <article class="bildirim-oge${okunmamis ? ' bildirim-oge--okunmamis' : ''}" data-id="${ADMIN.escHtml(b.id)}">
+            <div class="bildirim-oge__ikon">${tipIkonu(b.tur)}</div>
+            ${b.link
+              ? `<a href="${ADMIN.escHtml(b.link)}" class="bildirim-oge__link" data-aksiyon="goster">${icerikHtml}</a>`
+              : icerikHtml}
+            <div class="bildirim-oge__aksiyon">
+              ${okunmamis ? '<button type="button" class="bildirim-oge__dugme" data-aksiyon="okundu" title="Okundu işaretle">✓</button>' : ''}
+              <button type="button" class="bildirim-oge__dugme bildirim-oge__dugme--tehlike" data-aksiyon="sil" title="Sil">🗑</button>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      $liste.querySelectorAll('.bildirim-oge').forEach(el => {
+        const id = el.dataset.id;
+        const okuBt = el.querySelector('[data-aksiyon="okundu"]');
+        if (okuBt) {
+          okuBt.addEventListener('click', async (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            try { await API.bildirimler.okundu(id); await yukle(); }
+            catch (err) { ADMIN.toast(err.message, 'hata'); }
+          });
+        }
+        el.querySelector('[data-aksiyon="sil"]').addEventListener('click', async (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          try {
+            await API.bildirimler.sil(id);
+            await yukle();
+            ADMIN.toast('Bildirim silindi', 'basari');
+          } catch (err) { ADMIN.toast(err.message, 'hata'); }
+        });
+        const linkEl = el.querySelector('[data-aksiyon="goster"]');
+        if (linkEl) {
+          linkEl.addEventListener('click', async () => {
+            try { await API.bildirimler.okundu(id); } catch {}
+          });
+        }
+      });
+    };
+
+    document.getElementById('dgTumuOkundu').addEventListener('click', async () => {
+      try {
+        await API.bildirimler.tumuOkundu();
+        await yukle();
+        ADMIN.toast('Tüm bildirimler okundu olarak işaretlendi', 'basari');
+      } catch (e) { ADMIN.toast(e.message, 'hata'); }
+    });
+    document.getElementById('dgTumunuSil').addEventListener('click', async () => {
+      if (liste.length === 0) return;
+      if (!confirm(`${liste.length} bildirimi silmek istediğinize emin misiniz?`)) return;
+      try {
+        await API.bildirimler.tumunuSil();
+        await yukle();
+        ADMIN.toast('Tüm bildirimler silindi', 'basari');
+      } catch (e) { ADMIN.toast(e.message, 'hata'); }
+    });
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

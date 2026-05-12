@@ -1,0 +1,14 @@
+# /api/install/ klasörü web'den erişime varsayılan olarak kapalı.
+# Bu klasördeki scriptler yalnızca CLI'dan çalıştırılır:
+#   docker compose exec -T web php api/install/admin-olustur.php
+#   docker compose exec -T web php api/install/import-json.php
+#
+# İSTİSNA: migrate.php — CI/CD'den HTTPS üzerinden tetiklenir.
+# Kendi içinde X-Migration-Key header doğrulaması yapar; secret olmadan 403 döner.
+#
+# Apache 2.4+ söz dizimi.
+Require all denied
+
+<Files "migrate.php">
+    Require all granted
+</Files>

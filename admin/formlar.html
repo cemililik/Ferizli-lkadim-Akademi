@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Formlar — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  <style>
+    .alan-karti { background: var(--renk-arka-yumusak); border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak); padding: var(--bosluk-3) var(--bosluk-4); margin-bottom: var(--bosluk-3); transition: all var(--gecis-hizli); }
+    .alan-karti:hover { border-color: var(--renk-birincil-acik); background: white; }
+    .alan-karti__ust { display: flex; align-items: center; gap: var(--bosluk-3); cursor: pointer; }
+    .alan-karti__tip { font-size: var(--yazi-xs); padding: 2px 8px; background: white; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak-tam); color: var(--renk-yazi-acik); flex-shrink: 0; }
+    .alan-karti__baslik { flex-grow: 1; font-weight: 600; font-size: var(--yazi-sm); }
+    .alan-karti__dugmeler { display: flex; gap: 4px; flex-shrink: 0; }
+    .alan-karti__dugme { width: 28px; height: 28px; background: transparent; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak-sm); cursor: pointer; font-size: 12px; color: var(--renk-yazi-acik); display: flex; align-items: center; justify-content: center; }
+    .alan-karti__dugme:hover { background: var(--renk-arka-yumusak); }
+    .alan-karti__dugme--tehlike:hover { background: #fef2f2; color: var(--renk-hata); border-color: var(--renk-hata); }
+    .alan-karti__detay { margin-top: var(--bosluk-3); padding-top: var(--bosluk-3); border-top: 1px solid var(--renk-cizgi); }
+    .alan-tip-secici { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--bosluk-2); padding: var(--bosluk-3); background: var(--renk-arka-yumusak); border-radius: var(--yuvarlak); margin-bottom: var(--bosluk-3); }
+    .alan-tip-dugme { background: white; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak); padding: var(--bosluk-3) var(--bosluk-2); cursor: pointer; text-align: center; font-size: var(--yazi-sm); transition: all var(--gecis-hizli); }
+    .alan-tip-dugme:hover { border-color: var(--renk-birincil); background: var(--renk-arka-yumusak); color: var(--renk-birincil); }
+    .alan-tip-dugme__ikon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Formlar</h1>
+          <p>Başvuru / anket formlarınızı oluşturun. Cevaplar <strong>Cevaplar</strong> menüsünde toplanır.</p>
+        </div>
+        <button type="button" class="dugme dugme--vurgu dugme--kucuk" id="dgYeni">+ Yeni Form</button>
+      </div>
+    </div>
+
+    <div class="yonetim-duzen">
+      <aside class="yonetim-liste">
+        <div class="yonetim-liste__ust">
+          <input type="search" class="form-girdi" id="aramaGirdi" placeholder="Form ara...">
+        </div>
+        <div class="yonetim-liste__icerik" id="liste"><p style="padding:var(--bosluk-6);text-align:center;color:var(--renk-yazi-soluk);font-size:var(--yazi-sm);">Yükleniyor…</p></div>
+      </aside>
+
+      <section class="yonetim-icerik" id="form">
+        <div class="yonetim-icerik__bos" id="bosDurum">
+          <p style="font-size: 3rem; margin-bottom: var(--bosluk-3);">📝</p>
+          <h3 style="margin-bottom: var(--bosluk-2);">Düzenlemek için bir form seçin</h3>
+          <p style="color: var(--renk-yazi-soluk);">veya yeni form ekleyin.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('formlar');
+
+    const ALAN_TIPLERI = {
+      text:           { etiket: 'Kısa metin', ikon: '📝' },
+      textarea:       { etiket: 'Uzun metin', ikon: '📄' },
+      email:          { etiket: 'E-posta', ikon: '✉️' },
+      tel:            { etiket: 'Telefon', ikon: '📞' },
+      number:         { etiket: 'Sayı', ikon: '🔢' },
+      date:           { etiket: 'Tarih', ikon: '📅' },
+      select:         { etiket: 'Açılır liste', ikon: '⬇️' },
+      radio:          { etiket: 'Tek seçim', ikon: '⚪' },
+      checkbox:       { etiket: 'Çoklu seçim', ikon: '☑️' },
+      'checkbox-tek': { etiket: 'Onay kutusu', ikon: '✅' },
+      baslik:         { etiket: 'Başlık (görsel)', ikon: '🔖' },
+    };
+    const SECENEKLI = new Set(['select', 'radio', 'checkbox']);
+
+    let formlar = [];
+    let secilenId = null;
+    let acikAlanId = null;
+    let aramaTerimi = '';
+
+    const $liste = document.getElementById('liste');
+    const $form = document.getElementById('form');
+    const $bos = document.getElementById('bosDurum');
+
+    const yukle = async () => {
+      try {
+        const r = await API.formlar.liste(true);
+        formlar = r.formlar || [];
+        listeRender();
+        if (secilenId) formRender();
+      } catch (e) {
+        $liste.innerHTML = `<div style="padding:var(--bosluk-4);color:var(--renk-hata);">${ADMIN.escHtml(e.message)}</div>`;
+      }
+    };
+
+    const listeRender = () => {
+      const t = aramaTerimi.toLocaleLowerCase('tr-TR');
+      const filt = formlar.filter(f => !t || (f.ad || '').toLocaleLowerCase('tr-TR').includes(t));
+      if (filt.length === 0) {
+        $liste.innerHTML = `<div style="padding:var(--bosluk-6);text-align:center;color:var(--renk-yazi-soluk);font-size:var(--yazi-sm);">${aramaTerimi ? 'Eşleşme yok.' : 'Henüz form yok.'}</div>`;
+        return;
+      }
+      $liste.innerHTML = filt.map(f => {
+        const durum = f.yayinda ? '🟢' : '🔴';
+        const varsayilan = f.varsayilan ? '⭐ ' : '';
+        const alanSayisi = (f.alanlar || []).filter(a => a.tip !== 'baslik').length;
+        return `
+          <a href="#" class="yonetim-liste__oge${f.id === secilenId ? ' aktif' : ''}" data-id="${ADMIN.escHtml(f.id)}">
+            <h4>${varsayilan}${ADMIN.escHtml(f.ad || '(adsız)')}</h4>
+            <div class="yonetim-liste__oge-meta">
+              <span>${durum} ${alanSayisi} alan</span>
+              <span>${ADMIN.tarihGoster(f.olusturulma)}</span>
+            </div>
+          </a>
+        `;
+      }).join('');
+      $liste.querySelectorAll('[data-id]').forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          secilenId = a.dataset.id;
+          acikAlanId = null;
+          listeRender();
+          formRender();
+        });
+      });
+    };
+
+    const alanKartHtml = (alan, idx, toplam) => {
+      const tipBilgi = ALAN_TIPLERI[alan.tip] || { etiket: alan.tip, ikon: '❓' };
+      const acik = alan.id === acikAlanId;
+      return `
+        <div class="alan-karti" data-alan-id="${ADMIN.escHtml(alan.id)}">
+          <div class="alan-karti__ust" data-alan-toggle>
+            <span style="font-size: 1.2rem;">${tipBilgi.ikon}</span>
+            <span class="alan-karti__tip">${ADMIN.escHtml(tipBilgi.etiket)}</span>
+            <span class="alan-karti__baslik">${ADMIN.escHtml(alan.etiket || '(etiketsiz)')}${alan.zorunlu && alan.tip !== 'baslik' ? ' <span style="color:var(--renk-vurgu)">*</span>' : ''}</span>
+            <div class="alan-karti__dugmeler" onclick="event.stopPropagation()">
+              <button type="button" class="alan-karti__dugme" data-alan-yukari ${idx === 0 ? 'disabled style="opacity:.3"' : ''}>↑</button>
+              <button type="button" class="alan-karti__dugme" data-alan-asagi ${idx === toplam - 1 ? 'disabled style="opacity:.3"' : ''}>↓</button>
+              <button type="button" class="alan-karti__dugme alan-karti__dugme--tehlike" data-alan-sil>🗑</button>
+            </div>
+          </div>
+          ${acik ? alanDetayHtml(alan) : ''}
+        </div>
+      `;
+    };
+
+    const alanDetayHtml = (alan) => {
+      const secenekliMi = SECENEKLI.has(alan.tip);
+      const secenekler = (alan.secenekler || []).map((s, i) => `
+        <div style="display: flex; gap: var(--bosluk-2); margin-bottom: 4px;" data-secenek-i="${i}">
+          <input type="text" class="form-girdi" data-secenek value="${ADMIN.escHtml(s)}" style="flex:1; padding: 6px 10px; font-size: var(--yazi-sm);">
+          <button type="button" class="alan-karti__dugme alan-karti__dugme--tehlike" data-secenek-sil>×</button>
+        </div>
+      `).join('');
+
+      return `
+        <div class="alan-karti__detay">
+          <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+            <label class="form-etiket" style="font-size: var(--yazi-xs);">Etiket</label>
+            <input type="text" class="form-girdi" data-alan-etiket value="${ADMIN.escHtml(alan.etiket || '')}">
+          </div>
+
+          ${alan.tip !== 'baslik' ? `
+            <div class="admin-form-satir" style="gap: var(--bosluk-2);">
+              <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+                <label class="form-etiket" style="font-size: var(--yazi-xs);">Kimlik (slug)</label>
+                <input type="text" class="form-girdi" data-alan-key value="${ADMIN.escHtml(alan.id)}" pattern="[a-z0-9-]+">
+              </div>
+              ${['text','email','tel','number','textarea'].includes(alan.tip) ? `
+                <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+                  <label class="form-etiket" style="font-size: var(--yazi-xs);">Placeholder</label>
+                  <input type="text" class="form-girdi" data-alan-placeholder value="${ADMIN.escHtml(alan.placeholder || '')}">
+                </div>
+              ` : '<div></div>'}
+            </div>
+          ` : ''}
+
+          ${alan.tip !== 'baslik' ? `
+            <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+              <label style="display: flex; gap: var(--bosluk-2); align-items: center; font-size: var(--yazi-sm);">
+                <input type="checkbox" data-alan-zorunlu ${alan.zorunlu ? 'checked' : ''}>
+                <span>Zorunlu alan</span>
+              </label>
+            </div>
+            <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+              <label class="form-etiket" style="font-size: var(--yazi-xs);">Yardım metni (etiketin altında küçük açıklama)</label>
+              <input type="text" class="form-girdi" data-alan-yardim value="${ADMIN.escHtml(alan.yardim || '')}">
+            </div>
+          ` : ''}
+
+          ${secenekliMi ? `
+            <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+              <label class="form-etiket" style="font-size: var(--yazi-xs);">Seçenekler</label>
+              <div data-secenekler>${secenekler}</div>
+              <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-secenek-ekle style="margin-top: 4px;">+ Seçenek Ekle</button>
+            </div>
+          ` : ''}
+
+          <div style="display: flex; justify-content: flex-end; gap: var(--bosluk-2);">
+            <button type="button" class="dugme dugme--birincil dugme--kucuk" data-alan-kaydet>Tamam</button>
+          </div>
+        </div>
+      `;
+    };
+
+    const formRender = () => {
+      if (!secilenId) { $form.innerHTML = ''; $form.appendChild($bos); return; }
+      const f = formlar.find(x => x.id === secilenId);
+      if (!f) { secilenId = null; formRender(); return; }
+
+      const alanlarHtml = (f.alanlar || []).map((a, i) => alanKartHtml(a, i, f.alanlar.length)).join('');
+      const tipDugmeleri = Object.entries(ALAN_TIPLERI).map(([tip, b]) => `
+        <button type="button" class="alan-tip-dugme" data-yeni-alan="${tip}">
+          <span class="alan-tip-dugme__ikon">${b.ikon}</span>${ADMIN.escHtml(b.etiket)}
+        </button>
+      `).join('');
+
+      const siteUrl = `/basvuru.html?form=${encodeURIComponent(f.id)}`;
+
+      $form.innerHTML = `
+        <div style="border-bottom: 1px solid var(--renk-cizgi); padding-bottom: var(--bosluk-5); margin-bottom: var(--bosluk-5);">
+          <div class="admin-form-satir">
+            <div class="form-grup" style="margin-bottom: 0;">
+              <label class="form-etiket" for="f-ad">Form Adı *</label>
+              <input class="form-girdi" type="text" id="f-ad" value="${ADMIN.escHtml(f.ad || '')}">
+            </div>
+            <div class="form-grup" style="margin-bottom: 0;">
+              <label class="form-etiket" for="f-id">Form Kimliği</label>
+              <input class="form-girdi" type="text" id="f-id" value="${ADMIN.escHtml(f.id || '')}" readonly>
+            </div>
+          </div>
+
+          ${f.yayinda ? `
+            <div style="margin-top: var(--bosluk-3); padding: var(--bosluk-3); background: #eff6ff; border: 1px solid #bfdbfe; border-radius: var(--yuvarlak); display: flex; gap: var(--bosluk-3); align-items: center; flex-wrap: wrap;">
+              <span style="font-size: var(--yazi-sm); color: #1e40af;"><strong>🔗 Site URL:</strong></span>
+              <code style="flex: 1; min-width: 200px; background: white; padding: 4px 10px; border-radius: var(--yuvarlak-sm); font-size: var(--yazi-sm); border: 1px solid var(--renk-cizgi); word-break: break-all;">${ADMIN.escHtml(siteUrl)}</code>
+              <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="urlKopyala">📋 Kopyala</button>
+              <a href="${siteUrl}" target="_blank" class="dugme dugme--cerceve dugme--kucuk">👁 Önizle</a>
+            </div>
+          ` : ''}
+
+          <div class="form-grup" style="margin-top: var(--bosluk-3); margin-bottom: var(--bosluk-3);">
+            <label class="form-etiket" for="f-aciklama">Açıklama</label>
+            <textarea class="form-alani" id="f-aciklama" rows="2">${ADMIN.escHtml(f.aciklama || '')}</textarea>
+          </div>
+          <div class="form-grup" style="margin-bottom: var(--bosluk-3);">
+            <label class="form-etiket" for="f-tesekkur">Teşekkür Mesajı</label>
+            <textarea class="form-alani" id="f-tesekkur" rows="2">${ADMIN.escHtml(f.tesekkurMesaji || '')}</textarea>
+          </div>
+          <div class="admin-form-satir">
+            <label style="display:flex; gap: var(--bosluk-2); align-items:center; font-size: var(--yazi-sm);">
+              <input type="checkbox" id="f-yayinda" ${f.yayinda ? 'checked' : ''}>
+              <span><strong>Yayında</strong></span>
+            </label>
+            <label style="display:flex; gap: var(--bosluk-2); align-items:center; font-size: var(--yazi-sm);">
+              <input type="checkbox" id="f-varsayilan" ${f.varsayilan ? 'checked' : ''}>
+              <span><strong>Varsayılan</strong> — /basvuru.html'de gösterilir</span>
+            </label>
+          </div>
+        </div>
+
+        <h3 style="font-size: var(--yazi-lg); margin-bottom: var(--bosluk-2);">Alanlar</h3>
+        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">Düzenlemek için bir alana tıklayın.</p>
+
+        <div id="alanlarListesi">
+          ${alanlarHtml || '<div style="padding: var(--bosluk-6); text-align: center; color: var(--renk-yazi-soluk); font-size: var(--yazi-sm); background: var(--renk-arka-yumusak); border-radius: var(--yuvarlak);">Henüz alan yok. Aşağıdan bir tip seçin.</div>'}
+        </div>
+
+        <h4 style="font-size: var(--yazi-base); margin: var(--bosluk-6) 0 var(--bosluk-3);">Yeni Alan Ekle</h4>
+        <div class="alan-tip-secici">${tipDugmeleri}</div>
+
+        <div class="admin-form__dugmeler">
+          <div class="admin-form__dugmeler-sol">
+            <button type="button" class="dugme dugme--tehlike" id="silDugme">🗑 Sil</button>
+          </div>
+          <button type="button" class="dugme dugme--birincil" id="kaydetDugme">Formu Kaydet</button>
+        </div>
+      `;
+
+      bagla(f);
+    };
+
+    const bagla = (f) => {
+      document.querySelectorAll('[data-yeni-alan]').forEach(b => {
+        b.addEventListener('click', () => yeniAlanEkle(f, b.dataset.yeniAlan));
+      });
+
+      document.querySelectorAll('.alan-karti').forEach(kart => {
+        const alanId = kart.dataset.alanId;
+        kart.querySelector('[data-alan-toggle]').addEventListener('click', () => {
+          acikAlanId = acikAlanId === alanId ? null : alanId;
+          formRender();
+        });
+        kart.querySelector('[data-alan-yukari]')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          alanTasi(f, alanId, -1);
+        });
+        kart.querySelector('[data-alan-asagi]')?.addEventListener('click', (e) => {
+          e.stopPropagation();
+          alanTasi(f, alanId, 1);
+        });
+        kart.querySelector('[data-alan-sil]').addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (!confirm('Bu alanı silmek istediğinize emin misiniz?')) return;
+          f.alanlar = f.alanlar.filter(a => a.id !== alanId);
+          acikAlanId = null;
+          formRender();
+        });
+
+        const detay = kart.querySelector('.alan-karti__detay');
+        if (detay) {
+          const yerelKaydet = () => {
+            const alan = f.alanlar.find(a => a.id === alanId);
+            if (!alan) return;
+            alan.etiket = (detay.querySelector('[data-alan-etiket]')?.value || '').trim();
+            const yeniKey = (detay.querySelector('[data-alan-key]')?.value || '').trim();
+            if (yeniKey && yeniKey !== alan.id) {
+              alan.id = ADMIN.slugify(yeniKey) || alan.id;
+              acikAlanId = alan.id;
+            }
+            alan.placeholder = (detay.querySelector('[data-alan-placeholder]')?.value || '').trim();
+            alan.yardim = (detay.querySelector('[data-alan-yardim]')?.value || '').trim();
+            const z = detay.querySelector('[data-alan-zorunlu]');
+            if (z) alan.zorunlu = z.checked;
+            const secEls = detay.querySelectorAll('[data-secenek]');
+            if (secEls.length > 0) alan.secenekler = Array.from(secEls).map(e => e.value.trim()).filter(Boolean);
+          };
+
+          detay.querySelector('[data-alan-kaydet]').addEventListener('click', () => {
+            yerelKaydet();
+            acikAlanId = null;
+            formRender();
+          });
+          detay.querySelector('[data-secenek-ekle]')?.addEventListener('click', () => {
+            yerelKaydet();
+            const alan = f.alanlar.find(a => a.id === alanId);
+            alan.secenekler = alan.secenekler || [];
+            alan.secenekler.push('Yeni seçenek');
+            formRender();
+          });
+          detay.querySelectorAll('[data-secenek-sil]').forEach(b => {
+            b.addEventListener('click', () => {
+              yerelKaydet();
+              const i = Number(b.closest('[data-secenek-i]').dataset.secenekI);
+              const alan = f.alanlar.find(a => a.id === alanId);
+              alan.secenekler.splice(i, 1);
+              formRender();
+            });
+          });
+        }
+      });
+
+      document.getElementById('silDugme').addEventListener('click', () => formuSil(f));
+      document.getElementById('kaydetDugme').addEventListener('click', () => formuKaydet(f));
+
+      document.getElementById('urlKopyala')?.addEventListener('click', async () => {
+        const ok = await ADMIN.panoyaKopyala(`/basvuru.html?form=${encodeURIComponent(f.id)}`);
+        ADMIN.toast(ok ? 'URL kopyalandı' : 'Kopyalanamadı', ok ? 'basari' : 'hata');
+      });
+    };
+
+    const yeniAlanEkle = (f, tip) => {
+      f.alanlar = f.alanlar || [];
+      const numara = f.alanlar.length + 1;
+      const yeni = {
+        id: `alan-${numara}-${Date.now().toString(36).slice(-4)}`,
+        tip, etiket: tip === 'baslik' ? 'Yeni Başlık' : `Yeni alan ${numara}`,
+        zorunlu: false
+      };
+      if (SECENEKLI.has(tip)) yeni.secenekler = ['Seçenek 1', 'Seçenek 2'];
+      f.alanlar.push(yeni);
+      acikAlanId = yeni.id;
+      formRender();
+    };
+
+    const alanTasi = (f, alanId, yon) => {
+      const i = f.alanlar.findIndex(a => a.id === alanId);
+      const j = i + yon;
+      if (j < 0 || j >= f.alanlar.length) return;
+      [f.alanlar[i], f.alanlar[j]] = [f.alanlar[j], f.alanlar[i]];
+      formRender();
+    };
+
+    const formuKaydet = async (f) => {
+      const btn = document.getElementById('kaydetDugme');
+      const veri = {
+        ad: document.getElementById('f-ad').value.trim(),
+        aciklama: document.getElementById('f-aciklama').value.trim(),
+        tesekkurMesaji: document.getElementById('f-tesekkur').value.trim(),
+        yayinda: document.getElementById('f-yayinda').checked,
+        varsayilan: document.getElementById('f-varsayilan').checked,
+        alanlar: f.alanlar || [],
+      };
+      if (btn) btn.disabled = true;
+      try {
+        await API.formlar.guncelle(f.id, veri);
+        ADMIN.toast('Form kaydedildi', 'basari');
+        await yukle();
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    };
+
+    const formuSil = async (f) => {
+      if (!confirm(`"${f.ad}" formunu silmek istediğinize emin misiniz?`)) return;
+      try {
+        await API.formlar.sil(f.id);
+        secilenId = null;
+        acikAlanId = null;
+        await yukle();
+        formRender();
+        ADMIN.toast('Form silindi', 'basari');
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    document.getElementById('dgYeni').addEventListener('click', async () => {
+      try {
+        const r = await API.formlar.olustur({
+          ad: 'Yeni Form',
+          tesekkurMesaji: 'Başvurunuz alındı. En kısa sürede sizinle iletişime geçeceğiz.',
+          alanlar: [],
+        });
+        await yukle();
+        secilenId = r.id;
+        acikAlanId = null;
+        listeRender();
+        formRender();
+        ADMIN.toast('Yeni form oluşturuldu', 'basari');
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      }
+    });
+
+    document.getElementById('aramaGirdi').addEventListener('input', (e) => {
+      aramaTerimi = e.target.value;
+      listeRender();
+    });
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

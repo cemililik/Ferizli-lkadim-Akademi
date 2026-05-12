@@ -1,0 +1,8 @@
+{
+  "albumler": [
+    { "id": "kurum", "ad": "Kurumumuz" },
+    { "id": "dersler", "ad": "Derslerden" },
+    { "id": "etkinlik", "ad": "Etkinlikler" }
+  ],
+  "gorseller": []
+}

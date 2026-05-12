@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Form Cevapları — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+  <style>
+    .form-tablari { display: flex; gap: var(--bosluk-2); flex-wrap: wrap; padding: var(--bosluk-3) 0; border-bottom: 1px solid var(--renk-cizgi); margin-bottom: var(--bosluk-5); }
+    .form-tab { padding: var(--bosluk-2) var(--bosluk-4); background: white; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak-tam); font-size: var(--yazi-sm); font-weight: 500; cursor: pointer; transition: all var(--gecis-hizli); color: var(--renk-yazi-acik); display: inline-flex; align-items: center; gap: 8px; }
+    .form-tab:hover { border-color: var(--renk-birincil); color: var(--renk-birincil); }
+    .form-tab.aktif { background: var(--renk-birincil); color: white; border-color: var(--renk-birincil); }
+    .form-tab__sayi { background: rgba(255,255,255,0.25); padding: 1px 8px; border-radius: var(--yuvarlak-tam); font-size: 11px; }
+    .form-tab:not(.aktif) .form-tab__sayi { background: var(--renk-arka-yumusak); color: var(--renk-yazi-acik); }
+    .cevap-tablo { width: 100%; background: white; border: 1px solid var(--renk-cizgi); border-radius: var(--yuvarlak-md); border-collapse: collapse; overflow: hidden; }
+    .cevap-tablo th, .cevap-tablo td { padding: var(--bosluk-3) var(--bosluk-4); text-align: left; font-size: var(--yazi-sm); border-bottom: 1px solid var(--renk-cizgi); vertical-align: top; }
+    .cevap-tablo th { background: var(--renk-arka-yumusak); font-weight: 600; color: var(--renk-yazi); font-size: var(--yazi-xs); text-transform: uppercase; letter-spacing: 0.05em; }
+    .cevap-tablo tr:last-child td { border-bottom: 0; }
+    .cevap-tablo tr.cevap-satir { cursor: pointer; transition: background var(--gecis-hizli); }
+    .cevap-tablo tr.cevap-satir:hover { background: var(--renk-arka-yumusak); }
+    .modal-arkaplan { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 100; display: flex; align-items: center; justify-content: center; padding: var(--bosluk-4); overflow-y: auto; }
+    .modal-kart { background: white; border-radius: var(--yuvarlak-md); max-width: 700px; width: 100%; max-height: 90vh; overflow-y: auto; padding: var(--bosluk-8); }
+    .modal-veri-satir { display: grid; grid-template-columns: 180px 1fr; gap: var(--bosluk-4); padding: var(--bosluk-3) 0; border-bottom: 1px solid var(--renk-cizgi); }
+    .modal-veri-satir:last-of-type { border-bottom: 0; }
+    .modal-veri-satir__etiket { font-weight: 600; color: var(--renk-yazi-acik); font-size: var(--yazi-sm); }
+    .modal-veri-satir__deger { white-space: pre-wrap; word-break: break-word; }
+    @media (max-width: 600px) { .modal-veri-satir { grid-template-columns: 1fr; gap: 4px; } }
+  </style>
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Form Cevapları</h1>
+          <p>Site üzerinden gönderilen form cevapları.</p>
+        </div>
+        <div style="display:flex;gap:var(--bosluk-2);flex-wrap:wrap;">
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgCsv">📊 CSV</button>
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgPdf">📄 PDF</button>
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgJson">{ } JSON</button>
+          <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="dgJsonl">⤓ JSONL</button>
+          <button type="button" class="dugme dugme--tehlike dugme--kucuk" id="dgTumunuSil">🗑 Tümünü Sil</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-tablari" id="formTablari"></div>
+    <div id="icerik"></div>
+  </main>
+
+  <div id="modalYer"></div>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('cevaplar');
+
+    let formlar = [];
+    let aktifFormId = null;
+    let cevaplar = [];
+
+    const $tablar = document.getElementById('formTablari');
+    const $icerik = document.getElementById('icerik');
+
+    const tablariYukle = async () => {
+      try {
+        const r = await API.formlar.liste(true);
+        formlar = r.formlar || [];
+      } catch (e) { console.error(e); }
+    };
+
+    const cevaplariYukle = async () => {
+      cevaplar = [];
+      if (!aktifFormId) return;
+      try {
+        const r = await API.cevaplar.liste(aktifFormId);
+        cevaplar = r.cevaplar || [];
+      } catch (e) { ADMIN.toast(e.message, 'hata'); }
+    };
+
+    const tablariCiz = (sayilar = {}) => {
+      if (formlar.length === 0) {
+        $tablar.innerHTML = '<p style="color: var(--renk-yazi-soluk); font-size: var(--yazi-sm);">Önce form oluşturmalısınız.</p>';
+        return;
+      }
+      $tablar.innerHTML = formlar.map(f => `
+        <button type="button" class="form-tab${aktifFormId === f.id ? ' aktif' : ''}" data-form-id="${ADMIN.escHtml(f.id)}">
+          <span>${ADMIN.escHtml(f.ad)}</span>
+          <span class="form-tab__sayi">${sayilar[f.id] ?? '…'}</span>
+        </button>
+      `).join('');
+      $tablar.querySelectorAll('[data-form-id]').forEach(b => {
+        b.addEventListener('click', async () => {
+          aktifFormId = b.dataset.formId;
+          history.replaceState(null, '', `?form=${encodeURIComponent(aktifFormId)}`);
+          tablariCiz({ ...sayilar });
+          await cevaplariYukle();
+          icerikCiz();
+          // Aktif formun sayısını güncelle
+          sayilar[aktifFormId] = cevaplar.length;
+          tablariCiz(sayilar);
+        });
+      });
+    };
+
+    const icerikCiz = () => {
+      const aktifForm = formlar.find(f => f.id === aktifFormId);
+      if (!aktifForm) {
+        $icerik.innerHTML = '<div class="bos-durum"><div class="bos-durum__ikon">📥</div><p>Cevaplarını görmek için yukarıdan bir form seçin.</p></div>';
+        return;
+      }
+      if (cevaplar.length === 0) {
+        $icerik.innerHTML = `
+          <div class="bos-durum">
+            <div class="bos-durum__ikon">📭</div>
+            <h3 style="margin-bottom: var(--bosluk-2);">Henüz cevap yok</h3>
+            <p>Bu forma henüz kimse cevap göndermedi.</p>
+            ${aktifForm.yayinda ? `<p style="margin-top: var(--bosluk-4); font-size: var(--yazi-sm);">Test için <a href="/basvuru.html?form=${ADMIN.escHtml(aktifFormId)}" target="_blank">yeni sekmede açın</a>.</p>` : ''}
+          </div>`;
+        return;
+      }
+      const veriAlanlari = (aktifForm.alanlar || []).filter(a => a.tip !== 'baslik').slice(0, 3);
+      const headers = ['Tarih', ...veriAlanlari.map(a => a.etiket || a.id), 'İşlem'];
+      const satirlar = cevaplar.map(c => {
+        const tarih = new Date(c.tarih).toLocaleString('tr-TR', { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+        const ozet = veriAlanlari.map(a => {
+          const v = c.veriler && c.veriler[a.id];
+          const str = Array.isArray(v) ? v.join(', ') : (v == null ? '—' : String(v));
+          return ADMIN.escHtml(str.length > 60 ? str.slice(0, 60) + '…' : str);
+        });
+        return `
+          <tr class="cevap-satir" data-cevap-id="${ADMIN.escHtml(c.id)}">
+            <td><strong>${tarih}</strong></td>
+            ${ozet.map(s => `<td>${s}</td>`).join('')}
+            <td style="white-space: nowrap;">
+              <button type="button" class="cevap-tablo__min-dugme" data-aksiyon="bak" title="Aç">👁</button>
+              <button type="button" class="cevap-tablo__min-dugme cevap-tablo__min-dugme--tehlike" data-aksiyon="sil" title="Sil">🗑</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      $icerik.innerHTML = `
+        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">${cevaplar.length} cevap</p>
+        <div style="overflow-x: auto;">
+          <table class="cevap-tablo">
+            <thead><tr>${headers.map(h => `<th>${ADMIN.escHtml(h)}</th>`).join('')}</tr></thead>
+            <tbody>${satirlar}</tbody>
+          </table>
+        </div>
+      `;
+
+      $icerik.querySelectorAll('.cevap-satir').forEach(tr => {
+        const cevapId = tr.dataset.cevapId;
+        tr.addEventListener('click', (e) => {
+          if (e.target.closest('[data-aksiyon]')) return;
+          detayAc(aktifForm, cevapId);
+        });
+        tr.querySelector('[data-aksiyon="bak"]').addEventListener('click', (e) => {
+          e.stopPropagation();
+          detayAc(aktifForm, cevapId);
+        });
+        tr.querySelector('[data-aksiyon="sil"]').addEventListener('click', async (e) => {
+          e.stopPropagation();
+          if (!confirm('Bu cevabı silmek istediğinize emin misiniz?')) return;
+          try {
+            await API.cevaplar.sil(cevapId);
+            await cevaplariYukle();
+            icerikCiz();
+            ADMIN.toast('Cevap silindi', 'basari');
+          } catch (err) { ADMIN.toast(err.message, 'hata'); }
+        });
+      });
+    };
+
+    const detayAc = (form, cevapId) => {
+      const c = cevaplar.find(x => x.id === cevapId);
+      if (!c) return;
+      const tarih = new Date(c.tarih).toLocaleString('tr-TR');
+      const satirlar = (form.alanlar || []).filter(a => a.tip !== 'baslik').map(a => {
+        const v = c.veriler && c.veriler[a.id];
+        const str = Array.isArray(v) ? v.join(', ') : (v == null ? '—' : String(v));
+        return `<div class="modal-veri-satir"><div class="modal-veri-satir__etiket">${ADMIN.escHtml(a.etiket || a.id)}</div><div class="modal-veri-satir__deger">${ADMIN.escHtml(str)}</div></div>`;
+      }).join('');
+      // ADMIN.modalAc helper'ı: ESC, backdrop, body scroll lock dahil
+      const m = ADMIN.modalAc(`
+        <div class="modal-kart">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: var(--bosluk-4); padding-bottom: var(--bosluk-4); border-bottom: 1px solid var(--renk-cizgi); margin-bottom: var(--bosluk-5);">
+            <div>
+              <h2 style="margin: 0 0 4px;">Cevap Detayı</h2>
+              <p style="margin: 0; font-size: var(--yazi-sm); color: var(--renk-yazi-acik);">${tarih}</p>
+            </div>
+            <button type="button" id="modalKapa" aria-label="Kapat" style="width:32px;height:32px;background:var(--renk-arka-yumusak);border:0;border-radius:50%;cursor:pointer;font-size:18px;">×</button>
+          </div>
+          <div>${satirlar}</div>
+          <div style="display: flex; gap: var(--bosluk-2); justify-content: flex-end; margin-top: var(--bosluk-6); padding-top: var(--bosluk-4); border-top: 1px solid var(--renk-cizgi);">
+            <button type="button" class="dugme dugme--tehlike dugme--kucuk" id="modalSil">🗑 Sil</button>
+            <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="modalKapa2">Kapat</button>
+          </div>
+        </div>
+      `);
+      m.kok.querySelector('#modalKapa').addEventListener('click', ADMIN.modalKapa);
+      m.kok.querySelector('#modalKapa2').addEventListener('click', ADMIN.modalKapa);
+      m.kok.querySelector('#modalSil').addEventListener('click', async () => {
+        if (!confirm('Bu cevabı silmek istediğinize emin misiniz?')) return;
+        try {
+          await API.cevaplar.sil(cevapId);
+          await cevaplariYukle();
+          icerikCiz();
+          ADMIN.modalKapa();
+          ADMIN.toast('Cevap silindi', 'basari');
+        } catch (e) { ADMIN.toast(e.message, 'hata'); }
+      });
+    };
+
+    /* Dışa aktarma */
+    const aktif = () => formlar.find(f => f.id === aktifFormId);
+    document.getElementById('dgCsv').addEventListener('click', () => {
+      const f = aktif(); if (!f || cevaplar.length === 0) return ADMIN.toast('Cevap yok', 'hata');
+      ADMIN.cevaplariCsvIndir(f, cevaplar);
+    });
+    document.getElementById('dgPdf').addEventListener('click', () => {
+      const f = aktif(); if (!f || cevaplar.length === 0) return ADMIN.toast('Cevap yok', 'hata');
+      ADMIN.cevaplariPdfIndir(f, cevaplar);
+    });
+    document.getElementById('dgJson').addEventListener('click', () => {
+      const f = aktif(); if (!f || cevaplar.length === 0) return ADMIN.toast('Cevap yok', 'hata');
+      ADMIN.cevaplariJsonIndir(f, cevaplar);
+    });
+    document.getElementById('dgJsonl').addEventListener('click', () => {
+      const f = aktif(); if (!f || cevaplar.length === 0) return ADMIN.toast('Cevap yok', 'hata');
+      ADMIN.cevaplariJsonlIndir(f, cevaplar);
+    });
+    document.getElementById('dgTumunuSil').addEventListener('click', async () => {
+      if (!aktifFormId || cevaplar.length === 0) return ADMIN.toast('Cevap yok', 'hata');
+      if (!confirm(`Bu formun ${cevaplar.length} cevabının TÜMÜNÜ silmek istediğinize emin misiniz?`)) return;
+      try {
+        await API.cevaplar.tumunuSil(aktifFormId);
+        await cevaplariYukle();
+        icerikCiz();
+        ADMIN.toast('Tüm cevaplar silindi', 'basari');
+      } catch (e) { ADMIN.toast(e.message, 'hata'); }
+    });
+
+    /* Başlat */
+    await tablariYukle();
+    const params = new URLSearchParams(location.search);
+    aktifFormId = params.get('form') || (formlar.find(f => f.varsayilan)?.id) || formlar[0]?.id;
+    tablariCiz({});
+    await cevaplariYukle();
+    icerikCiz();
+    // Aktif formun sayısını tablara yansıt
+    const sayilar = {};
+    if (aktifFormId) sayilar[aktifFormId] = cevaplar.length;
+    tablariCiz(sayilar);
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,130 @@
+{
+  "baslik": "İlk Adım Akademi — Yönetim Paneli Yardım Merkezi",
+  "bolumler": [
+    {
+      "id": "baslarken",
+      "baslik": "Başlarken",
+      "ikon": "🚀",
+      "sayfalar": [
+        { "id": "giris", "baslik": "Hoş Geldiniz" },
+        { "id": "panel-tanitimi", "baslik": "Panele Genel Bakış" },
+        { "id": "giris-cikis", "baslik": "Giriş ve Çıkış" },
+        { "id": "sifre-degistirme", "baslik": "Şifre Değiştirme" }
+      ]
+    },
+    {
+      "id": "site-ayarlari",
+      "baslik": "Site Ayarları",
+      "ikon": "⚙️",
+      "sayfalar": [
+        { "id": "kurum-bilgileri", "baslik": "Kurum Bilgileri" },
+        { "id": "iletisim", "baslik": "İletişim Bilgileri" },
+        { "id": "calisma-saatleri", "baslik": "Çalışma Saatleri" },
+        { "id": "sosyal-medya", "baslik": "Sosyal Medya" },
+        { "id": "istatistikler", "baslik": "İstatistik Kartları" },
+        { "id": "harita", "baslik": "Google Maps Konumu" }
+      ]
+    },
+    {
+      "id": "duyurular",
+      "baslik": "Duyurular",
+      "ikon": "📢",
+      "sayfalar": [
+        { "id": "yeni-duyuru", "baslik": "Yeni Duyuru Ekleme" },
+        { "id": "duzenleme-silme", "baslik": "Düzenleme ve Silme" },
+        { "id": "kategoriler", "baslik": "Kategoriler" },
+        { "id": "form-baglama", "baslik": "Forma Bağlama" }
+      ]
+    },
+    {
+      "id": "programlar",
+      "baslik": "Eğitim Programları",
+      "ikon": "📚",
+      "sayfalar": [
+        { "id": "program-ekleme", "baslik": "Yeni Program Ekleme" },
+        { "id": "duzenleme", "baslik": "Program Düzenleme" }
+      ]
+    },
+    {
+      "id": "kadro",
+      "baslik": "Eğitim Kadrosu",
+      "ikon": "👨‍🏫",
+      "sayfalar": [
+        { "id": "ogretmen-ekleme", "baslik": "Öğretmen Kartı Ekleme" },
+        { "id": "duzenleme", "baslik": "Düzenleme ve Sıralama" }
+      ]
+    },
+    {
+      "id": "galeri",
+      "baslik": "Galeri",
+      "ikon": "🖼️",
+      "sayfalar": [
+        { "id": "albumler", "baslik": "Albüm Yönetimi" },
+        { "id": "gorsel-yukleme", "baslik": "Görsel Yükleme" },
+        { "id": "duzenleme-silme", "baslik": "Düzenleme ve Silme" }
+      ]
+    },
+    {
+      "id": "formlar",
+      "baslik": "Formlar",
+      "ikon": "📝",
+      "sayfalar": [
+        { "id": "form-mantigi", "baslik": "Form Mantığı" },
+        { "id": "yeni-form", "baslik": "Yeni Form Oluşturma" },
+        { "id": "alan-tipleri", "baslik": "Alan Tipleri" },
+        { "id": "yayina-alma", "baslik": "Yayına Alma" },
+        { "id": "varsayilan-form", "baslik": "Varsayılan Form" }
+      ]
+    },
+    {
+      "id": "cevaplar",
+      "baslik": "Form Cevapları",
+      "ikon": "📥",
+      "sayfalar": [
+        { "id": "goruntuleme", "baslik": "Cevapları Görüntüleme" },
+        { "id": "indirme", "baslik": "İndirme (CSV / PDF / JSON)" }
+      ]
+    },
+    {
+      "id": "blog",
+      "baslik": "Blog",
+      "ikon": "✍️",
+      "sayfalar": [
+        { "id": "modul-acma", "baslik": "Blog Modülünü Açma" },
+        { "id": "yazi-yazma", "baslik": "Yazı Yazma" },
+        { "id": "editor", "baslik": "Editörü Kullanma" },
+        { "id": "etiketler-yazar", "baslik": "Etiketler ve Yazar" }
+      ]
+    },
+    {
+      "id": "bildirimler",
+      "baslik": "Bildirimler",
+      "ikon": "🔔",
+      "sayfalar": [
+        { "id": "bildirimler", "baslik": "Bildirimleri Yönetme" }
+      ]
+    },
+    {
+      "id": "kullanicilar",
+      "baslik": "Kullanıcılar",
+      "ikon": "👤",
+      "sayfalar": [
+        { "id": "roller", "baslik": "Roller: Admin ve Editör" },
+        { "id": "yeni-kullanici", "baslik": "Yeni Kullanıcı Ekleme" },
+        { "id": "sifre-sifirlama", "baslik": "Şifre Sıfırlama" },
+        { "id": "profil", "baslik": "Profilim" }
+      ]
+    },
+    {
+      "id": "ipuclari",
+      "baslik": "İpuçları ve SSS",
+      "ikon": "💡",
+      "sayfalar": [
+        { "id": "gorsel-ipuclari", "baslik": "Görsel Yüklerken" },
+        { "id": "guvenlik", "baslik": "Güvenlik Tavsiyeleri" },
+        { "id": "sss", "baslik": "Sık Sorulan Sorular" },
+        { "id": "iletisim", "baslik": "Destek ve İletişim" }
+      ]
+    }
+  ]
+}

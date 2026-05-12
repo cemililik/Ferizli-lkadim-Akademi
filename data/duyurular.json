@@ -1,0 +1,41 @@
+{
+  "duyurular": [
+    {
+      "id": "ornek-1",
+      "baslik": "2025–2026 Kayıt Dönemi Başladı",
+      "ozet": "Yeni eğitim öğretim yılı için ön kayıtlarımız başlamıştır. Kontenjanlar sınırlıdır.",
+      "icerik": "Yeni eğitim öğretim yılı için ön kayıtlarımız başlamıştır. Detaylı bilgi ve kayıt için kurumumuza ulaşabilirsiniz. Kontenjanlar sınırlı olup başvuru sırasına göre değerlendirilecektir.",
+      "kategori": "kayit",
+      "tarih": "2025-08-15",
+      "kapakGorseli": "",
+      "onemli": true,
+      "bagliForm": "basvuru"
+    },
+    {
+      "id": "ornek-2",
+      "baslik": "Ücretsiz LGS Deneme Sınavı",
+      "ozet": "Tüm 8. sınıf öğrencileri için ücretsiz deneme sınavımız hafta sonu yapılacak.",
+      "icerik": "Tüm 8. sınıf öğrencilerine açık ücretsiz LGS deneme sınavımız bu Cumartesi saat 10:00'da kurumumuzda gerçekleştirilecektir. Kayıt için 0XXX XXX XX XX numaralı telefondan bize ulaşabilirsiniz.",
+      "kategori": "sinav",
+      "tarih": "2025-07-02",
+      "kapakGorseli": "",
+      "onemli": false
+    },
+    {
+      "id": "ornek-3",
+      "baslik": "Yaz Okulu Programımız Açıklandı",
+      "ozet": "Ortaokul ve lise öğrencileri için yaz okulu programımız belli oldu.",
+      "icerik": "Bu yaz açılacak olan yaz okulu programımızın detayları belirlendi. Matematik, Fen, Türkçe ve İngilizce branşlarında hafta içi yoğun program uygulanacaktır. Detaylar için iletişime geçebilirsiniz.",
+      "kategori": "genel",
+      "tarih": "2025-06-10",
+      "kapakGorseli": "",
+      "onemli": false
+    }
+  ],
+  "kategoriler": {
+    "genel": "Genel",
+    "kayit": "Kayıt",
+    "sinav": "Sınav",
+    "etkinlik": "Etkinlik"
+  }
+}

@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eğitim Kadrosu — İlk Adım Akademi Yönetim</title>
+  <meta name="robots" content="noindex,nofollow">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/admin/css/admin.css">
+</head>
+<body>
+  <div id="adminBar"></div>
+
+  <main class="kapsayici">
+    <div class="admin-sayfa-bas">
+      <div class="admin-sayfa-bas__icerik">
+        <div>
+          <h1>Eğitim Kadrosu</h1>
+          <p>Öğretmenleri ekleyin, fotoğraflarını ve bilgilerini güncelleyin.</p>
+        </div>
+        <button type="button" class="dugme dugme--vurgu dugme--kucuk" id="dgYeni">+ Yeni Öğretmen</button>
+      </div>
+    </div>
+
+    <div class="yonetim-duzen">
+      <aside class="yonetim-liste">
+        <div class="yonetim-liste__ust">
+          <input type="search" class="form-girdi" id="aramaGirdi" placeholder="Öğretmen ara...">
+        </div>
+        <div class="yonetim-liste__icerik" id="liste"><p style="padding: var(--bosluk-6); text-align: center; color: var(--renk-yazi-soluk); font-size: var(--yazi-sm);">Yükleniyor…</p></div>
+      </aside>
+
+      <section class="yonetim-icerik" id="form">
+        <div class="yonetim-icerik__bos" id="bosDurum">
+          <p style="font-size: 3rem; margin-bottom: var(--bosluk-3);">👨‍🏫</p>
+          <h3 style="margin-bottom: var(--bosluk-2);">Düzenlemek için bir öğretmen seçin</h3>
+          <p style="color: var(--renk-yazi-soluk);">veya yeni öğretmen ekleyin.</p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script src="/admin/js/api-client.js"></script>
+  <script src="/admin/js/admin-core.js"></script>
+  <script>
+  (async () => {
+    'use strict';
+    if (!(await ADMIN.korumaliSayfaKapisi())) return;
+    ADMIN.adminBarYukle('kadro');
+
+    let liste = [];
+    let secilenId = null;
+    let aramaTerimi = '';
+
+    const $liste = document.getElementById('liste');
+    const $form = document.getElementById('form');
+    const $bos = document.getElementById('bosDurum');
+
+    const harfler = (ad) => (ad || '').split(/\s+/).filter(Boolean).slice(0, 2)
+      .map(p => p.charAt(0).toLocaleUpperCase('tr-TR')).join('') || '?';
+
+    const yukle = async () => {
+      try {
+        const r = await API.kadro.liste(true);
+        liste = r.kadro || [];
+        listeRender();
+        if (secilenId) formRender();
+      } catch (e) {
+        $liste.innerHTML = `<div style="padding: var(--bosluk-4); color: var(--renk-hata);">${ADMIN.escHtml(e.message)}</div>`;
+      }
+    };
+
+    const listeRender = () => {
+      const t = aramaTerimi.toLocaleLowerCase('tr-TR');
+      const filt = liste.filter(k => !t || (k.ad || '').toLocaleLowerCase('tr-TR').includes(t) || (k.brans || '').toLocaleLowerCase('tr-TR').includes(t));
+      if (filt.length === 0) {
+        $liste.innerHTML = `<div style="padding:var(--bosluk-6);text-align:center;color:var(--renk-yazi-soluk);font-size:var(--yazi-sm);">${aramaTerimi ? 'Eşleşme yok.' : 'Henüz öğretmen eklenmedi.'}</div>`;
+        return;
+      }
+      $liste.innerHTML = filt.map(k => {
+        const foto = k.foto
+          ? `<img src="${k.foto}" alt="" style="width:36px;height:36px;border-radius:50%;object-fit:cover;flex-shrink:0;">`
+          : `<div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--renk-birincil),var(--renk-birincil-acik));color:white;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;">${ADMIN.escHtml(harfler(k.ad))}</div>`;
+        return `
+          <a href="#" class="yonetim-liste__oge${k.id === secilenId ? ' aktif' : ''}" data-id="${ADMIN.escHtml(k.id)}" style="display:flex;align-items:center;gap:var(--bosluk-3);">
+            ${foto}
+            <div style="flex:1;min-width:0;">
+              <h4>${ADMIN.escHtml(k.ad || '(adsız)')}</h4>
+              <div class="yonetim-liste__oge-meta">
+                <span>${ADMIN.escHtml(k.brans || '—')}</span>
+                <span>${k.deneyimYil ? k.deneyimYil + ' yıl' : ''}</span>
+              </div>
+            </div>
+          </a>
+        `;
+      }).join('');
+      $liste.querySelectorAll('[data-id]').forEach(a => {
+        a.addEventListener('click', (e) => {
+          e.preventDefault();
+          secilenId = a.dataset.id;
+          listeRender();
+          formRender();
+        });
+      });
+    };
+
+    const formRender = () => {
+      if (!secilenId) { $form.innerHTML = ''; $form.appendChild($bos); return; }
+      const k = liste.find(x => x.id === secilenId);
+      if (!k) { secilenId = null; formRender(); return; }
+
+      const fotoBlok = k.foto
+        ? `<img src="${k.foto}" alt="" style="width:140px;height:140px;border-radius:50%;object-fit:cover;border:3px solid var(--renk-cizgi);">`
+        : `<div style="width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--renk-birincil),var(--renk-birincil-acik));color:white;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:700;">${ADMIN.escHtml(harfler(k.ad))}</div>`;
+
+      $form.innerHTML = `
+        <form id="ftn">
+          <div style="display: flex; gap: var(--bosluk-6); align-items: flex-start; margin-bottom: var(--bosluk-6); flex-wrap: wrap;">
+            <div style="text-align: center;">
+              <div id="fotoOnizleme">${fotoBlok}</div>
+              <div style="display: flex; gap: var(--bosluk-2); margin-top: var(--bosluk-3); flex-direction: column;">
+                <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="fotoSec">📷 Fotoğraf</button>
+                ${k.foto ? '<button type="button" class="dugme dugme--tehlike dugme--kucuk" id="fotoSil">Sil</button>' : ''}
+              </div>
+            </div>
+            <div style="flex: 1; min-width: 250px;">
+              <div class="form-grup">
+                <label class="form-etiket" for="a-ad">Ad Soyad *</label>
+                <input class="form-girdi" type="text" id="a-ad" required value="${ADMIN.escHtml(k.ad || '')}">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="a-brans">Branş *</label>
+                <input class="form-girdi" type="text" id="a-brans" required value="${ADMIN.escHtml(k.brans || '')}">
+              </div>
+              <div class="form-grup">
+                <label class="form-etiket" for="a-unvan">Ünvan</label>
+                <input class="form-girdi" type="text" id="a-unvan" value="${ADMIN.escHtml(k.unvan || 'Branş Öğretmeni')}">
+              </div>
+            </div>
+          </div>
+
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="a-mezuniyet">Mezuniyet</label>
+              <input class="form-girdi" type="text" id="a-mezuniyet" value="${ADMIN.escHtml(k.mezuniyet || '')}">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="a-deneyim">Deneyim (yıl)</label>
+              <input class="form-girdi" type="number" id="a-deneyim" min="0" max="60" value="${k.deneyimYil ?? ''}">
+            </div>
+          </div>
+
+          <div class="form-grup">
+            <label class="form-etiket" for="a-motto">Motto</label>
+            <textarea class="form-alani" id="a-motto" rows="2">${ADMIN.escHtml(k.motto || '')}</textarea>
+          </div>
+
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="a-sira">Sıra</label>
+              <input class="form-girdi" type="number" id="a-sira" value="${k.sira || 0}">
+            </div>
+            <div class="form-grup">
+              <label style="display: flex; gap: var(--bosluk-2); align-items: center; margin-top: var(--bosluk-7);">
+                <input type="checkbox" id="a-yayinda" ${k.yayinda !== false ? 'checked' : ''}>
+                <span><strong>Yayında</strong></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="admin-form__dugmeler">
+            <div class="admin-form__dugmeler-sol">
+              <button type="button" class="dugme dugme--tehlike" id="silDugme">🗑 Sil</button>
+            </div>
+            <button type="button" class="dugme dugme--cerceve" id="iptalDugme">İptal</button>
+            <button type="submit" class="dugme dugme--birincil">Kaydet</button>
+          </div>
+        </form>
+      `;
+
+      document.getElementById('ftn').addEventListener('submit', (e) => { e.preventDefault(); kaydet(); });
+      document.getElementById('silDugme').addEventListener('click', sil);
+      document.getElementById('iptalDugme').addEventListener('click', () => { secilenId = null; listeRender(); formRender(); });
+
+      document.getElementById('fotoSec').addEventListener('click', async () => {
+        try {
+          const r = await ADMIN.gorselSec({ maxGenislik: 600, maxYukseklik: 600, klasor: 'kadro' });
+          k.foto = r.dataUrl;
+          formRender();
+          ADMIN.toast(`Fotoğraf önizlendi (${r.boyutKB} KB) — Kaydet'e basmazsanız kaybolur`, 'bilgi');
+        } catch (e) {
+          if (e.message !== 'İptal edildi') ADMIN.toast(e.message, 'hata');
+        }
+      });
+      const fSil = document.getElementById('fotoSil');
+      if (fSil) {
+        fSil.addEventListener('click', () => {
+          k.foto = '';
+          formRender();
+        });
+      }
+    };
+
+    const yeni = async () => {
+      try {
+        const r = await API.kadro.olustur({ ad: 'Yeni Öğretmen', brans: '', sira: liste.length, yayinda: true });
+        await yukle();
+        secilenId = r.id;
+        listeRender();
+        formRender();
+        ADMIN.toast('Yeni öğretmen oluşturuldu', 'basari');
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    const kaydet = async () => {
+      const k = liste.find(x => x.id === secilenId);
+      if (!k) return;
+      const btn = document.querySelector('#ftn button[type="submit"]');
+      const veri = {
+        ad: document.getElementById('a-ad').value.trim(),
+        brans: document.getElementById('a-brans').value.trim(),
+        unvan: document.getElementById('a-unvan').value.trim() || 'Branş Öğretmeni',
+        mezuniyet: document.getElementById('a-mezuniyet').value.trim(),
+        deneyimYil: document.getElementById('a-deneyim').value ? Number(document.getElementById('a-deneyim').value) : null,
+        motto: document.getElementById('a-motto').value.trim(),
+        foto: k.foto || '',
+        sira: Number(document.getElementById('a-sira').value) || 0,
+        yayinda: document.getElementById('a-yayinda').checked,
+      };
+      if (btn) btn.disabled = true;
+      try {
+        await API.kadro.guncelle(secilenId, veri);
+        ADMIN.toast('Kaydedildi', 'basari');
+        await yukle();
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      } finally {
+        if (btn) btn.disabled = false;
+      }
+    };
+
+    const sil = async () => {
+      if (!confirm('Bu öğretmeni silmek istediğinize emin misiniz?')) return;
+      try {
+        await API.kadro.sil(secilenId);
+        secilenId = null;
+        await yukle();
+        formRender();
+        ADMIN.toast('Silindi', 'basari');
+      } catch (e) {
+        ADMIN.toast(e.message, 'hata');
+      }
+    };
+
+    document.getElementById('dgYeni').addEventListener('click', yeni);
+    document.getElementById('aramaGirdi').addEventListener('input', (e) => { aramaTerimi = e.target.value; listeRender(); });
+
+    yukle();
+  })();
+  </script>
+</body>
+</html>

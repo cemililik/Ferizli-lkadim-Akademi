@@ -1,0 +1,427 @@
+/* ============================================
+   YARDIM MERKEZİ — İlk Adım Akademi
+   3 kolon shell: sidebar + içerik (+ büyük ekranda TOC).
+   admin.css'in üzerine, sadece /admin/yardim* sayfalarında.
+   ============================================ */
+
+:root {
+  --yardim-sidebar-w: 280px;
+  --yardim-toc-w: 220px;
+  --yardim-icerik-max: 760px;
+}
+
+/* Üst bar zaten admin.css'den geliyor, body bg admin'le aynı */
+.yardim-shell {
+  display: grid;
+  grid-template-columns: var(--yardim-sidebar-w) minmax(0, 1fr);
+  gap: var(--bosluk-6);
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: var(--bosluk-5) var(--bosluk-5);
+  align-items: start;
+}
+@media (min-width: 1200px) {
+  .yardim-shell {
+    grid-template-columns: var(--yardim-sidebar-w) minmax(0, 1fr) var(--yardim-toc-w);
+  }
+}
+@media (max-width: 960px) {
+  .yardim-shell {
+    display: block;
+    padding: var(--bosluk-4) var(--bosluk-4);
+  }
+}
+
+/* ---------- Sidebar ---------- */
+.yardim-sidebar {
+  position: sticky;
+  top: calc(60px + var(--bosluk-4));
+  max-height: calc(100vh - 60px - var(--bosluk-8));
+  overflow-y: auto;
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-md);
+  padding: var(--bosluk-4);
+  font-size: var(--yazi-sm);
+  scrollbar-width: thin;
+}
+.yardim-sidebar__ara {
+  position: relative;
+  margin-bottom: var(--bosluk-4);
+}
+.yardim-sidebar__ara input {
+  width: 100%;
+  padding: var(--bosluk-2) var(--bosluk-3);
+  font-size: var(--yazi-sm);
+  border: 1px solid var(--renk-cizgi-koyu);
+  border-radius: var(--yuvarlak);
+  background: var(--renk-arka);
+}
+.yardim-sidebar__ara input:focus {
+  outline: none;
+  border-color: var(--renk-birincil);
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.12);
+}
+
+.yardim-bolum {
+  margin-bottom: var(--bosluk-5);
+}
+.yardim-bolum__baslik {
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-2);
+  font-size: var(--yazi-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--renk-yazi-soluk);
+  padding: var(--bosluk-2) var(--bosluk-3);
+  margin-bottom: 4px;
+}
+.yardim-bolum__baslik-ikon { font-size: var(--yazi-base); }
+
+.yardim-bolum__liste { list-style: none; padding: 0; margin: 0; }
+.yardim-bolum__liste li { margin: 0; }
+.yardim-bolum__link {
+  display: block;
+  padding: var(--bosluk-2) var(--bosluk-3);
+  border-radius: var(--yuvarlak);
+  color: var(--renk-yazi-acik);
+  text-decoration: none;
+  line-height: 1.4;
+  transition: background var(--gecis-hizli), color var(--gecis-hizli);
+  position: relative;
+}
+.yardim-bolum__link:hover {
+  background: var(--renk-arka-yumusak);
+  color: var(--renk-birincil);
+}
+.yardim-bolum__link.aktif {
+  background: var(--pastel-mavi);
+  color: var(--renk-birincil);
+  font-weight: 600;
+}
+.yardim-bolum__link.aktif::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 6px; bottom: 6px;
+  width: 3px;
+  background: var(--renk-birincil);
+  border-radius: 2px;
+}
+
+/* Mobilde sidebar drawer'a dönüşür */
+.yardim-mobil-bar {
+  display: none;
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak);
+  padding: var(--bosluk-3) var(--bosluk-4);
+  margin-bottom: var(--bosluk-4);
+  font-size: var(--yazi-sm);
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bosluk-3);
+  position: sticky;
+  top: 60px;
+  z-index: 5;
+}
+.yardim-mobil-bar__dugme {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-2) var(--bosluk-3);
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak);
+  background: var(--renk-arka);
+  cursor: pointer;
+  font-weight: 600;
+}
+@media (max-width: 960px) {
+  .yardim-mobil-bar { display: flex; }
+  .yardim-sidebar {
+    display: none;
+    position: fixed;
+    top: 60px;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 100;
+    border-radius: 0;
+    border: 0;
+    border-bottom: 1px solid var(--renk-cizgi);
+    max-height: none;
+  }
+  .yardim-sidebar.acik { display: block; }
+}
+
+/* ---------- İçerik ---------- */
+.yardim-icerik {
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-md);
+  padding: clamp(var(--bosluk-6), 4vw, var(--bosluk-10));
+  min-height: 60vh;
+  max-width: var(--yardim-icerik-max);
+  margin: 0 auto;
+}
+
+.yardim-icerik__kirilma {
+  display: flex;
+  gap: var(--bosluk-2);
+  font-size: var(--yazi-xs);
+  color: var(--renk-yazi-soluk);
+  margin-bottom: var(--bosluk-4);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.yardim-icerik h1 {
+  font-size: clamp(var(--yazi-2xl), 3.5vw, var(--yazi-4xl));
+  margin-bottom: var(--bosluk-4);
+  line-height: 1.2;
+}
+.yardim-icerik h2 {
+  font-size: var(--yazi-2xl);
+  margin-top: var(--bosluk-10);
+  margin-bottom: var(--bosluk-4);
+  padding-top: var(--bosluk-3);
+  border-top: 1px solid var(--renk-cizgi);
+  scroll-margin-top: 80px;
+}
+.yardim-icerik h2:first-of-type { border-top: 0; padding-top: 0; margin-top: var(--bosluk-6); }
+.yardim-icerik h3 {
+  font-size: var(--yazi-xl);
+  margin-top: var(--bosluk-6);
+  margin-bottom: var(--bosluk-3);
+  scroll-margin-top: 80px;
+}
+.yardim-icerik h4 {
+  font-size: var(--yazi-lg);
+  margin-top: var(--bosluk-5);
+  margin-bottom: var(--bosluk-2);
+}
+
+.yardim-icerik p { margin-bottom: var(--bosluk-4); line-height: 1.7; }
+.yardim-icerik p:last-child { margin-bottom: 0; }
+
+.yardim-icerik ul, .yardim-icerik ol {
+  margin: 0 0 var(--bosluk-4);
+  padding-left: var(--bosluk-6);
+}
+.yardim-icerik ul { list-style: disc; }
+.yardim-icerik ol { list-style: decimal; }
+.yardim-icerik li { margin-bottom: var(--bosluk-2); line-height: 1.7; }
+.yardim-icerik li > ul, .yardim-icerik li > ol { margin-top: var(--bosluk-2); }
+
+.yardim-icerik strong { font-weight: 700; color: var(--renk-yazi); }
+.yardim-icerik em { font-style: italic; }
+.yardim-icerik a {
+  color: var(--renk-birincil);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.yardim-icerik a:hover { color: var(--renk-birincil-koyu); }
+
+.yardim-icerik code {
+  background: var(--renk-arka-yumusak);
+  padding: 2px 6px;
+  border-radius: var(--yuvarlak-sm);
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.92em;
+  color: var(--renk-vurgu-koyu);
+}
+.yardim-icerik pre {
+  background: var(--renk-arka-koyu);
+  color: #e2e8f0;
+  padding: var(--bosluk-4);
+  border-radius: var(--yuvarlak);
+  overflow-x: auto;
+  margin-bottom: var(--bosluk-4);
+  font-size: var(--yazi-sm);
+}
+.yardim-icerik pre code {
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* Tablo */
+.yardim-icerik table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: var(--bosluk-4);
+  font-size: var(--yazi-sm);
+}
+.yardim-icerik th, .yardim-icerik td {
+  text-align: left;
+  padding: var(--bosluk-3);
+  border-bottom: 1px solid var(--renk-cizgi);
+  vertical-align: top;
+}
+.yardim-icerik th {
+  background: var(--renk-arka-yumusak);
+  font-weight: 700;
+  color: var(--renk-yazi);
+}
+
+/* Callout (blockquote) */
+.yardim-icerik blockquote {
+  background: var(--pastel-mavi);
+  border-left: 4px solid var(--renk-birincil);
+  padding: var(--bosluk-4) var(--bosluk-5);
+  border-radius: 0 var(--yuvarlak) var(--yuvarlak) 0;
+  margin: var(--bosluk-5) 0;
+  color: var(--renk-yazi);
+}
+.yardim-icerik blockquote p { margin-bottom: var(--bosluk-2); }
+.yardim-icerik blockquote p:last-child { margin-bottom: 0; }
+.yardim-icerik blockquote.uyari {
+  background: #fff4e5;
+  border-left-color: var(--renk-uyari);
+}
+.yardim-icerik blockquote.tehlike {
+  background: #fef2f2;
+  border-left-color: var(--renk-hata);
+}
+.yardim-icerik blockquote.ipucu {
+  background: var(--pastel-yesil);
+  border-left-color: var(--renk-basari);
+}
+
+/* Mermaid */
+.yardim-icerik .mermaid {
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak);
+  padding: var(--bosluk-4);
+  margin-bottom: var(--bosluk-4);
+  overflow-x: auto;
+  text-align: center;
+}
+
+/* Görsel */
+.yardim-icerik img {
+  max-width: 100%;
+  border-radius: var(--yuvarlak);
+  border: 1px solid var(--renk-cizgi);
+  margin-block: var(--bosluk-3);
+}
+
+/* Adım kutusu */
+.yardim-icerik .adim-listesi {
+  counter-reset: adim;
+  list-style: none;
+  padding-left: 0;
+}
+.yardim-icerik .adim-listesi > li {
+  counter-increment: adim;
+  position: relative;
+  padding-left: 48px;
+  margin-bottom: var(--bosluk-3);
+  min-height: 32px;
+}
+.yardim-icerik .adim-listesi > li::before {
+  content: counter(adim);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 32px; height: 32px;
+  background: var(--renk-birincil);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: var(--yazi-sm);
+}
+
+/* Sayfa altı: prev/next */
+.yardim-icerik__pager {
+  margin-top: var(--bosluk-10);
+  padding-top: var(--bosluk-5);
+  border-top: 1px solid var(--renk-cizgi);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--bosluk-4);
+}
+.yardim-icerik__pager a {
+  display: block;
+  padding: var(--bosluk-4);
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak);
+  text-decoration: none;
+  color: var(--renk-yazi);
+  transition: all var(--gecis-hizli);
+}
+.yardim-icerik__pager a:hover {
+  border-color: var(--renk-birincil);
+  background: var(--renk-arka-yumusak);
+  color: var(--renk-birincil);
+}
+.yardim-icerik__pager .yon {
+  font-size: var(--yazi-xs);
+  text-transform: uppercase;
+  color: var(--renk-yazi-soluk);
+  letter-spacing: 0.05em;
+  margin-bottom: 4px;
+}
+.yardim-icerik__pager .baslik { font-weight: 600; }
+.yardim-icerik__pager .ileri { text-align: right; }
+@media (max-width: 540px) {
+  .yardim-icerik__pager { grid-template-columns: 1fr; }
+  .yardim-icerik__pager .ileri { text-align: left; }
+}
+
+/* Boş içerik / hata */
+.yardim-bos {
+  text-align: center;
+  padding: var(--bosluk-12) var(--bosluk-4);
+  color: var(--renk-yazi-soluk);
+}
+.yardim-bos__ikon { font-size: 3rem; margin-bottom: var(--bosluk-3); }
+
+/* TOC (sağ kolon, sadece desktop) */
+.yardim-toc {
+  position: sticky;
+  top: calc(60px + var(--bosluk-4));
+  max-height: calc(100vh - 60px - var(--bosluk-8));
+  overflow-y: auto;
+  font-size: var(--yazi-sm);
+}
+.yardim-toc__baslik {
+  font-size: var(--yazi-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--renk-yazi-soluk);
+  margin-bottom: var(--bosluk-3);
+}
+.yardim-toc ul { list-style: none; padding: 0; margin: 0; }
+.yardim-toc li { margin: 0; }
+.yardim-toc a {
+  display: block;
+  padding: 4px var(--bosluk-3);
+  color: var(--renk-yazi-acik);
+  border-left: 2px solid transparent;
+  font-size: var(--yazi-sm);
+  line-height: 1.5;
+  transition: all var(--gecis-hizli);
+}
+.yardim-toc a:hover { color: var(--renk-birincil); }
+.yardim-toc a.aktif {
+  color: var(--renk-birincil);
+  border-left-color: var(--renk-birincil);
+  background: var(--renk-arka-yumusak);
+}
+.yardim-toc li.h3 a { padding-left: var(--bosluk-5); font-size: var(--yazi-xs); }
+@media (max-width: 1199px) { .yardim-toc { display: none; } }
+
+/* Yazdırma */
+@media print {
+  .admin-bar, .yardim-sidebar, .yardim-toc, .yardim-mobil-bar,
+  .yardim-icerik__pager { display: none !important; }
+  .yardim-icerik { border: none; padding: 0; }
+}

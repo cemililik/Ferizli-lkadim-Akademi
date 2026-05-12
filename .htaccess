@@ -1,0 +1,32 @@
+# ============================================================
+# Ferizli İlk Adım Akademi — Kök .htaccess
+# Sadece statik kaynak cache header'ları + sitemap placeholder.
+# Detaylı rewrite kuralları (sitemap, SEO yönlendirmeleri vb.)
+# Agent 4 tarafından bu dosyaya EKLENECEK.
+# ============================================================
+
+# ---------- Statik kaynaklar için cache (30 gün) ----------
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|gif|ico|css|js|svg|woff|woff2)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+
+# ---------- Markdown dosyaları (admin yardım merkezi) ----------
+# .md uzantısı için doğru content-type döndür; UTF-8 charset ile.
+<IfModule mod_mime.c>
+  AddType text/markdown .md
+  AddCharset UTF-8 .md
+</IfModule>
+
+# ---------- Rewrite ----------
+RewriteEngine On
+
+# NOT: sitemap.xml rewrite — Agent 4 sitemap.php oluşturacak.
+# Şimdilik placeholder olarak rewrite hazır; sitemap.php yoksa 404 döner.
+RewriteRule ^sitemap\.xml$ sitemap.php [L]
+
+# TODO (Agent 4):
+#   - https/www canonicalization
+#   - eski URL'lerden yeni URL'lere 301 yönlendirmeleri
+#   - SEO için clean URL kuralları (gerekirse)

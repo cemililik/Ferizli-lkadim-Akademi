@@ -1,0 +1,400 @@
+/* ============================================
+   COMPONENTS — yeniden kullanılan UI parçaları
+   ============================================ */
+
+/* ---------- Düğmeler ---------- */
+.dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-3) var(--bosluk-6);
+  font-family: var(--yazi-aile-baslik);
+  font-weight: 600;
+  font-size: var(--yazi-base);
+  line-height: 1;
+  border-radius: var(--yuvarlak);
+  text-decoration: none;
+  transition: all var(--gecis);
+  white-space: nowrap;
+  border: 2px solid transparent;
+  cursor: pointer;
+}
+
+.dugme--birincil {
+  background-color: var(--renk-birincil);
+  color: white;
+}
+.dugme--birincil:hover {
+  background-color: var(--renk-birincil-koyu);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--golge-md);
+}
+
+.dugme--vurgu {
+  background-color: var(--renk-vurgu);
+  color: white;
+}
+.dugme--vurgu:hover {
+  background-color: var(--renk-vurgu-koyu);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--golge-md);
+}
+
+.dugme--cerceve {
+  background-color: transparent;
+  color: var(--renk-birincil);
+  border-color: var(--renk-birincil);
+}
+.dugme--cerceve:hover {
+  background-color: var(--pastel-mavi);
+  color: var(--renk-birincil-koyu);
+  border-color: var(--renk-birincil);
+  transform: translateY(-2px);
+  box-shadow: var(--golge-renk);
+}
+
+.dugme--cerceve-acik {
+  background-color: transparent;
+  color: white;
+  border-color: white;
+}
+.dugme--cerceve-acik:hover {
+  background-color: white;
+  color: var(--renk-birincil);
+}
+
+.dugme--whatsapp {
+  background-color: var(--renk-whatsapp);
+  color: white;
+}
+.dugme--whatsapp:hover {
+  background-color: #1ebe57;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--golge-md);
+}
+
+.dugme--buyuk {
+  padding: var(--bosluk-4) var(--bosluk-8);
+  font-size: var(--yazi-lg);
+}
+
+.dugme--kucuk {
+  padding: var(--bosluk-2) var(--bosluk-4);
+  font-size: var(--yazi-sm);
+}
+
+.dugme--blok {
+  display: flex;
+  width: 100%;
+}
+
+/* ---------- Kartlar ---------- */
+.kart {
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-md);
+  padding: var(--bosluk-6);
+  transition: all var(--gecis);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+.kart:hover {
+  box-shadow: var(--golge-renk);
+  transform: translateY(-4px);
+  border-color: var(--renk-birincil-acik);
+}
+
+.kart__ikon {
+  font-size: 2rem;
+  margin-bottom: var(--bosluk-4);
+  display: inline-flex;
+  width: 60px; height: 60px;
+  align-items: center; justify-content: center;
+  background: var(--pastel-mavi);
+  color: var(--renk-birincil);
+  border-radius: var(--yuvarlak-md);
+  transition: all var(--gecis);
+}
+.kart:hover .kart__ikon {
+  background: var(--renk-birincil);
+  color: white;
+  transform: scale(1.05) rotate(-3deg);
+}
+
+.kart__baslik {
+  font-size: var(--yazi-xl);
+  margin-bottom: var(--bosluk-2);
+}
+
+.kart__metin {
+  color: var(--renk-yazi-acik);
+  flex-grow: 1;
+  margin-bottom: var(--bosluk-4);
+}
+
+.kart__liste {
+  margin-bottom: var(--bosluk-4);
+}
+.kart__liste li {
+  padding: var(--bosluk-2) 0;
+  padding-left: var(--bosluk-6);
+  position: relative;
+  color: var(--renk-yazi-acik);
+  font-size: var(--yazi-sm);
+}
+.kart__liste li::before {
+  content: "✓";
+  position: absolute;
+  left: 0;
+  color: var(--renk-vurgu);
+  font-weight: 700;
+}
+
+/* ---------- Etiket (kategori, badge) ---------- */
+.etiket {
+  display: inline-block;
+  padding: var(--bosluk-1) var(--bosluk-3);
+  background-color: var(--renk-birincil);
+  color: white;
+  font-size: var(--yazi-xs);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-radius: var(--yuvarlak-tam);
+}
+.etiket--vurgu { background-color: var(--renk-vurgu); color: white; }
+.etiket--yumusak {
+  background-color: var(--renk-arka-yumusak);
+  color: var(--renk-birincil);
+  border: 1px solid var(--renk-cizgi);
+}
+
+/* ---------- Form ögeleri ---------- */
+.form-grup { margin-bottom: var(--bosluk-5); }
+
+.form-etiket {
+  display: block;
+  margin-bottom: var(--bosluk-2);
+  font-weight: 600;
+  color: var(--renk-yazi);
+  font-size: var(--yazi-sm);
+}
+
+.form-girdi, .form-secim, .form-alani {
+  width: 100%;
+  padding: var(--bosluk-3) var(--bosluk-4);
+  font: inherit;
+  color: var(--renk-yazi);
+  background: var(--renk-arka);
+  border: 1.5px solid var(--renk-cizgi-koyu);
+  border-radius: var(--yuvarlak);
+  transition: all var(--gecis-hizli);
+}
+.form-girdi:focus, .form-secim:focus, .form-alani:focus {
+  outline: none;
+  border-color: var(--renk-birincil);
+  box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
+}
+/* iOS Safari'de input zoom önlemek için 16px min font */
+@media (max-width: 640px) {
+  .form-girdi, .form-secim, .form-alani { font-size: 16px; }
+}
+
+.form-alani { resize: vertical; min-height: 120px; }
+
+/* Fieldset/legend tabanlı grup (radio/checkbox) — varsayılan tarayıcı stillerini sıfırla */
+.form-grup--grup {
+  border: 0;
+  padding: 0;
+  margin-bottom: var(--bosluk-5);
+}
+.form-grup--grup > .form-etiket {
+  padding: 0;
+  margin-bottom: var(--bosluk-2);
+}
+
+/* Radio/checkbox tekli seçenek satırı */
+.form-secenek {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-2);
+  margin-bottom: 4px;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak);
+  cursor: pointer;
+  font-size: var(--yazi-sm);
+  background: transparent;
+  transition: border-color var(--gecis-hizli), background var(--gecis-hizli);
+}
+.form-secenek input[type="radio"],
+.form-secenek input[type="checkbox"] {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+.form-secenek:hover {
+  border-color: var(--renk-birincil-acik);
+  background: var(--renk-arka-yumusak);
+}
+.form-secenek:has(input:checked) {
+  border-color: var(--renk-birincil);
+  background: var(--pastel-mavi);
+}
+
+/* Zorunlu alan yıldızı (görsel; sr-only "(zorunlu)" yan yana) */
+.form-zorunlu {
+  color: var(--renk-vurgu);
+  font-weight: 700;
+}
+
+/* ---------- Bilgi kutusu ---------- */
+.bilgi-kutusu {
+  padding: var(--bosluk-5);
+  background-color: var(--pastel-mavi);
+  border-left: 4px solid var(--renk-birincil);
+  border-radius: var(--yuvarlak);
+}
+.bilgi-kutusu--vurgu {
+  background-color: var(--pastel-pembe);
+  border-left-color: var(--renk-vurgu);
+}
+
+/* ---------- Bilgilendirme şeridi ---------- */
+.serit-baslik {
+  display: inline-block;
+  padding: 4px 14px;
+  background: var(--pastel-pembe);
+  color: var(--renk-vurgu);
+  font-size: var(--yazi-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  border-radius: var(--yuvarlak-tam);
+  margin-bottom: var(--bosluk-4);
+}
+/* Pastel mavi bölümde rozet rengini de mavi yap */
+.bolum-yumusak .serit-baslik {
+  background: white;
+  color: var(--renk-birincil);
+}
+
+/* ---------- İstatistik kutusu ---------- */
+.istatistik {
+  text-align: center;
+  padding: var(--bosluk-6) var(--bosluk-4);
+  background: white;
+  border-radius: var(--yuvarlak-md);
+  border: 1px solid var(--renk-cizgi);
+  transition: all var(--gecis);
+}
+.istatistik:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--golge-renk);
+  border-color: transparent;
+}
+.istatistik__sayi {
+  display: block;
+  font-family: var(--yazi-aile-baslik);
+  font-size: var(--yazi-5xl);
+  font-weight: 800;
+  background: linear-gradient(135deg, var(--renk-birincil), var(--renk-vurgu));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  line-height: 1;
+  margin-bottom: var(--bosluk-2);
+}
+.istatistik__etiket {
+  font-size: var(--yazi-base);
+  color: var(--renk-yazi-acik);
+  font-weight: 500;
+}
+
+/* ---------- Duyuru kartı ---------- */
+.duyuru-karti {
+  background: var(--renk-arka);
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-md);
+  overflow: hidden;
+  transition: all var(--gecis);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+.duyuru-karti:hover {
+  box-shadow: var(--golge-md);
+  transform: translateY(-4px);
+}
+.duyuru-karti--onemli {
+  border-left: 4px solid var(--renk-vurgu);
+}
+
+.duyuru-karti__gorsel {
+  display: block;
+  aspect-ratio: 16/9;
+  overflow: hidden;
+  background: var(--renk-arka-yumusak);
+}
+.duyuru-karti__gorsel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform var(--gecis);
+}
+.duyuru-karti:hover .duyuru-karti__gorsel img {
+  transform: scale(1.05);
+}
+
+.duyuru-karti__icerik {
+  padding: var(--bosluk-6);
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+}
+.duyuru-karti__ust {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--bosluk-3);
+  gap: var(--bosluk-3);
+}
+.duyuru-karti__tarih {
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-soluk);
+}
+.duyuru-karti__baslik {
+  font-size: var(--yazi-xl);
+  margin-bottom: var(--bosluk-3);
+  color: var(--renk-yazi);
+}
+.duyuru-karti__ozet {
+  color: var(--renk-yazi-acik);
+  flex-grow: 1;
+  margin-bottom: var(--bosluk-4);
+}
+.duyuru-karti__link {
+  color: var(--renk-birincil);
+  font-weight: 600;
+  font-size: var(--yazi-sm);
+  align-self: flex-start;
+}
+.duyuru-karti__link::after {
+  content: "→";
+  margin-left: var(--bosluk-2);
+  transition: transform var(--gecis-hizli);
+  display: inline-block;
+}
+.duyuru-karti__link:hover::after { transform: translateX(4px); }
+
+/* ---------- Boş durum ---------- */
+.bos-durum {
+  text-align: center;
+  padding: var(--bosluk-16) var(--bosluk-4);
+  color: var(--renk-yazi-soluk);
+}
+.bos-durum__ikon { font-size: 3rem; margin-bottom: var(--bosluk-4); }

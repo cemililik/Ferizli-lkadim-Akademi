@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Başarılarımız</title>
+
+  <!-- Favicon -->
+  <link rel="icon" type="image/x-icon" href="/assets/img/favicon/favicon.ico">
+  <link rel="icon" type="image/png" sizes="32x32" href="/assets/img/favicon/favicon-32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/assets/img/favicon/favicon-16.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/assets/img/favicon/apple-touch-icon.png">
+  <link rel="manifest" href="/site.webmanifest">
+  <meta name="theme-color" content="#1565c0">
+  <meta name="description" content="Öğrencilerimizin LGS, YKS ve diğer sınavlardaki başarıları.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="İlk Adım Akademi">
+  <meta property="og:locale" content="tr_TR">
+  <meta property="og:title" content="Başarılarımız | İlk Adım Akademi">
+  <meta property="og:description" content="Öğrencilerimizin LGS, YKS ve diğer sınavlardaki başarıları.">
+  <meta property="og:image" content="/assets/img/favicon/og-default.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="/assets/css/base.css">
+  <link rel="stylesheet" href="/assets/css/components.css">
+  <link rel="stylesheet" href="/assets/css/layout.css">
+  <link rel="stylesheet" href="/assets/css/pages.css">
+</head>
+<body>
+
+  <div id="siteHeaderYer"></div>
+
+  <main id="main">
+    <section class="sayfa-basligi">
+      <div class="kapsayici">
+        <nav class="kirilma-yolu" aria-label="Sayfa konumu">
+          <a href="/index.html">Ana Sayfa</a>
+          <span>›</span>
+          <span>Başarılarımız</span>
+        </nav>
+        <h1>Başarılarımız</h1>
+        <p>Öğrencilerimizin sınav ve yerleştirme başarıları.</p>
+      </div>
+    </section>
+
+    <!-- İSTATİSTİKLER — admin/ayarlar üzerinden yönetilir. Veri yoksa bölüm gizlenir. -->
+    <section class="bolum" data-istatistik-bolum hidden>
+      <div class="kapsayici">
+        <div class="izgara izgara--4" data-istatistik-yer></div>
+      </div>
+    </section>
+
+    <!-- Boş durum: kurum henüz veri girmediyse gösterilir -->
+    <section class="bolum" data-basarilar-bos>
+      <div class="kapsayici kapsayici-dar">
+        <div class="bos-durum" style="text-align:center; padding: var(--bosluk-16) var(--bosluk-6);">
+          <div class="bos-durum__ikon" style="font-size: 3rem; margin-bottom: var(--bosluk-4);">🏆</div>
+          <h2 style="margin-bottom: var(--bosluk-3);">Başarı Hikâyelerimiz Yakında Burada</h2>
+          <p style="color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-6);">
+            Öğrencilerimizin sınav ve yerleştirme sonuçlarını yakında bu sayfada paylaşacağız.
+            Süreçle ilgili bilgi almak için bize ulaşabilirsiniz.
+          </p>
+          <a href="/iletisim.html" class="dugme dugme--birincil">Bize Ulaşın</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div id="siteFooterYer"></div>
+  <div id="floatIkonlarYer"></div>
+
+  <script src="/assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+name: Deploy to Production
+
+# Tetikleyiciler:
+#  - Bir release tagı (v1.0.0 gibi) push edildiğinde otomatik
+#  - Veya elle (workflow_dispatch) Actions sekmesinden
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      skip_migrations:
+        description: 'DB migration adımını atla'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+# Aynı anda birden fazla deploy çalışmasın (DB migration güvenliği)
+concurrency:
+  group: deploy-prod
+  cancel-in-progress: false
+
+env:
+  PHP_VERSION: '8.2'
+
+jobs:
+  # ====================================================================
+  # 1) Doğrula: syntax + JSON validity
+  # ====================================================================
+  validate:
+    name: Validate
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Version'ı tag'den oku
+        id: version
+        run: |
+          if [[ "${{ github.ref_type }}" == "tag" ]]; then
+            echo "version=${GITHUB_REF##*/}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=manual-$(date +%Y%m%d%H%M)" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: PHP'i kur
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: none
+
+      - name: PHP syntax check (tüm .php)
+        run: |
+          set -e
+          fail=0
+          while IFS= read -r f; do
+            if ! php -l "$f" > /dev/null 2>&1; then
+              echo "❌ Syntax error: $f"
+              php -l "$f" || true
+              fail=1
+            fi
+          done < <(find . -name "*.php" -not -path "./.git/*" -not -path "./vendor/*")
+          [[ $fail -eq 0 ]] && echo "✓ Tüm PHP dosyaları geçti"
+          exit $fail
+
+      - name: JSON dosyaları validate et
+        run: |
+          set -e
+          while IFS= read -r f; do
+            if ! python3 -c "import json,sys; json.load(open(sys.argv[1]))" "$f"; then
+              echo "❌ Geçersiz JSON: $f"
+              exit 1
+            fi
+          done < <(find . -name "*.json" -not -path "./.git/*" -not -path "./node_modules/*")
+          echo "✓ Tüm JSON dosyaları geçerli"
+
+  # ====================================================================
+  # 2) Deploy: config üret + FTP/FTPS ile dosya yükle
+  # ====================================================================
+  deploy:
+    name: Deploy (${{ needs.validate.outputs.version }})
+    needs: validate
+    runs-on: ubuntu-latest
+    environment:
+      name: production
+      url: ${{ vars.SITE_URL }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP'i kur (config üretmek için)
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          coverage: none
+          tools: none
+
+      - name: api/config.php'yi şablondan üret
+        env:
+          DB_HOST: ${{ secrets.DB_HOST }}
+          DB_PORT: ${{ secrets.DB_PORT }}
+          DB_NAME: ${{ secrets.DB_NAME }}
+          DB_USER: ${{ secrets.DB_USER }}
+          DB_PASS: ${{ secrets.DB_PASS }}
+          SITE_URL: ${{ vars.SITE_URL }}
+          MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
+        run: |
+          php -r '
+            $tpl = file_get_contents("api/config.template.php");
+            if ($tpl === false) { fwrite(STDERR, "Template okunamadı\n"); exit(1); }
+            $esc = fn($v) => str_replace(["\\\\", "\""], ["\\\\\\\\", "\\\""], (string)$v);
+            // Sayısal alanlar tırnaksız, string alanlar tek tırnaklı placeholder
+            // → addslashes ile tek tırnak içine güvenli yerleştir.
+            $strEsc = fn($v) => str_replace(["\\\\", "'"], ["\\\\\\\\", "\\'"], (string)$v);
+            $repl = [
+              "__DB_HOST__"          => $strEsc(getenv("DB_HOST") ?: ""),
+              "__DB_PORT__"          => (string)(int)(getenv("DB_PORT") ?: 3306),
+              "__DB_NAME__"          => $strEsc(getenv("DB_NAME") ?: ""),
+              "__DB_USER__"          => $strEsc(getenv("DB_USER") ?: ""),
+              "__DB_PASS__"          => $strEsc(getenv("DB_PASS") ?: ""),
+              "__SITE_URL__"         => $strEsc(getenv("SITE_URL") ?: ""),
+              "__MIGRATION_SECRET__" => $strEsc(getenv("MIGRATION_SECRET") ?: ""),
+            ];
+            $out = strtr($tpl, $repl);
+            // Doğruluğu sözdizimi seviyesinde test et — bozuk config sunucuda hata verir
+            file_put_contents("api/config.php", $out);
+            $check = shell_exec("php -l api/config.php 2>&1");
+            if (strpos($check, "No syntax errors") === false) {
+              fwrite(STDERR, "Üretilen config.php geçersiz:\n$check\n");
+              exit(1);
+            }
+            echo "✓ api/config.php üretildi (" . strlen($out) . " bayt)\n";
+          '
+
+      # ----- DEFAULT: FTP/FTPS deploy (paylaşımlı hosting için) -----
+      - name: Dosyaları FTP/FTPS ile yükle
+        if: vars.DEPLOY_METHOD != 'ssh'
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          port: ${{ vars.FTP_PORT || 21 }}
+          username: ${{ secrets.FTP_USER }}
+          password: ${{ secrets.FTP_PASS }}
+          # 'ftps' = FTP over TLS (port 21, AUTH TLS). Hosting destekliyorsa
+          # mutlaka kullanın. Düz 'ftp' güvensiz — şifreler clear-text gider.
+          protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
+          local-dir: ./
+          server-dir: ${{ vars.FTP_REMOTE_PATH }}
+          # Sunucuda olmayan dosyaları yükle, mevcut dosyaları sadece değiştiyse güncelle.
+          # Sunucudaki kullanıcı yüklemelerini silmesin diye dangerous-clean-slate=false.
+          dangerous-clean-slate: false
+          dry-run: ${{ vars.DEPLOY_DRY_RUN == 'true' }}
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/.github/**
+            **/.gitignore
+            **/.gitkeep
+            **/.env
+            **/.env.example
+            **/.env.local
+            **/docker/**
+            **/docker-compose.yml
+            **/node_modules/**
+            **/vendor/**
+            **/composer.lock
+            **/composer.json
+            **/KURUMA_ICERIK_TALEBI.md
+            **/KURULUM_HOSTING.md
+            **/KURULUM_PHP.md
+            **/ANALIZ.md
+            **/ADMIN_REHBERI.md
+            **/api/config.template.php
+            **/api/config.example.php
+            **/*.log
+            **/.DS_Store
+            **/Thumbs.db
+
+      # ----- ALTERNATIF: VPS / SSH ile rsync (DEPLOY_METHOD=ssh ise) -----
+      - name: Dosyaları SSH/rsync ile yükle (VPS)
+        if: vars.DEPLOY_METHOD == 'ssh'
+        uses: easingthemes/ssh-deploy@v5
+        with:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          REMOTE_HOST: ${{ secrets.SSH_HOST }}
+          REMOTE_USER: ${{ secrets.SSH_USER }}
+          REMOTE_PORT: ${{ vars.SSH_PORT || 22 }}
+          TARGET: ${{ vars.SSH_REMOTE_PATH }}
+          ARGS: "-rltgoDzvO --delete-after"
+          EXCLUDE: ".git*, .github/, docker/, docker-compose.yml, node_modules/, vendor/, *.log, KURUMA_*.md, KURULUM_*.md, ANALIZ.md, api/config.template.php, api/config.example.php"
+
+  # ====================================================================
+  # 3) Migration: web endpoint'i üzerinden DB güncellemesi
+  # ====================================================================
+  migrate:
+    name: Run database migrations
+    needs: deploy
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_migrations }}
+    environment: production
+    steps:
+      - name: Migration endpoint'ini tetikle
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
+        run: |
+          set -e
+          echo "→ POST $SITE_URL/api/install/migrate.php"
+          response=$(curl -sS \
+            -w "\n___STATUS:%{http_code}" \
+            --max-time 120 \
+            -X POST \
+            -H "X-Migration-Key: $MIGRATION_SECRET" \
+            "$SITE_URL/api/install/migrate.php")
+          status=$(echo "$response" | grep "___STATUS:" | cut -d: -f2)
+          body=$(echo "$response" | sed '/___STATUS:/d')
+          echo "HTTP $status"
+          echo "Yanıt:"
+          echo "$body"
+          if [[ "$status" != "200" ]]; then
+            echo "❌ Migration başarısız (HTTP $status)"
+            exit 1
+          fi
+          echo "✓ Migration tamamlandı"
+
+  # ====================================================================
+  # 4) Smoke test: site açılıyor mu?
+  # ====================================================================
+  smoke-test:
+    name: Smoke test
+    needs: [deploy, migrate]
+    if: always() && needs.deploy.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Anasayfa HTTP kontrolü
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          for i in 1 2 3; do
+            status=$(curl -sS -o /dev/null -w "%{http_code}" -L --max-time 30 "$SITE_URL/")
+            echo "Deneme $i: HTTP $status"
+            if [[ "$status" == "200" ]]; then
+              echo "✓ Site ayakta"
+              exit 0
+            fi
+            sleep 5
+          done
+          echo "❌ Site beklenen yanıtı vermedi"
+          exit 1
