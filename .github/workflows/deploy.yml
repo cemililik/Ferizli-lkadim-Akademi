@@ -139,7 +139,7 @@ jobs:
       # ----- DEFAULT: FTP/FTPS deploy (paylaşımlı hosting için) -----
       - name: Dosyaları FTP/FTPS ile yükle
         if: vars.DEPLOY_METHOD != 'ssh'
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_HOST }}
           port: ${{ vars.FTP_PORT || 21 }}
@@ -183,7 +183,7 @@ jobs:
       # ----- ALTERNATIF: VPS / SSH ile rsync (DEPLOY_METHOD=ssh ise) -----
       - name: Dosyaları SSH/rsync ile yükle (VPS)
         if: vars.DEPLOY_METHOD == 'ssh'
-        uses: easingthemes/ssh-deploy@v5
+        uses: easingthemes/ssh-deploy@v5.1.2
         with:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           REMOTE_HOST: ${{ secrets.SSH_HOST }}

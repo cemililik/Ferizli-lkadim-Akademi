@@ -1,38 +1,81 @@
-# Ferizli İlkadım Akademi — Web Sitesi
+# Özel Ferizli İlk Adım Akademi — Web Sitesi
 
-Statik HTML/CSS/JS tabanlı kurumsal web sitesi. Veritabanı yok; tüm dinamik
-veri JSON dosyalarından okunur.
+[![PHP 8.2](https://img.shields.io/badge/PHP-8.2-777BB4?logo=php&logoColor=white)](https://www.php.net/)
+[![MariaDB 11](https://img.shields.io/badge/MariaDB-11-003545?logo=mariadb&logoColor=white)](https://mariadb.org/)
+[![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker&logoColor=white)](https://docs.docker.com/compose/)
 
-## Hızlı Bakış
-
-- **Tech:** Vanilla HTML + CSS + JS. Build adımı yok.
-- **Veri:** `data/*.json` dosyalarında.
-- **Hosting (önerilen):** Netlify / Vercel / GitHub Pages (hepsi ücretsiz).
-- **Bağımlılık:** Yalnızca Google Fonts (Inter + Manrope) CDN.
+Sakarya/Ferizli'de yer alan özel öğretim kursunun kurumsal web sitesi.
+Vanilla HTML/CSS/JS frontend + PHP + MySQL backend; tüm dinamik içerik
+admin panelinden yönetilir, geliştiriciye iş düşmez.
 
 ---
 
-## Geliştirme Ortamı
+## Mimari
 
-Site **statik bir sunucu** üzerinden çalıştırılmalı (dosyaları çift tıkla
-açmak `fetch()` çağrılarını CORS hatasıyla bozar).
-
-### Seçenek 1 — VS Code "Live Server" eklentisi (en kolay)
-1. VS Code'da `Live Server` eklentisini kur.
-2. `index.html`'e sağ tıkla → "Open with Live Server".
-3. Tarayıcı otomatik açılır (genelde `http://127.0.0.1:5500`).
-
-### Seçenek 2 — Python ile
-```bash
-cd /Users/dev/Documents/Projects/FerizliIlkadimDersane
-python3 -m http.server 8000
-# Tarayıcı: http://localhost:8000
+```mermaid
+flowchart LR
+  subgraph CLI["Geliştirme"]
+    DC["docker compose up<br/>(web + db + phpmyadmin)"]
+  end
+  subgraph PROD["Üretim"]
+    AP["Apache + PHP 8.2"]
+    DB[("MariaDB 11")]
+    AP <--> DB
+  end
+  subgraph FE["Tarayıcı (ziyaretçi)"]
+    HTML["13 statik HTML sayfa"]
+    JS["Vanilla JS modülleri"]
+    HTML --> JS
+    JS -- "fetch /api/*" --> AP
+  end
+  subgraph ADM["Admin paneli (/admin)"]
+    AHTML["11 yönetim ekranı"]
+    HELP["Yardım merkezi<br/>(MD + Mermaid)"]
+    AHTML -- "fetch /api/*" --> AP
+  end
+  subgraph CI["CI/CD"]
+    TAG["git tag v1.0.0"]
+    GHA["GitHub Actions"]
+    TAG --> GHA
+    GHA -- "FTPS upload + migrate.php" --> AP
+  end
 ```
 
-### Seçenek 3 — Node.js ile
+| Katman | Stack |
+|---|---|
+| **Frontend** | Vanilla HTML5 + CSS3 + ES2022 (no build, no framework) |
+| **Backend** | PHP 8.2 (PDO, prepared statements) — yalın, framework yok |
+| **Database** | MariaDB 11 (utf8mb4, InnoDB) |
+| **Web sunucu** | Apache 2.4 + mod_rewrite |
+| **Dev env** | Docker Compose (web + db + phpmyadmin) |
+| **CI/CD** | GitHub Actions → FTPS / SSH deploy + DB migration |
+| **Editör** | Quill.js (blog), DOMPurify (XSS sanitize) |
+| **Yardım** | Marked.js + Mermaid.js + DOMPurify, runtime markdown |
+
+---
+
+## Hızlı Başlangıç (yerel geliştirme)
+
 ```bash
-npx serve .
+# 1) .env hazırla (DB şifresi vs. — örnekten kopyala)
+cp .env.example .env
+
+# 2) Konteynerleri başlat
+docker compose up -d
+
+# 3) Site: http://localhost:8088
+# phpMyAdmin (opsiyonel): http://localhost:8081
+#   docker compose --profile dev up -d   ile başlatılır
 ```
+
+İlk açılışta `sql/schema.sql` + `sql/seed.sql` otomatik içeri alınır.
+Admin şifresi başlangıçta **kilitli**; gerçek şifre atamak için:
+
+```bash
+docker compose exec -T web php api/install/admin-olustur.php
+```
+
+Detaylı kurulum: [KURULUM_PHP.md](KURULUM_PHP.md)
 
 ---
 
@@ -40,171 +83,208 @@ npx serve .
 
 ```
 /
-├── *.html                # Tüm sayfalar (kök seviyede)
-├── partials/             # Header, footer, floating icons (paylaşılan)
+├── *.html                  # 13 sayfa (index, hakkimizda, programlar, …)
+├── partials/               # header / footer / floating-icons
 ├── assets/
-│   ├── css/              # Modüler stil dosyaları
-│   ├── js/               # main.js + sayfa-özel scriptler
-│   └── img/              # Görseller (kurum gelene kadar boş)
-├── admin/                # Yönetim paneli (geliştirme + Decap CMS hazırlık)
-│   ├── index.html        # Login + dashboard
-│   ├── duyurular.html    # Duyuru CRUD ekranı
-│   ├── ayarlar.html      # Site ayarları düzenleme
-│   ├── css/admin.css
-│   ├── js/admin-core.js  # Auth, toast, JSON indir/yükle yardımcıları
-│   ├── decap-config.yml  # Production CMS config (deploy sonrası)
-│   └── decap-index.html.taslak  # Production admin HTML (deploy sonrası)
-├── data/                 # JSON içerik dosyaları
-│   ├── ayarlar.json      # Site geneli ayarlar (tel, adres, sosyal)
-│   ├── duyurular.json    # Duyuru listesi
-│   ├── programlar.json   # Eğitim programları
-│   └── kadro.json        # Öğretmen listesi
-├── ANALIZ.md             # Proje planlama dokümanı
-├── KURUMA_ICERIK_TALEBI.md  # Kurumla paylaşılan içerik isteği
-└── README.md             # Bu dosya
+│   ├── css/                # base, components, layout, pages (4 dosya)
+│   ├── js/                 # main.js + sayfa-özel modüller
+│   ├── img/                # logo, favicon, og-default
+│   └── uploads/            # kullanıcı yüklemeleri (gitignored)
+├── admin/                  # Yönetim paneli
+│   ├── index.html          # Login + dashboard
+│   ├── duyurular.html      # Duyuru CRUD
+│   ├── programlar.html     # Eğitim programları
+│   ├── kadro.html          # Öğretmen kartları
+│   ├── galeri.html         # Albüm + görsel yönetimi
+│   ├── formlar.html        # Form tasarımcısı (11 alan tipi)
+│   ├── cevaplar.html       # Form yanıtları (CSV/PDF/JSON)
+│   ├── blog.html           # Quill editör ile yazı oluşturma
+│   ├── bildirimler.html    # Sistem bildirimleri
+│   ├── kullanicilar.html   # Kullanıcı yönetimi (admin/editör)
+│   ├── ayarlar.html        # Site ayarları (telefon, adres, ...)
+│   ├── yardim.html         # Yardım merkezi shell
+│   ├── yardim/             # 41 markdown sayfa (12 bölüm)
+│   ├── css/                # admin.css + yardim.css
+│   └── js/                 # admin-core, api-client, yardim
+├── api/
+│   ├── index.php           # REST router
+│   ├── db.php              # PDO singleton
+│   ├── helpers.php         # JSON cevap, slug, sanitize
+│   ├── auth.php            # Session-based auth (bcrypt)
+│   ├── endpoints/          # 11 endpoint (blog, formlar, ayarlar, ...)
+│   ├── install/
+│   │   ├── admin-olustur.php   # CLI: ilk admin şifresini ayarla
+│   │   ├── migrate.php          # CLI + web: DB migration runner
+│   │   └── migrate-base64-images.php
+│   ├── config.example.php  # ENV-based dev config
+│   └── config.template.php # CI/CD'nin doldurduğu prod şablonu
+├── sql/
+│   ├── schema.sql          # Tüm tablolar (utf8mb4)
+│   ├── seed.sql            # Varsayılan kullanıcı + ayarlar
+│   └── migrations/         # Artımlı schema güncellemeleri
+├── docker/                 # Dockerfile + php.ini + entrypoint
+├── docker-compose.yml      # web + db + phpmyadmin
+├── .github/
+│   ├── workflows/deploy.yml      # CI/CD pipeline
+│   └── SECRETS_KURULUM.md        # GitHub secret/vars rehberi
+└── *.md                    # Dokümanlar (aşağıda)
 ```
 
 ---
 
 ## Tek Bir Yerden Değiştirilebilenler
 
-### Tüm site iletişim bilgileri → `data/ayarlar.json`
-Telefon numarası, adres, sosyal medya URL'leri, çalışma saatleri vb. **tek
-dosyadan** değişir; tüm sayfalara otomatik yansır.
+| Konu | Yer |
+|---|---|
+| Telefon, adres, sosyal medya, çalışma saatleri | Admin → **Site Ayarları** |
+| İstatistik kartları (mezun, deneyim vb.) | Admin → Site Ayarları → İstatistikler |
+| Anasayfa tanıtım videosu | Admin → Site Ayarları → YouTube ID |
+| Tema renkleri | [assets/css/base.css](assets/css/base.css) `:root` değişkenleri |
+| Site genelinde marka adı | Admin → Site Ayarları → Kurum Bilgileri |
+| KVKK aydınlatma metni | [kvkk.html](kvkk.html) (üretim öncesi hukuki onay) |
 
-```json
-{
-  "iletisim": {
-    "telefon": "+90 264 XXX XX XX",
-    "whatsapp": "905XXXXXXXXX",
-    ...
-  }
-}
+---
+
+## Yönetim Paneli
+
+`/admin/` rotasında. İki rol:
+
+- **Admin**: tüm modüller + kullanıcı yönetimi
+- **Editör**: içerik yönetimi (duyuru, kadro, galeri, blog) + Profilim
+
+Paneldeki **🎓 Yardım** sekmesinden 41 sayfalık kullanım rehberine ulaşılır
+(Markdown + Mermaid; teknik bilgisi olmayan kullanıcılar için yazılmıştır).
+
+---
+
+## CI/CD
+
+Release tag (`v1.0.0` formatlı) push edildiğinde otomatik tetiklenir:
+
+```
+git tag v1.0.0 && git push origin v1.0.0
 ```
 
-### Tema renkleri → `assets/css/base.css` (en üst, `:root`)
-```css
-:root {
-  --renk-birincil: #0f4c81;  /* Bunu değiştirsen tüm site etkilenir */
-  --renk-vurgu: #f2a65a;
-  ...
-}
+Pipeline akışı:
+
+1. **validate** — PHP syntax + JSON validity
+2. **deploy** — `api/config.php` secrets'tan üretilir + FTPS/SSH ile yüklenir
+3. **migrate** — `migrate.php` endpoint'i tetiklenir → bootstrap veya artımlı migration
+4. **smoke-test** — anasayfa HTTP 200 mü?
+
+Detaylar:
+- **GitHub secrets/variables kurulumu** → [.github/SECRETS_KURULUM.md](.github/SECRETS_KURULUM.md)
+- **Müşteriden hosting bilgisi alma** → [KURULUM_HOSTING.md](KURULUM_HOSTING.md)
+- **CI workflow** → [.github/workflows/deploy.yml](.github/workflows/deploy.yml)
+
+### Migration sistemi
+
+```mermaid
+flowchart LR
+  A["migrate.php çağrıldı"] --> B{"_migrations tablosu var mı?"}
+  B -->|"Hayır (ilk kurulum)"| C["schema.sql + seed.sql<br/>+ _migrations oluştur"]
+  B -->|"Evet"| D["sql/migrations/*.sql<br/>sıralı uygula"]
+  D --> E{"Yeni dosya var mı?"}
+  E -->|"Evet"| F["Transaction içinde çalıştır<br/>_migrations'a kaydet"]
+  E -->|"Hayır"| G["✓ Güncel"]
+  C --> G
+  F --> G
 ```
 
----
-
-## Yönetim Paneli (`/admin/`)
-
-Detaylı rehber için: **[ADMIN_REHBERI.md](ADMIN_REHBERI.md)**
-
-Kısa özet:
-- **Aşama 1 (şu an):** `/admin/` rotasında client-side panel. Şifre:
-  `ilkadim2026` (`admin/js/admin-core.js` içinde değiştirilir). Duyuru ve site
-  ayarları düzenlenir, `JSON İndir` → manuel git push.
-- **Aşama 2 (deploy sonrası):** Decap CMS + Netlify Identity. Config dosyaları
-  `admin/decap-config.yml` ve `admin/decap-index.html.taslak` olarak hazır.
-  Aktivasyon adımları yine `ADMIN_REHBERI.md` Bölüm B'de.
+Yeni migration eklemek için: `sql/migrations/<3-haneli>_<açıklama>.sql`
+(örn. `001_blog_etiketler.sql`). CI bir sonraki deploy'da otomatik uygular.
 
 ---
 
-## Duyuru Ekleme — Manuel (panel kullanmadan)
+## Form Motoru
 
-`data/duyurular.json` dosyasını elle düzenle, git'e push et, Netlify otomatik
-yeniden deploy eder.
+Kendi form motoru (Google Forms yok):
 
-```json
-{
-  "duyurular": [
-    {
-      "id": "benzersiz-bir-slug",
-      "baslik": "Duyuru başlığı",
-      "ozet": "Liste sayfasında görünecek kısa metin.",
-      "icerik": "Detay sayfasında görünecek uzun metin.",
-      "kategori": "kayit",          // genel | kayit | sinav | etkinlik
-      "tarih": "2026-05-12",
-      "kapakGorseli": "",
-      "onemli": false
-    }
-  ]
-}
-```
-
-**Gelecek:** [Decap CMS](https://decapcms.org/) entegrasyonu yapılınca, kurum
-personeli `/admin/` adresinden görsel arayüzle düzenleyebilecek. Site
-Netlify'a deploy edildikten sonra eklenecek.
-
----
-
-## Form Kurulumu (başvuru, anket)
-
-Şu an `basvuru.html` içinde statik bir taslak form var (submit → tesekkurler.html).
-
-**Aşama 1 — Google Forms entegrasyonu (önerilen ilk adım):**
-1. [Google Forms](https://forms.google.com)'da bir form oluştur.
-2. Cevapları bir Google Sheet'e bağla.
-3. Formun "Yayınla" → "Gömme" sekmesinden HTML kodunu al.
-4. `basvuru.html` içinde, taslak `<form>` etiketinin yerine bu `<iframe>` kodu
-   yapıştır. (`basvuru.html` dosyasında bu yerin nasıl olacağına dair yorum satırı var.)
-
-**Aşama 2 (ileride):** Kurum daha fazla form yönetmek isterse, JSON tabanlı
-custom form motoru + Google Apps Script web hook ile Sheets'e yazma yapılır.
-
----
-
-## Deploy (Netlify ile, ücretsiz)
-
-1. Bu klasörü bir GitHub repository'sine push et.
-2. [netlify.com](https://netlify.com) → "Import from Git" → repo'yu seç.
-3. Build komutu: **(boş)** | Publish directory: **(boş ya da `.`)**
-4. Deploy. Custom domain bağla.
-
-> Notlar:
-> - Netlify, `404.html` dosyasını otomatik olarak 404 sayfası olarak kullanır.
-> - Tüm `<a href="/...">` linkleri kökten başlıyor, bu yüzden alt klasör değil,
->   ana domain'de deploy edilmeli.
+- Admin → **Formlar** menüsünde 11 alan tipi (text, email, tel, textarea,
+  select, radio, checkbox, checkbox-tek, date, number, başlık)
+- Cevaplar **Cevaplar** sayfasında, CSV/PDF/JSON/JSONL olarak indirilebilir
+- KVKK uyarısı: form yanıtları kişisel veridir — bkz. [admin yardım merkezi](admin/yardim/ipuclari/guvenlik.md)
+- Bir form **"Varsayılan"** işaretlenirse `/basvuru.html` ona yönlendirir
+- Duyurular formlara bağlanabilir → "📝 Formu Doldur" butonu çıkar
 
 ---
 
 ## Yeni Sayfa Ekleme
 
-1. Kök dizinde `yenisayfa.html` oluştur. Mevcut bir sayfayı (örn. `hakkimizda.html`)
-   şablon olarak kopyala.
-2. `partials/header.html` içindeki `<ul class="site-nav__liste">` altına
-   yeni bir `<li>` ekle:
+1. Kök dizinde `yenisayfa.html` oluştur (mevcut bir sayfayı şablon olarak kopyala).
+2. [partials/header.html](partials/header.html) içindeki nav listesine `<li>` ekle:
    ```html
    <li><a href="/yenisayfa.html" class="site-nav__link" data-link="yenisayfa">Yeni Sayfa</a></li>
    ```
-3. `assets/js/main.js` içindeki `eslesme` nesnesine sayfa eşlemesini ekle (aktif
-   menü vurgusu için).
-4. `partials/footer.html` içindeki ilgili menü listesine de ekle (isteğe bağlı).
+3. [assets/js/main.js](assets/js/main.js)'deki `eslesme` nesnesine sayfa ID'sini ekle
+   (aktif menü vurgusu için).
+4. [partials/footer.html](partials/footer.html) menü listesine de eklemeyi unutma (opsiyonel).
 
 ---
 
-## Yapılacaklar / Bağımlı Kısımlar
+## Tema / Renk Değişikliği
 
-- [ ] Logo, kurum fotoğrafları, öğretmen fotoğrafları (kurum sağlayacak)
-- [ ] Kurum metinleri (hikâye, kurucu mesajı vb.)
-- [ ] Gerçek telefon, adres, e-posta bilgileri → `data/ayarlar.json`
-- [ ] Google Maps gerçek konum embed URL'si
-- [ ] Google Form bağlantısı (başvuru için)
-- [ ] KVKK metni — kurum vergi/ünvan bilgisi sonrası finalize
-- [ ] Netlify'a deploy
-- [ ] (Sonra) Decap CMS kurulumu — `/admin/`
-- [ ] (Sonra) Galeri için lightbox JS
-- [ ] Favicon ekle (`/favicon.ico`, `/apple-touch-icon.png`)
-- [ ] SEO meta tag'leri, Open Graph, sitemap.xml, robots.txt
+Tüm tema [assets/css/base.css](assets/css/base.css) içindeki `:root` CSS değişkenleriyle
+yönetilir. Logo renklerinden esinlenilmiş pastel + kurumsal palet:
+
+```css
+:root {
+  --renk-birincil: #1565c0;   /* Logo mavisi — kurumsal */
+  --renk-vurgu:    #d32f2f;   /* Logo kırmızısı — CTA */
+  --pastel-mavi:   #eaf3fb;
+  --pastel-pembe:  #fdebec;
+  --pastel-krem:   #fdf8ee;
+  /* ... */
+}
+```
+
+Değişiklik tüm sayfalarda anında yansır.
 
 ---
 
-## Geliştirici Notları
+## Veri Bağlama (Frontend ↔ API)
 
-- Tüm sayfa şablonu aynıdır: `<div id="siteHeaderYer">`, `<main>`,
-  `<div id="siteFooterYer">`, `<div id="floatIkonlarYer">`. `main.js` bu
-  ID'leri görüp partial'ları yükler.
-- Veri bağlama için `data-veri="path.to.field"` niteliği kullanılır.
-  Örn: `<span data-veri="iletisim.telefon">…</span>` → ayarlar.json'daki
-  `iletisim.telefon` değeriyle dolar.
-- Sosyal medya linkleri için `data-sosyal="instagram"` kullanılır; URL boşsa
-  link otomatik gizlenir.
-- Floating ikonlar `partials/floating-icons.html`'de tanımlı, `main.js`
-  içinden ayarlar'a göre bağlanır.
+Her sayfada [assets/js/main.js](assets/js/main.js) çalışır; üç yolu vardır:
+
+1. **`data-veri="path"`** → `/api/ayarlar`'dan ilgili değeri elementin metnine yazar.
+   Örn: `<span data-veri="iletisim.telefon">…</span>`.
+2. **`data-veri-href="tel:iletisim.telefon"`** → tıklanabilir `tel:` veya `mailto:` href.
+3. **`data-veri-gizle-bos="iletisim.eposta"`** → değer boşsa elementi gizler
+   (sahte fallback'leri ortadan kaldırır).
+
+Listeleme yapan modüller: [duyurular.js](assets/js/duyurular.js),
+[programlar.js](assets/js/programlar.js), [kadro.js](assets/js/kadro.js),
+[galeri.js](assets/js/galeri.js), [blog.js](assets/js/blog.js),
+[form-render.js](assets/js/form-render.js).
+
+---
+
+## Dokümanlar
+
+| Dosya | Kim için |
+|---|---|
+| [KURULUM_PHP.md](KURULUM_PHP.md) | Yerel geliştirme ortamı (Docker / MAMP) |
+| [KURULUM_HOSTING.md](KURULUM_HOSTING.md) | Müşteriye sorulacak hosting bilgileri |
+| [.github/SECRETS_KURULUM.md](.github/SECRETS_KURULUM.md) | GitHub Actions secrets/variables |
+| [KURUMA_ICERIK_TALEBI.md](KURUMA_ICERIK_TALEBI.md) | Kuruma içerik talep mesajı + durum |
+| [/admin/yardim.html](admin/yardim.html) | Kurum personeli için adım adım kullanım kılavuzu (41 sayfa) |
+
+---
+
+## Önemli Notlar
+
+- **Güvenlik**: `api/config.php` ve `.env` git'e **girmez** (gitignored). CI'da
+  secrets'tan üretilir, sadece sunucuya gider.
+- **`api/install/`** klasörü web erişimine kapalı (`.htaccess: Require all denied`),
+  istisna: `migrate.php` — kendi `X-Migration-Key` doğrulamasını yapar.
+- **Çoklu admin önerisi**: Kuruma teslim sırasında en az 2 admin hesabı açın
+  (birinin şifresi unutulursa diğeri sıfırlayabilir).
+- **Yedekleme**: `assets/uploads/` kullanıcı verisi içerir; hosting otomatik
+  yedek almıyorsa düzenli aralıkla manuel indirin.
+
+---
+
+## Lisans
+
+Bu proje **Özel Ferizli İlk Adım Akademi** için özel olarak geliştirilmiştir.
+Kaynak kodu eğitim ve referans amaçlı incelenebilir.
