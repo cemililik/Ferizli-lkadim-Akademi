@@ -34,5 +34,24 @@
   },
   "whatsappMesaj": "Merhaba, web sitesi üzerinden ulaşıyorum. Bilgi almak istiyorum.",
   "footerNot": "Bu site Özel Ferizli İlk Adım Akademi'nin resmi web sitesidir.",
-  "istatistikler": []
+  "istatistikler": [],
+  "moduller": {
+    "hakkimizda": true,
+    "programlar": true,
+    "kadro": true,
+    "duyurular": true,
+    "galeri": true,
+    "blog": false
+  },
+  "hakkimizda": {
+    "hikayeMetni1": "<strong>Özel Ferizli İlk Adım Akademi</strong>, 2023 yılında Ferizli'de kurulmuş bir özel öğretim kursudur. Ortaokul ve lise düzeyindeki öğrencilerimize sınav hazırlık, takviye ve etüt programları sunuyoruz.",
+    "hikayeMetni2": "Akademik programımız ve eğitim kadromuzla, öğrencilerimizin sadece sınav başarısına değil, hayata hazırlanmasına da katkı sağlamayı hedefliyoruz. Modern eğitim anlayışı ile sıcak bir kurum kültürünü birleştirerek, her bir öğrencimizin potansiyelinin zirvesine ulaşması için çalışıyoruz.",
+    "misyon": "Her öğrenciyi potansiyelinin zirvesine taşımak. Akademik başarının yanında, karakter gelişimine ve sorumluluk duygusuna katkı sağlamak.",
+    "vizyon": "Ferizli ve çevresinde adı güvenle anılan, mezunlarının gururla andığı, sürekli kendini yenileyen bir eğitim kurumu olmak.",
+    "degerler": "Disiplinli çalışma ortamı, samimi öğretmen-öğrenci ilişkisi, veliye karşı şeffaflık ve sürekli iyileştirme anlayışı.",
+    "kurucuMesajiBaslik": "Eğitim, doğru adımlarla başlar.",
+    "kurucuMesajiMetni": "Sevgili veliler ve öğrenciler, kurumumuzun ilk gününden bugüne kadar hedefimiz hep aynı oldu: her bir öğrencimizin akademik ve kişisel gelişimine destek olmak. Modern eğitim anlayışı ile sıcak bir kurum kültürünü birleştirerek, sizleri en iyi şekilde geleceğe hazırlamak için buradayız.",
+    "kurucuImza": "Kurum Yönetimi",
+    "kurucuFoto": ""
+  }
 }

@@ -50,12 +50,67 @@
     }
   };
 
+  // Modül aktif mi? — ayarlar.moduller.<X> kontrol et, undefined ise açık varsay
+  const modulAktif = (ayarlar, ad) => {
+    const m = ayarlar.moduller;
+    if (!m || typeof m !== 'object') return true;        // ayar yok → varsayılan açık
+    const v = m[ad];
+    if (v === undefined || v === null || v === '') return true; // değer yok → açık
+    return v === true || v === 1 || v === '1';            // string/bool çoklu format
+  };
+
+  // Modülleri uygula:
+  //   - [data-modul] elementlerini açık modüller için göster, kapalılar için gizle.
+  //     (Blog için HTML'de default hidden — açılması bu fonksiyonun görevi.)
+  //   - [data-sayfa-modul] body kapalıysa 404'e yönlendir.
+  // Blog footer linki için: modül açıkken footer "Hızlı Erişim" menüsüne ekle.
+  const modulleriUygula = (ayarlar) => {
+    document.querySelectorAll('[data-modul]').forEach(el => {
+      const ad = el.getAttribute('data-modul');
+      el.hidden = !modulAktif(ayarlar, ad);
+    });
+
+    // Blog açıksa footer "Hızlı Erişim" menüsüne ekle (eski blogModuluKontrol davranışı).
+    if (modulAktif(ayarlar, 'blog')) {
+      const footerMenu = document.querySelector('.site-footer__menu');
+      if (footerMenu && !footerMenu.querySelector('[href="/blog.html"]')) {
+        const li = document.createElement('li');
+        li.setAttribute('data-modul', 'blog');
+        li.innerHTML = '<a href="/blog.html">Blog</a>';
+        footerMenu.appendChild(li);
+      }
+    }
+
+    const sayfaModul = document.body.getAttribute('data-sayfa-modul');
+    if (sayfaModul && !modulAktif(ayarlar, sayfaModul)) {
+      // Sayfayı yok say — 404'e yönlendir (modül kapalıyken kullanıcı /programlar.html'e
+      // direkt yazmış olabilir). location.replace ile geri tuşu da güvenli.
+      location.replace('/404.html');
+    }
+  };
+
   // data-veri="path" niteliği taşıyan elemanlara metni bas
   const veriBagla = (ayarlar) => {
     document.querySelectorAll('[data-veri]').forEach(el => {
       const yol = el.getAttribute('data-veri');
       const deger = noktaYol(ayarlar, yol);
       if (deger != null && deger !== '') el.textContent = deger;
+    });
+
+    // data-veri-html="path" — multi-line HTML değerlerini innerHTML olarak yaz.
+    // SADECE ayarlar tablosundan gelen güvenli içerikler için (kurum kendi yazıyor).
+    // Yine de basit bir whitelist: script/style/iframe içeren değerleri reddet.
+    document.querySelectorAll('[data-veri-html]').forEach(el => {
+      const yol = el.getAttribute('data-veri-html');
+      const deger = noktaYol(ayarlar, yol);
+      if (deger == null || deger === '') return;
+      const str = String(deger);
+      if (/<\s*(script|iframe|object|embed|style)\b/i.test(str) || /\son\w+\s*=/i.test(str)) {
+        // Tehlikeli içerik — düz metne düşür
+        el.textContent = str.replace(/<[^>]+>/g, '');
+      } else {
+        el.innerHTML = str;
+      }
     });
 
     // data-veri-gizle-bos="iletisim.eposta" → değer boş/eksikse en yakın li/satırı gizle.
@@ -67,6 +122,25 @@
       if (deger == null || String(deger).trim() === '') {
         const gizlenecek = el.closest('[data-satir]') || el.closest('li') || el;
         gizlenecek.hidden = true;
+      }
+    });
+
+    // data-veri-src="hakkimizda.kurucuFoto" → img.src dinamik atama.
+    // Değer boşsa: en yakın [data-veri-src-kaldir-bossa] varsa onu kaldır
+    // (örn. fotoğraf wrapper'ı). Yoksa img'i hidden bırak.
+    document.querySelectorAll('[data-veri-src]').forEach(el => {
+      const yol = el.getAttribute('data-veri-src');
+      const deger = noktaYol(ayarlar, yol);
+      if (deger != null && String(deger).trim() !== '') {
+        el.setAttribute('src', String(deger));
+        el.hidden = false;
+      } else {
+        const kaldir = el.closest('[data-veri-src-kaldir-bossa]');
+        if (kaldir) {
+          kaldir.remove();
+        } else {
+          el.hidden = true;
+        }
       }
     });
 
@@ -339,29 +413,8 @@
     if (yilEl) yilEl.textContent = new Date().getFullYear();
   };
 
-  // Blog modülü aktif mi? Aktifse menüye Blog item'ı eklenir.
-  // API yoksa sessizce başarısız olur (statik mod).
-  const blogModuluKontrol = async () => {
-    const menuOgesi = document.querySelector('[data-blog-menu]');
-    if (!menuOgesi) return;
-    try {
-      const r = await fetch('/api/blog/durum', { credentials: 'include' });
-      if (!r.ok) return;
-      const veri = await r.json();
-      if (veri.aktif) {
-        menuOgesi.hidden = false;
-        // Footer hızlı erişim menüsüne de ekle
-        const footerMenu = document.querySelector('.site-footer__menu');
-        if (footerMenu && !footerMenu.querySelector('[href="/blog.html"]')) {
-          const li = document.createElement('li');
-          li.innerHTML = '<a href="/blog.html">Blog</a>';
-          footerMenu.appendChild(li);
-        }
-      }
-    } catch {
-      // API yok / hata — menü gizli kalır
-    }
-  };
+  // (eski blogModuluKontrol kaldırıldı — blog artık ayarlar.moduller.blog ile
+  // diğer modüllerle birlikte modulleriUygula üzerinden yönetiliyor.)
 
   // Ana çalıştırıcı
   const baslat = async () => {
@@ -384,12 +437,14 @@
     }
 
     // 3. Bağla & başlat
+    // ÖNEMLİ: modulleriUygula veriBagla'dan ÖNCE gelir — eğer sayfa modülü kapalıysa
+    // 404'e yönlendiren bu fonksiyon çalışsın, gereksiz veri bağlama yapılmasın.
+    modulleriUygula(ayarlar);
     veriBagla(ayarlar);
     aktifMenu();
     mobilMenu();
     headerScroll();
     yilGuncelle();
-    blogModuluKontrol();
 
     // 4. Özel olay: diğer scriptler "site:hazir" bekleyebilir
     document.dispatchEvent(new CustomEvent('site:hazir', { detail: { ayarlar } }));

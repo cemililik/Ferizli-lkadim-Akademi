@@ -42,6 +42,8 @@
       </div>
     </div>
 
+    <div id="modulDurumYer"></div>
+
     <div style="padding: var(--bosluk-4) 0; display: flex; gap: var(--bosluk-2); flex-wrap: wrap; align-items: center;">
       <span style="font-size: var(--yazi-sm); color: var(--renk-yazi-soluk);">Albüm:</span>
       <div id="albumFiltresi" style="display: flex; gap: var(--bosluk-2); flex-wrap: wrap; flex-grow: 1;"></div>
@@ -75,6 +77,7 @@
     'use strict';
     if (!(await ADMIN.korumaliSayfaKapisi())) return;
     ADMIN.adminBarYukle('galeri');
+    ADMIN.modulDurumKutusuYerlestir('#modulDurumYer', 'galeri', 'Galeri');
 
     let albumler = [];
     let gorseller = [];

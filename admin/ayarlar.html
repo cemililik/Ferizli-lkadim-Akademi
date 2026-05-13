@@ -20,150 +20,344 @@
       <div class="admin-sayfa-bas__icerik">
         <div>
           <h1>Site Ayarları</h1>
-          <p>Telefon, adres, sosyal medya ve çalışma saatleri. Tüm sayfalar buradan beslenir.</p>
+          <p>Tüm site genelindeki ayarlar. Bölüm başlıklarına tıklayarak açıp kapatabilirsiniz.</p>
         </div>
       </div>
     </div>
 
-    <form id="ayarForm" style="padding-block: var(--bosluk-6);">
+    <form id="ayarForm" style="padding-block: var(--bosluk-5);">
 
-      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
-        <h3 style="margin-bottom: var(--bosluk-5);">Kurum Bilgileri</h3>
-        <div class="admin-form-satir">
-          <div class="form-grup">
-            <label class="form-etiket" for="kurum-ad">Resmi Kurum Adı *</label>
-            <input class="form-girdi" type="text" id="kurum-ad" data-yol="kurum.ad" required>
+      <div class="ayarlar-uctug-bar">
+        <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="tumunuAc">Tümünü Aç</button>
+        <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="tumunuKapa">Tümünü Kapa</button>
+      </div>
+
+      <!-- 1) KURUM BİLGİLERİ -->
+      <details class="ayarlar-bolum" open>
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">🏛️</span>
+          <span>
+            Kurum Bilgileri
+            <span class="ayarlar-bolum__alt">Ad, slogan, kuruluş yılı, MEB ruhsat no, tanıtım videosu</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="kurum-ad">Resmi Kurum Adı *</label>
+              <input class="form-girdi" type="text" id="kurum-ad" data-yol="kurum.ad" required>
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="kurum-kisaAd">Kısa Ad</label>
+              <input class="form-girdi" type="text" id="kurum-kisaAd" data-yol="kurum.kisaAd">
+            </div>
           </div>
           <div class="form-grup">
-            <label class="form-etiket" for="kurum-kisaAd">Kısa Ad</label>
-            <input class="form-girdi" type="text" id="kurum-kisaAd" data-yol="kurum.kisaAd">
+            <label class="form-etiket" for="kurum-slogan">Slogan</label>
+            <input class="form-girdi" type="text" id="kurum-slogan" data-yol="kurum.slogan">
+          </div>
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="kurum-yil">Kuruluş Yılı</label>
+              <input class="form-girdi" type="number" id="kurum-yil" data-yol="kurum.kurulusYili" min="1900" max="2100">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="kurum-ruhsat">MEB Ruhsat No</label>
+              <input class="form-girdi" type="text" id="kurum-ruhsat" data-yol="kurum.mebRuhsatNo">
+            </div>
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="kurum-yt">Tanıtım Videosu (YouTube)</label>
+            <input class="form-girdi" type="text" id="kurum-yt" data-yol="kurum.tanitimVideoId" placeholder="Örn: dQw4w9WgXcQ veya https://youtu.be/dQw4w9WgXcQ">
+            <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-acik); margin-top: 4px;">
+              YouTube video ID'sini (11 karakter) veya tam URL'yi yapıştırın. Boş bırakırsanız anasayfadaki video bölümü gizlenir.
+            </p>
           </div>
         </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="kurum-slogan">Slogan</label>
-          <input class="form-girdi" type="text" id="kurum-slogan" data-yol="kurum.slogan">
-        </div>
-        <div class="admin-form-satir">
-          <div class="form-grup">
-            <label class="form-etiket" for="kurum-yil">Kuruluş Yılı</label>
-            <input class="form-girdi" type="number" id="kurum-yil" data-yol="kurum.kurulusYili" min="1900" max="2100">
+      </details>
+
+      <!-- 2) İLETİŞİM -->
+      <details class="ayarlar-bolum" open>
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">📞</span>
+          <span>
+            İletişim Bilgileri
+            <span class="ayarlar-bolum__alt">Telefon, WhatsApp, e-posta, adres, Google Maps</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="il-tel">Telefon (+90...) *</label>
+              <input class="form-girdi" type="tel" id="il-tel" data-yol="iletisim.telefon" placeholder="+90 549 355 61 54" required>
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="il-tel-okuma">Telefon (gösterim)</label>
+              <input class="form-girdi" type="text" id="il-tel-okuma" data-yol="iletisim.telefonHumanReadable" placeholder="0549 355 61 54">
+            </div>
           </div>
           <div class="form-grup">
-            <label class="form-etiket" for="kurum-ruhsat">MEB Ruhsat No</label>
-            <input class="form-girdi" type="text" id="kurum-ruhsat" data-yol="kurum.mebRuhsatNo">
+            <label class="form-etiket" for="il-wa">WhatsApp (sadece rakam)</label>
+            <input class="form-girdi" type="text" id="il-wa" data-yol="iletisim.whatsapp" placeholder="905493556154" pattern="[0-9]+">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="il-mesaj">WhatsApp Hazır Mesaj</label>
+            <input class="form-girdi" type="text" id="il-mesaj" data-yol="whatsappMesaj">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="il-eposta">E-posta</label>
+            <input class="form-girdi" type="email" id="il-eposta" data-yol="iletisim.eposta">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="il-adres">Kısa Adres</label>
+            <input class="form-girdi" type="text" id="il-adres" data-yol="iletisim.adres">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="il-adres-u">Uzun Adres</label>
+            <textarea class="form-alani" id="il-adres-u" data-yol="iletisim.adresUzun" rows="2"></textarea>
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="il-maps">Google Maps Embed URL</label>
+            <input class="form-girdi" type="url" id="il-maps" data-yol="iletisim.mapsEmbedUrl">
           </div>
         </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="kurum-yt">Tanıtım Videosu (YouTube)</label>
-          <input class="form-girdi" type="text" id="kurum-yt" data-yol="kurum.tanitimVideoId" placeholder="Örn: dQw4w9WgXcQ veya https://youtu.be/dQw4w9WgXcQ">
-          <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-acik); margin-top: 4px;">
-            YouTube video ID'sini (11 karakter) veya tam URL'yi yapıştırın. Boş bırakırsanız anasayfadaki video bölümü gizlenir.
-            <strong>Önerilen:</strong> Videoyu YouTube'a yükleyin → adresten ID kısmını alın.
+      </details>
+
+      <!-- 3) ÇALIŞMA SAATLERİ -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">🕐</span>
+          <span>
+            Çalışma Saatleri
+            <span class="ayarlar-bolum__alt">Haftalık 7 gün için açılış/kapanış saatleri</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="cs-pazartesi">Pazartesi</label>
+              <input class="form-girdi" type="text" id="cs-pazartesi" data-yol="iletisim.calismaSaatleri.pazartesi" placeholder="09:00 – 18:00 veya Kapalı">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="cs-sali">Salı</label>
+              <input class="form-girdi" type="text" id="cs-sali" data-yol="iletisim.calismaSaatleri.sali">
+            </div>
+          </div>
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="cs-carsamba">Çarşamba</label>
+              <input class="form-girdi" type="text" id="cs-carsamba" data-yol="iletisim.calismaSaatleri.carsamba">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="cs-persembe">Perşembe</label>
+              <input class="form-girdi" type="text" id="cs-persembe" data-yol="iletisim.calismaSaatleri.persembe">
+            </div>
+          </div>
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="cs-cuma">Cuma</label>
+              <input class="form-girdi" type="text" id="cs-cuma" data-yol="iletisim.calismaSaatleri.cuma">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="cs-cumartesi">Cumartesi</label>
+              <input class="form-girdi" type="text" id="cs-cumartesi" data-yol="iletisim.calismaSaatleri.cumartesi">
+            </div>
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="cs-pazar">Pazar</label>
+            <input class="form-girdi" type="text" id="cs-pazar" data-yol="iletisim.calismaSaatleri.pazar">
+          </div>
+        </div>
+      </details>
+
+      <!-- 4) MODÜLLER -->
+      <details class="ayarlar-bolum" open>
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">🎛️</span>
+          <span>
+            Modüller — Aç / Kapa
+            <span class="ayarlar-bolum__alt">Hakkımızda, Programlar, Kadro, Duyurular, Galeri, Blog</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            Hangi sayfaların sitede görüneceğini buradan kontrol edersiniz. <strong>Kapatılan modüller:</strong>
+            üst menüde ve footer'da link olarak gözükmez; anasayfadaki ilgili bölüm gizlenir;
+            birisi doğrudan adresi yazsa bile <em>Sayfa Bulunamadı</em>'ya yönlendirilir.
+            Veriler silinmez — tekrar açtığınızda olduğu gibi geri gelir.
           </p>
+          <div class="modul-toggle-izgara">
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.hakkimizda" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">🏛️</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Hakkımızda</span>
+                <span class="modul-toggle__aciklama">Hakkımızda sayfası + anasayfa kurum tanıtımı</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.programlar" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">📚</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Programlar</span>
+                <span class="modul-toggle__aciklama">Programlar sayfası + anasayfa program bölümü</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.kadro" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">👨‍🏫</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Eğitim Kadrosu</span>
+                <span class="modul-toggle__aciklama">Kadro sayfası — öğretmen tanıtım kartları</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.duyurular" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">📢</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Duyurular</span>
+                <span class="modul-toggle__aciklama">Duyurular sayfası + anasayfa duyuru bölümü</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.galeri" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">🖼️</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Galeri</span>
+                <span class="modul-toggle__aciklama">Galeri sayfası — albümler ve fotoğraflar</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.blog" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">✍️</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Blog</span>
+                <span class="modul-toggle__aciklama">Blog sayfası — yazılar ve yazar profilleri</span>
+              </span>
+            </label>
+          </div>
         </div>
-      </section>
+      </details>
 
-      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
-        <h3 style="margin-bottom: var(--bosluk-5);">İletişim</h3>
-        <div class="admin-form-satir">
+      <!-- 5) HAKKIMIZDA SAYFASI İÇERİĞİ -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">📝</span>
+          <span>
+            Hakkımızda Sayfası İçeriği
+            <span class="ayarlar-bolum__alt">Kuruluş hikâyesi, misyon, vizyon, kurucu mesajı ve fotoğrafı</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            <strong>/hakkimizda.html</strong> sayfasındaki metinler. Boş bırakırsanız o alan sitede boş görünür.
+            Çift satır karakteri (<kbd>Enter</kbd> + <kbd>Enter</kbd>) ile paragraf araları yapabilirsiniz.
+          </p>
           <div class="form-grup">
-            <label class="form-etiket" for="il-tel">Telefon (+90...) *</label>
-            <input class="form-girdi" type="tel" id="il-tel" data-yol="iletisim.telefon" placeholder="+90 549 355 61 54" required>
+            <label class="form-etiket" for="hk-hikaye1">Kuruluş Hikâyesi — 1. Paragraf <small style="font-weight:normal; color:var(--renk-yazi-soluk);">(HTML etiket destekli: &lt;strong&gt;, &lt;em&gt;, &lt;br&gt;)</small></label>
+            <textarea class="form-alani" id="hk-hikaye1" data-yol="hakkimizda.hikayeMetni1" rows="4" placeholder="Kurumun temel tanıtımı"></textarea>
           </div>
           <div class="form-grup">
-            <label class="form-etiket" for="il-tel-okuma">Telefon (gösterim)</label>
-            <input class="form-girdi" type="text" id="il-tel-okuma" data-yol="iletisim.telefonHumanReadable" placeholder="0549 355 61 54">
+            <label class="form-etiket" for="hk-hikaye2">Kuruluş Hikâyesi — 2. Paragraf</label>
+            <textarea class="form-alani" id="hk-hikaye2" data-yol="hakkimizda.hikayeMetni2" rows="4" placeholder="Misyon, hedef, çalışma yaklaşımı"></textarea>
           </div>
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="il-wa">WhatsApp (sadece rakam)</label>
-          <input class="form-girdi" type="text" id="il-wa" data-yol="iletisim.whatsapp" placeholder="905493556154" pattern="[0-9]+">
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="il-mesaj">WhatsApp Hazır Mesaj</label>
-          <input class="form-girdi" type="text" id="il-mesaj" data-yol="whatsappMesaj">
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="il-eposta">E-posta</label>
-          <input class="form-girdi" type="email" id="il-eposta" data-yol="iletisim.eposta">
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="il-adres">Kısa Adres</label>
-          <input class="form-girdi" type="text" id="il-adres" data-yol="iletisim.adres">
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="il-adres-u">Uzun Adres</label>
-          <textarea class="form-alani" id="il-adres-u" data-yol="iletisim.adresUzun" rows="2"></textarea>
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="il-maps">Google Maps Embed URL</label>
-          <input class="form-girdi" type="url" id="il-maps" data-yol="iletisim.mapsEmbedUrl">
-        </div>
-      </section>
 
-      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
-        <h3 style="margin-bottom: var(--bosluk-3);">Çalışma Saatleri</h3>
-        <div class="admin-form-satir">
+          <h4 style="margin-top: var(--bosluk-5); margin-bottom: var(--bosluk-3); font-size: var(--yazi-base); color: var(--renk-yazi-acik);">Misyon / Vizyon / Değerler</h4>
           <div class="form-grup">
-            <label class="form-etiket" for="cs-pazartesi">Pazartesi</label>
-            <input class="form-girdi" type="text" id="cs-pazartesi" data-yol="iletisim.calismaSaatleri.pazartesi" placeholder="09:00 – 18:00 veya Kapalı">
+            <label class="form-etiket" for="hk-misyon">🎯 Misyonumuz</label>
+            <textarea class="form-alani" id="hk-misyon" data-yol="hakkimizda.misyon" rows="3"></textarea>
           </div>
           <div class="form-grup">
-            <label class="form-etiket" for="cs-sali">Salı</label>
-            <input class="form-girdi" type="text" id="cs-sali" data-yol="iletisim.calismaSaatleri.sali">
-          </div>
-        </div>
-        <div class="admin-form-satir">
-          <div class="form-grup">
-            <label class="form-etiket" for="cs-carsamba">Çarşamba</label>
-            <input class="form-girdi" type="text" id="cs-carsamba" data-yol="iletisim.calismaSaatleri.carsamba">
+            <label class="form-etiket" for="hk-vizyon">🌟 Vizyonumuz</label>
+            <textarea class="form-alani" id="hk-vizyon" data-yol="hakkimizda.vizyon" rows="3"></textarea>
           </div>
           <div class="form-grup">
-            <label class="form-etiket" for="cs-persembe">Perşembe</label>
-            <input class="form-girdi" type="text" id="cs-persembe" data-yol="iletisim.calismaSaatleri.persembe">
+            <label class="form-etiket" for="hk-degerler">💎 Değerlerimiz</label>
+            <textarea class="form-alani" id="hk-degerler" data-yol="hakkimizda.degerler" rows="3"></textarea>
           </div>
-        </div>
-        <div class="admin-form-satir">
-          <div class="form-grup">
-            <label class="form-etiket" for="cs-cuma">Cuma</label>
-            <input class="form-girdi" type="text" id="cs-cuma" data-yol="iletisim.calismaSaatleri.cuma">
-          </div>
-          <div class="form-grup">
-            <label class="form-etiket" for="cs-cumartesi">Cumartesi</label>
-            <input class="form-girdi" type="text" id="cs-cumartesi" data-yol="iletisim.calismaSaatleri.cumartesi">
-          </div>
-        </div>
-        <div class="form-grup">
-          <label class="form-etiket" for="cs-pazar">Pazar</label>
-          <input class="form-girdi" type="text" id="cs-pazar" data-yol="iletisim.calismaSaatleri.pazar">
-        </div>
-      </section>
 
-      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
-        <h3 style="margin-bottom: var(--bosluk-3);">İstatistikler</h3>
-        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
-          Anasayfa ve Başarılarımız sayfasında gösterilen rakamlar (örn. "2+ Yıl Deneyim").
-          <strong>Boş bırakılan kart gösterilmez; hiçbir kart yoksa bölüm tamamen gizlenir.</strong>
-          Gerçek olmayan/abartılı rakamlar kullanmaktan kaçının — kurumun güvenilirliği için önemlidir.
-        </p>
-        <div id="istatistikListe" style="display:flex; flex-direction:column; gap: var(--bosluk-3);"></div>
-        <button type="button" id="istatistikEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
-          + Yeni İstatistik Ekle
-        </button>
-      </section>
+          <h4 style="margin-top: var(--bosluk-5); margin-bottom: var(--bosluk-3); font-size: var(--yazi-base); color: var(--renk-yazi-acik);">Kurucu / Yönetici Mesajı</h4>
 
-      <section class="yonetim-icerik" style="margin-bottom: var(--bosluk-5);">
-        <h3 style="margin-bottom: var(--bosluk-5);">Sosyal Medya</h3>
-        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">Boş bıraktığınız hesaplar sitede gösterilmez.</p>
-        <div class="form-grup"><label class="form-etiket" for="sm-ig">Instagram</label><input class="form-girdi" type="url" id="sm-ig" data-yol="sosyal.instagram"></div>
-        <div class="form-grup"><label class="form-etiket" for="sm-fb">Facebook</label><input class="form-girdi" type="url" id="sm-fb" data-yol="sosyal.facebook"></div>
-        <div class="form-grup"><label class="form-etiket" for="sm-yt">YouTube</label><input class="form-girdi" type="url" id="sm-yt" data-yol="sosyal.youtube"></div>
-        <div class="form-grup"><label class="form-etiket" for="sm-tt">TikTok</label><input class="form-girdi" type="url" id="sm-tt" data-yol="sosyal.tiktok"></div>
-        <div class="form-grup"><label class="form-etiket" for="sm-tw">Twitter / X</label><input class="form-girdi" type="url" id="sm-tw" data-yol="sosyal.twitter"></div>
-      </section>
+          <!-- Kurucu fotoğrafı yükleme -->
+          <div class="form-grup">
+            <label class="form-etiket">Kurucu / Yönetici Fotoğrafı</label>
+            <div class="gorsel-yukleme">
+              <div class="gorsel-yukleme__onizleme" id="kurucuFotoOnizleme">
+                <span>📷 Fotoğraf yok</span>
+              </div>
+              <div class="gorsel-yukleme__dugmeler">
+                <button type="button" class="dugme dugme--cerceve dugme--kucuk" id="kurucuFotoSec">📁 Fotoğraf Seç</button>
+                <button type="button" class="dugme dugme--kucuk" id="kurucuFotoSil"
+                  style="background:transparent; color:var(--renk-hata); border:1px solid var(--renk-hata);">🗑️ Kaldır</button>
+                <p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin:0;">
+                  Önerilen: kare veya 4:3, en az 600×450 piksel. Boş bırakırsanız sayfada
+                  metin tek sütuna yayılır (foto çerçevesi gözükmez).
+                </p>
+                <!-- Hidden input — form scanner buradan okur/yazar -->
+                <input type="hidden" id="hk-foto" data-yol="hakkimizda.kurucuFoto">
+              </div>
+            </div>
+          </div>
 
-      <div class="admin-form__dugmeler">
-        <button type="submit" class="dugme dugme--birincil dugme--buyuk">Değişiklikleri Kaydet</button>
+          <div class="form-grup">
+            <label class="form-etiket" for="hk-km-baslik">Vurgu Cümlesi <small style="font-weight:normal; color:var(--renk-yazi-soluk);">(tırnak içinde gösterilir)</small></label>
+            <input class="form-girdi" type="text" id="hk-km-baslik" data-yol="hakkimizda.kurucuMesajiBaslik" placeholder="Örn: Eğitim, doğru adımlarla başlar.">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="hk-km-metin">Mesaj Metni</label>
+            <textarea class="form-alani" id="hk-km-metin" data-yol="hakkimizda.kurucuMesajiMetni" rows="5"></textarea>
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="hk-imza">İmza (Ad / Görev)</label>
+            <input class="form-girdi" type="text" id="hk-imza" data-yol="hakkimizda.kurucuImza" placeholder="Örn: Kurum Müdürü Ahmet Yılmaz">
+          </div>
+        </div>
+      </details>
+
+      <!-- 6) İSTATİSTİKLER -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">📊</span>
+          <span>
+            İstatistik Kartları
+            <span class="ayarlar-bolum__alt">Anasayfa + Başarılarımız sayfasındaki rakamlar (mezun, deneyim vb.)</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            Anasayfa ve Başarılarımız sayfasında gösterilen rakamlar (örn. "2+ Yıl Deneyim").
+            <strong>Boş bırakılan kart gösterilmez; hiçbir kart yoksa bölüm tamamen gizlenir.</strong>
+            Gerçek olmayan/abartılı rakamlar kullanmaktan kaçının — kurumun güvenilirliği için önemlidir.
+          </p>
+          <div id="istatistikListe" style="display:flex; flex-direction:column; gap: var(--bosluk-3);"></div>
+          <button type="button" id="istatistikEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
+            + Yeni İstatistik Ekle
+          </button>
+        </div>
+      </details>
+
+      <!-- 7) SOSYAL MEDYA -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">📱</span>
+          <span>
+            Sosyal Medya
+            <span class="ayarlar-bolum__alt">Instagram, Facebook, YouTube, TikTok, Twitter/X</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">Boş bıraktığınız hesaplar sitede gösterilmez.</p>
+          <div class="form-grup"><label class="form-etiket" for="sm-ig">Instagram</label><input class="form-girdi" type="url" id="sm-ig" data-yol="sosyal.instagram"></div>
+          <div class="form-grup"><label class="form-etiket" for="sm-fb">Facebook</label><input class="form-girdi" type="url" id="sm-fb" data-yol="sosyal.facebook"></div>
+          <div class="form-grup"><label class="form-etiket" for="sm-yt">YouTube</label><input class="form-girdi" type="url" id="sm-yt" data-yol="sosyal.youtube"></div>
+          <div class="form-grup"><label class="form-etiket" for="sm-tt">TikTok</label><input class="form-girdi" type="url" id="sm-tt" data-yol="sosyal.tiktok"></div>
+          <div class="form-grup"><label class="form-etiket" for="sm-tw">Twitter / X</label><input class="form-girdi" type="url" id="sm-tw" data-yol="sosyal.twitter"></div>
+        </div>
+      </details>
+
+      <!-- Sticky kaydet butonu -->
+      <div style="position: sticky; bottom: 0; background: rgba(241, 244, 249, 0.95); backdrop-filter: blur(8px); padding: var(--bosluk-4) 0; margin-top: var(--bosluk-4); border-top: 1px solid var(--renk-cizgi); display: flex; justify-content: flex-end; gap: var(--bosluk-3); z-index: 5;">
+        <button type="submit" class="dugme dugme--birincil dugme--buyuk">💾 Değişiklikleri Kaydet</button>
       </div>
     </form>
   </main>
@@ -189,6 +383,50 @@
       }
       o[p[p.length - 1]] = deger;
     };
+
+    /* --- Tümünü aç / kapa --- */
+    document.getElementById('tumunuAc').addEventListener('click', () => {
+      document.querySelectorAll('.ayarlar-bolum').forEach(d => d.open = true);
+    });
+    document.getElementById('tumunuKapa').addEventListener('click', () => {
+      document.querySelectorAll('.ayarlar-bolum').forEach(d => d.open = false);
+    });
+
+    /* --- Kurucu fotoğraf yükleme --- */
+    const $fotoOnizleme = document.getElementById('kurucuFotoOnizleme');
+    const $fotoInput = document.getElementById('hk-foto');
+    const $fotoSec = document.getElementById('kurucuFotoSec');
+    const $fotoSil = document.getElementById('kurucuFotoSil');
+
+    const fotoOnizlemeYenile = () => {
+      const url = $fotoInput.value;
+      if (url) {
+        $fotoOnizleme.innerHTML = `<img src="${url}" alt="Kurucu fotoğrafı önizleme">`;
+        $fotoSil.style.display = '';
+      } else {
+        $fotoOnizleme.innerHTML = '<span>📷 Fotoğraf yok</span>';
+        $fotoSil.style.display = 'none';
+      }
+    };
+
+    $fotoSec.addEventListener('click', async () => {
+      try {
+        const r = await ADMIN.gorselSec({
+          maxGenislik: 800, maxYukseklik: 800, klasor: 'kurum'
+        });
+        // gorselSec sonuç formatı: { src } veya { dataUrl }
+        $fotoInput.value = r.src || r.dataUrl || '';
+        fotoOnizlemeYenile();
+        ADMIN.toast('Fotoğraf yüklendi — kaydetmeyi unutmayın', 'basari');
+      } catch (e) {
+        if (e.message !== 'İptal edildi') ADMIN.toast(e.message, 'hata');
+      }
+    });
+
+    $fotoSil.addEventListener('click', () => {
+      $fotoInput.value = '';
+      fotoOnizlemeYenile();
+    });
 
     /* --- İstatistikler dinamik liste --- */
     const $istListe = document.getElementById('istatistikListe');
@@ -248,24 +486,88 @@
       }
     });
 
+    /* --- Form yaz/oku --- */
+    const boolCoz = (v) => {
+      if (v === true || v === 1 || v === '1' || v === 'true') return true;
+      if (v === false || v === 0 || v === '0' || v === 'false') return false;
+      return v === undefined || v === null ? true : !!v;
+    };
+
     const formaYaz = () => {
       $form.querySelectorAll('[data-yol]').forEach(el => {
         const v = al(mevcut, el.dataset.yol);
-        el.value = (v == null) ? '' : v;
+        if (el.type === 'checkbox' && el.hasAttribute('data-bool')) {
+          el.checked = boolCoz(v);
+        } else {
+          el.value = (v == null) ? '' : v;
+        }
       });
       istatistikleriYaz(mevcut.istatistikler);
+      fotoOnizlemeYenile();
     };
 
     const formdanOku = () => {
       const yeni = {};
       $form.querySelectorAll('[data-yol]').forEach(el => {
-        let d = el.value;
-        if (el.type === 'number') d = d === '' ? null : Number(d);
+        // moduller.* alanları anında PUT ediliyor (her checkbox değişimi sonrası
+        // /api/moduller/durum endpoint'ine) — toplu Kaydet'in göndermesine gerek yok.
+        // Bu ayrım iki UI (Site Ayarları + admin modül sayfaları) arasında
+        // yarış durumunu önler: tek veri yolu kalır.
+        if (el.dataset.yol.startsWith('moduller.')) return;
+
+        let d;
+        if (el.type === 'checkbox' && el.hasAttribute('data-bool')) {
+          d = el.checked ? '1' : '0';
+        } else {
+          d = el.value;
+          if (el.type === 'number') d = d === '' ? null : Number(d);
+        }
         ayarla(yeni, el.dataset.yol, d);
       });
       yeni.istatistikler = istatistikleriOku();
       return yeni;
     };
+
+    /* --- Modül checkbox'ları: anında PUT (Kaydet beklemeden) --- */
+    // moduller.<ad> data-yol'lu her checkbox için change event'i
+    // direkt /api/moduller/durum endpoint'ini çağırır. Admin modül sayfasındaki
+    // toggle ile aynı endpoint kullanılır → tek veri yolu, otomatik senkron.
+    $form.querySelectorAll('[data-yol^="moduller."]').forEach(checkbox => {
+      if (checkbox.type !== 'checkbox') return;
+      checkbox.addEventListener('change', async () => {
+        const ad = checkbox.dataset.yol.replace(/^moduller\./, '');
+        const yeniDeger = checkbox.checked;
+        checkbox.disabled = true;
+        try {
+          await API.moduller.durumDegistir(ad, yeniDeger);
+          // Yerel ayarlar nesnesini de senkronize tut
+          ayarla(mevcut, checkbox.dataset.yol, yeniDeger ? '1' : '0');
+          ADMIN.toast(
+            yeniDeger ? `Modül yayında!` : `Modül gizlendi.`,
+            'basari'
+          );
+        } catch (e) {
+          checkbox.checked = !yeniDeger;  // hata: geri al
+          ADMIN.toast(`Modül durumu güncellenemedi: ${e.message}`, 'hata');
+        } finally {
+          checkbox.disabled = false;
+        }
+      });
+    });
+
+    // Sekme tekrar görünür olunca modül durumlarını taze çek
+    // (başka sekmede yapılan değişikleri yansıtmak için)
+    document.addEventListener('visibilitychange', async () => {
+      if (document.visibilityState !== 'visible') return;
+      try {
+        const r = await API.moduller.tumDurumlar();
+        Object.entries(r.moduller || {}).forEach(([ad, aktif]) => {
+          const cb = $form.querySelector(`[data-yol="moduller.${ad}"]`);
+          if (cb && cb.type === 'checkbox') cb.checked = !!aktif;
+          ayarla(mevcut, `moduller.${ad}`, aktif ? '1' : '0');
+        });
+      } catch {/* sessiz */}
+    });
 
     const yukle = async () => {
       try {

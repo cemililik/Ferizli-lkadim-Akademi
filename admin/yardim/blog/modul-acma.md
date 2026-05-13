@@ -1,5 +1,14 @@
 # Blog Modülünü Açma
 
+> [!İPUCU]
+> Blog modülünü **iki farklı yerden** yönetebilirsiniz:
+>
+> 1. **Üst menü → Blog** sayfasında — başlığın altındaki yeşil/kırmızı kutudaki anahtar
+> 2. **Üst menü → Ayarlar → Modüller** bölümünde — toplu görünümde diğer modüllerle birlikte
+>
+> İki yer de aynı yere yazar — birinde değiştirdiğinizde diğeri otomatik güncellenir.
+> Detay: [Modüller (Aç / Kapa)](#/site-ayarlari/moduller).
+
 Blog modülü **opsiyoneldir**. Açık değilse menüde "Blog" görünmez. Açık olunca:
 
 - Üst menüye **Blog** linki eklenir
@@ -7,22 +16,34 @@ Blog modülü **opsiyoneldir**. Açık değilse menüde "Blog" görünmez. Açı
 - `/blog.html` adresinden tüm yazılar listelenir
 - Her yazının kendi detay sayfası olur
 
-## Modülü açma
+## Modülü açma / kapatma
+
+### Yol A — Blog sayfasının üstünden (en hızlı)
 
 <ol class="adim-listesi">
-<li>Üst menüden <strong>Blog</strong> sayfasına gidin (admin'de zaten görünür).</li>
-<li>Sayfa üstünde <strong>"Blog modülü"</strong> toggle / switch olur.</li>
-<li>Bunu <strong>Açık</strong>'a çekin.</li>
-<li>Kaydedildiğinde sitede menülere "Blog" eklenmesi anında etkili olur.</li>
+<li>Üst menüden <strong>Blog</strong> sayfasına gidin.</li>
+<li>Sayfa başlığının altındaki yeşil/kırmızı durum kutusunu bulun.</li>
+<li>Sağdaki <strong>anahtarı</strong> tıklayın → modül anında açılır/kapanır.</li>
+<li>Kutu rengi değişir, sağ üstte yeşil toast bildirimi çıkar.</li>
 </ol>
 
-## Modülü kapatma
+### Yol B — Ayarlar → Modüller (toplu görünüm)
 
-Aynı yerde toggle'ı **Kapalı**'ya çekin.
+<ol class="adim-listesi">
+<li>Üst menüden <strong>Ayarlar</strong> sayfasına gidin.</li>
+<li>"Modüller — Aç / Kapa" bölümünü bulun (varsayılan olarak açık gelir).</li>
+<li>"<strong>✍️ Blog</strong>" kartındaki kutuyu işaretleyin/kaldırın.</li>
+<li><strong>Anında kaydedilir</strong> — Kaydet butonu beklemenize gerek yok.</li>
+</ol>
 
+> [!İPUCU]
+> İki yol da aynı veriyi yazıyor. Birini açtığınızda diğer açık sekmede de
+> (sekmeye geri döndüğünüzde) güncel durum gözükür.
+
+### Kapatınca veriler ne olur?
 - Sitede menü linkleri kaybolur.
 - `/blog.html` adresine doğrudan girenler **404** sayfasına yönlendirilir.
-- Yazılarınız silinmez — sadece görünmez. Tekrar açtığınızda hepsi geri gelir.
+- **Yazılarınız silinmez** — admin panelinde aynen durur. Tekrar açtığınızda hepsi geri gelir.
 
 ## Ne zaman blog açılmalı?
 

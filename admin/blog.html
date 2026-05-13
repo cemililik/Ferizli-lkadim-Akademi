@@ -120,17 +120,8 @@
       </div>
     </div>
 
-    <!-- Blog durumu (aktif/deaktif toggle) -->
-    <div class="blog-durum-kutusu" id="durumKutu" style="display:none;">
-      <div class="blog-durum-kutusu__bilgi">
-        <h3 id="durumBaslik">Blog modülü</h3>
-        <p id="durumMetni">Yükleniyor…</p>
-      </div>
-      <label class="toggle">
-        <input type="checkbox" id="durumToggle">
-        <span class="toggle__slider"></span>
-      </label>
-    </div>
+    <!-- Modül durum kutusu — ADMIN.modulDurumKutusuYerlestir() doldurur -->
+    <div id="modulDurumYer"></div>
 
     <div id="icerik">
       <p style="text-align:center;color:var(--renk-yazi-soluk);padding:var(--bosluk-12)">Yükleniyor…</p>
@@ -156,33 +147,8 @@
     const $icerik = document.getElementById('icerik');
     const $dgListe = document.getElementById('dgListe');
     const $dgYeni = document.getElementById('dgYeni');
-    const $durumKutu = document.getElementById('durumKutu');
-    const $durumToggle = document.getElementById('durumToggle');
-    const $durumMetni = document.getElementById('durumMetni');
-
-    /* ---------- Blog durumu ---------- */
-    const durumYukle = async () => {
-      try {
-        const r = await API.blog.durumAl();
-        $durumKutu.style.display = 'flex';
-        $durumToggle.checked = !!r.aktif;
-        $durumMetni.textContent = r.aktif
-          ? '🟢 Blog şu anda site menüsünde görünüyor.'
-          : '🔴 Blog henüz site menüsünde görünmüyor. Yayına almak için sağdaki anahtarı açın.';
-      } catch (e) {
-        console.error(e);
-      }
-    };
-    $durumToggle.addEventListener('change', async () => {
-      try {
-        const r = await API.blog.durumDegistir($durumToggle.checked);
-        ADMIN.toast(r.aktif ? 'Blog yayında!' : 'Blog gizlendi.', 'basari');
-        durumYukle();
-      } catch (e) {
-        ADMIN.toast(e.message, 'hata');
-        $durumToggle.checked = !$durumToggle.checked; // revert
-      }
-    });
+    /* ---------- Modül durum kutusu (paylaşılan komponent) ---------- */
+    ADMIN.modulDurumKutusuYerlestir('#modulDurumYer', 'blog', 'Blog');
 
     /* ---------- Liste görünümü ---------- */
     const listeyiGoster = async () => {
@@ -190,6 +156,8 @@
       acikYaziId = null;
       quill = null;
       $dgListe.style.display = 'none';
+      const $durumKutu = document.getElementById('modulDurumYer');
+      if ($durumKutu) $durumKutu.style.display = '';
 
       $icerik.innerHTML = '<p style="text-align:center;color:var(--renk-yazi-soluk);padding:var(--bosluk-12)">Yükleniyor…</p>';
 
@@ -286,7 +254,8 @@
       gorunum = 'editor';
       acikYaziId = yaziId;
       $dgListe.style.display = 'inline-flex';
-      $durumKutu.style.display = 'none';
+      const $durumKutu = document.getElementById('modulDurumYer');
+      if ($durumKutu) $durumKutu.style.display = 'none';
 
       let yazi = {
         baslik: '', slug: '', ozet: '', icerik: '', kapakGorseli: '',
@@ -620,7 +589,6 @@
         }
       } catch { mevcutKullanici = null; }
 
-      durumYukle();
       listeyiGoster();
     })();
   })();

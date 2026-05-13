@@ -158,6 +158,20 @@
   font-size: var(--yazi-sm);
   box-shadow: var(--golge-lg);
 }
+.iki-sutun__gorsel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Foto yokken (main.js wrapper'ı kaldırır) iki-sutun otomatik tek sütun olur.
+   :has() selector — Chrome 105+, Safari 15.4+, Firefox 121+ (~%96 destek). */
+.iki-sutun:has(> :only-child) {
+  grid-template-columns: 1fr;
+  max-width: 800px;
+  margin-inline: auto;
+}
 
 .tanitim-video {
   border-radius: var(--yuvarlak-lg);

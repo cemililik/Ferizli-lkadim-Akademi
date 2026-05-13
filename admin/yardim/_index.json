@@ -22,6 +22,8 @@
         { "id": "calisma-saatleri", "baslik": "Çalışma Saatleri" },
         { "id": "sosyal-medya", "baslik": "Sosyal Medya" },
         { "id": "istatistikler", "baslik": "İstatistik Kartları" },
+        { "id": "moduller", "baslik": "Modüller (Aç / Kapa)" },
+        { "id": "hakkimizda", "baslik": "Hakkımızda İçeriği" },
         { "id": "harita", "baslik": "Google Maps Konumu" }
       ]
     },
