@@ -13,6 +13,7 @@
   font-weight: 600;
   font-size: var(--yazi-base);
   line-height: 1;
+  letter-spacing: -0.005em;           /* Manrope için ufak optical sıkılaştırma */
   border-radius: var(--yuvarlak);
   text-decoration: none;
   transition: all var(--gecis);
@@ -92,38 +93,96 @@
   width: 100%;
 }
 
-/* ---------- Kartlar ---------- */
+/* SPRINT 3: Buton state'leri — mobil dokunma feedback + disabled + loading */
+.dugme:active {
+  transform: translateY(0) scale(0.98);
+  transition-duration: 80ms;
+}
+.dugme:disabled,
+.dugme[aria-disabled="true"] {
+  opacity: 0.5;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.dugme[data-loading="true"] {
+  color: transparent !important;
+  pointer-events: none;
+  position: relative;
+}
+.dugme[data-loading="true"]::after {
+  content: "";
+  position: absolute;
+  top: 50%; left: 50%;
+  width: 18px; height: 18px;
+  margin: -9px 0 0 -9px;
+  border: 2px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: dugme-spinner 0.6s linear infinite;
+  /* Görünür spinner — color transparent olduğu için border'a opacity ekle */
+  opacity: 0.85;
+  color: white;
+}
+/* Cerceve varyantlarında spinner mavi olsun */
+.dugme--cerceve[data-loading="true"]::after {
+  color: var(--renk-birincil);
+}
+@keyframes dugme-spinner {
+  to { transform: rotate(360deg); }
+}
+
+/* Buton grubu — inline style yerine semantik class */
+.dugme-grubu {
+  display: flex;
+  gap: var(--bosluk-3);
+  flex-wrap: wrap;
+}
+.dugme-grubu--merkez { justify-content: center; }
+.dugme-grubu--sag { justify-content: flex-end; }
+
+/* ---------- Kartlar ----------
+   SPRINT 3: "border + shadow + translateY" üçlüsü Material Design 2018 imzasıydı.
+   Modern dil (Linear, Stripe): tek bir hover sinyali = sadece shadow lift.
+   Border-color ve translateY kaldırıldı → daha sakin, profesyonel his. */
 .kart {
   background: white;
   border: 1px solid var(--renk-cizgi);
   border-radius: var(--yuvarlak-md);
   padding: var(--bosluk-6);
-  transition: all var(--gecis);
   height: 100%;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 1px 2px 0 rgb(15 23 42 / 0.03);
+  transition: box-shadow 200ms var(--easing-standard);
 }
 .kart:hover {
-  box-shadow: var(--golge-renk);
-  transform: translateY(-4px);
-  border-color: var(--renk-birincil-acik);
+  box-shadow:
+    0 4px 8px -2px rgb(15 23 42 / 0.06),
+    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  /* translateY KALDIRILDI — shadow lift hareketi tek başına yeterli.
+     border-color HOVER'da değişmiyor — sakin görünüm. */
 }
 
 .kart__ikon {
-  font-size: 2rem;
-  margin-bottom: var(--bosluk-4);
+  /* SPRINT 2: 2rem emoji → SVG (32px). Pastel solid bg, gradient değil. */
   display: inline-flex;
-  width: 60px; height: 60px;
+  width: 56px; height: 56px;
   align-items: center; justify-content: center;
   background: var(--pastel-mavi);
   color: var(--renk-birincil);
   border-radius: var(--yuvarlak-md);
+  margin-bottom: var(--bosluk-4);
   transition: all var(--gecis);
 }
+.kart__ikon svg {
+  width: 26px; height: 26px;
+  stroke-width: 1.75;
+}
 .kart:hover .kart__ikon {
+  /* SPRINT 3: scale + rotate çift hareket çok dramatikti.
+     Sadece renk shift — daha sakin, profesyonel ikon vurgusu. */
   background: var(--renk-birincil);
   color: white;
-  transform: scale(1.05) rotate(-3deg);
 }
 
 .kart__baslik {
@@ -153,6 +212,48 @@
   left: 0;
   color: var(--renk-vurgu);
   font-weight: 700;
+}
+
+/* ---------- Çip (filtre/segment) ----------
+   SPRINT 5: Programlar sayfasında kategori filtresi için pill-shape buton.
+   Aktif chip primary renk, hover'da hafif lift. Tek-seçimli segment olarak çalışır. */
+.cip-grubu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bosluk-2);
+  justify-content: center;
+  margin-bottom: var(--bosluk-6);
+}
+.cip-grubu:empty { display: none; }
+
+.cip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--bosluk-2);
+  padding: var(--bosluk-2) var(--bosluk-4);
+  background: white;
+  color: var(--renk-yazi-acik);
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-tam);
+  font: inherit;
+  font-size: var(--yazi-sm);
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color var(--gecis-hizli), color var(--gecis-hizli), background var(--gecis-hizli);
+}
+.cip:hover {
+  border-color: var(--renk-birincil);
+  color: var(--renk-birincil);
+}
+.cip--aktif {
+  background: var(--renk-birincil);
+  color: white;
+  border-color: var(--renk-birincil);
+}
+.cip--aktif:hover {
+  background: var(--renk-birincil-koyu);
+  color: white;
+  border-color: var(--renk-birincil-koyu);
 }
 
 /* ---------- Etiket (kategori, badge) ---------- */
@@ -200,9 +301,129 @@
   border-color: var(--renk-birincil);
   box-shadow: 0 0 0 3px rgba(21, 101, 192, 0.15);
 }
+
+/* SPRINT 3: aria-invalid="true" → error state.
+   form-render.js inline style (el.style.borderColor=...) yerine
+   bu CSS class'ı kullanıyor. Semantic + maintainable. */
+.form-girdi[aria-invalid="true"],
+.form-secim[aria-invalid="true"],
+.form-alani[aria-invalid="true"] {
+  border-color: var(--renk-hata);
+  background: #fef2f2;
+}
+.form-girdi[aria-invalid="true"]:focus,
+.form-secim[aria-invalid="true"]:focus,
+.form-alani[aria-invalid="true"]:focus {
+  border-color: var(--renk-hata);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
+}
+.form-grup[aria-invalid="true"] {
+  outline: 2px solid var(--renk-hata);
+  outline-offset: 4px;
+  border-radius: var(--yuvarlak);
+}
+
+/* Form yardım metni — eski form-render.js inline style yerine */
+.form-yardim {
+  display: block;
+  margin-top: 4px;
+  font-size: var(--yazi-xs);
+  color: var(--renk-yazi-soluk);
+}
+.form-yardim--hata {
+  color: var(--renk-hata);
+  font-weight: 500;
+}
 /* iOS Safari'de input zoom önlemek için 16px min font */
 @media (max-width: 640px) {
   .form-girdi, .form-secim, .form-alani { font-size: 16px; }
+}
+
+/* SPRINT 3: form-render.js inline style temizliği için yeni class'lar.
+   Dinamik form motoru (formlar.json → HTML) artık tüm görsel kararları
+   bu class'lar üzerinden alıyor. */
+
+/* Form gövdesi — kart içinde geniş padding */
+.kart--form { padding: var(--bosluk-8); }
+
+/* Form üst açıklaması (form.aciklama) */
+.form-aciklama {
+  color: var(--renk-yazi-acik);
+  margin-bottom: var(--bosluk-6);
+  padding-bottom: var(--bosluk-4);
+  border-bottom: 1px solid var(--renk-cizgi);
+}
+
+/* Form içi alt-başlık (alan tipi: "baslik" — bölüm ayracı) */
+.form-altbaslik {
+  margin: var(--bosluk-5) 0 var(--bosluk-3);
+  padding-top: var(--bosluk-3);
+  border-top: 1px solid var(--renk-cizgi);
+}
+.form-altbaslik__baslik {
+  font-size: var(--yazi-lg);
+  margin: 0;
+}
+
+/* Onay checkbox satırı (KVKK gibi tek-kutu onayı) */
+.form-onay {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--bosluk-2);
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-acik);
+  line-height: 1.5;
+  cursor: pointer;
+}
+.form-onay input[type="checkbox"] {
+  margin-top: 4px;
+  flex-shrink: 0;
+}
+
+/* Submit alanı — düğmenin form-grup'tan bağımsız üst boşluğu */
+.form-aksiyon { margin-top: var(--bosluk-6); }
+
+/* Zorunlu alan notu (* işaretli alanlar zorunludur) */
+.form-not {
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-soluk);
+  margin-top: var(--bosluk-4);
+  text-align: center;
+}
+
+/* Genel form hata kutusu (submit hatası — form üstüne eklenen) */
+.form-hata {
+  margin-bottom: var(--bosluk-4);
+  background: #fef2f2;
+  color: #991b1b;
+  padding: var(--bosluk-3) var(--bosluk-4);
+  border-radius: var(--yuvarlak);
+  border: 1px solid rgba(220, 38, 38, 0.2);
+}
+
+/* Teşekkür ekranı (başarılı submit sonrası in-place replace) */
+.form-tesekkur {
+  padding: var(--bosluk-12);
+  text-align: center;
+}
+.form-tesekkur__ikon {
+  display: inline-flex;
+  width: 88px; height: 88px;
+  align-items: center; justify-content: center;
+  background: rgba(22, 163, 74, 0.08);
+  color: var(--renk-basari);
+  border-radius: 50%;
+  margin-bottom: var(--bosluk-4);
+}
+.form-tesekkur__ikon svg {
+  width: 48px; height: 48px;
+}
+.form-tesekkur__metin {
+  color: var(--renk-yazi-acik);
+  font-size: var(--yazi-lg);
+  margin-bottom: var(--bosluk-6);
+  max-width: 500px;
+  margin-inline: auto;
 }
 
 .form-alani { resize: vertical; min-height: 120px; }
@@ -327,11 +548,18 @@
   height: 100%;
 }
 .duyuru-karti:hover {
-  box-shadow: var(--golge-md);
-  transform: translateY(-4px);
+  /* SPRINT 3: translateY kaldırıldı — sadece shadow lift */
+  box-shadow:
+    0 4px 8px -2px rgb(15 23 42 / 0.06),
+    0 8px 16px -4px rgb(15 23 42 / 0.04);
 }
 .duyuru-karti--onemli {
-  border-left: 4px solid var(--renk-vurgu);
+  /* SPRINT 3: border-left:4px (2012 WordPress blog tarzı) kaldırıldı.
+     "Önemli" sinyali zaten kart içinde "Önemli" etiketiyle veriliyor.
+     Yumuşak gradient hint ile koruyoruz — subtle ama belirgin. */
+  background:
+    linear-gradient(to right, rgba(211, 47, 47, 0.04), white 30%),
+    var(--renk-arka);
 }
 
 .duyuru-karti__gorsel {
@@ -347,7 +575,8 @@
   transition: transform var(--gecis);
 }
 .duyuru-karti:hover .duyuru-karti__gorsel img {
-  transform: scale(1.05);
+  /* SPRINT 3: 1.05 → 1.03 daha yumuşak zoom */
+  transform: scale(1.03);
 }
 
 .duyuru-karti__icerik {
@@ -397,4 +626,72 @@
   padding: var(--bosluk-16) var(--bosluk-4);
   color: var(--renk-yazi-soluk);
 }
-.bos-durum__ikon { font-size: 3rem; margin-bottom: var(--bosluk-4); }
+.bos-durum--buyuk { padding: var(--bosluk-16) var(--bosluk-6); }
+.bos-durum__ikon {
+  font-size: 3rem;          /* emoji fallback */
+  margin-bottom: var(--bosluk-4);
+  color: var(--renk-birincil);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.bos-durum__ikon svg {
+  /* SVG ikonlar için varsayılan büyük boyut — inline style'a gerek kalmaz */
+  width: 64px;
+  height: 64px;
+}
+.bos-durum--buyuk .bos-durum__ikon svg {
+  width: 88px; height: 88px;
+}
+
+/* ---------- Yasal/uzun metin listeleri (kvkk gibi) ---------- */
+.metin-listesi {
+  list-style: disc;
+  padding-left: var(--bosluk-6);
+  margin-bottom: var(--bosluk-4);
+}
+.metin-listesi li {
+  margin-bottom: var(--bosluk-2);
+}
+
+/* SPRINT 3: Yasal/uzun metin sayfaları için içerik bloğu (KVKK gibi).
+   Sıralı h2'ler arasına otomatik üst boşluk koyar — markup'tan inline
+   margin-top kaldırılabilir. İlk h2 boşluksuz başlar. */
+.metin-icerik h2 { margin-top: var(--bosluk-8); }
+.metin-icerik h2:first-child { margin-top: 0; }
+.metin-icerik h3 { margin-top: var(--bosluk-6); }
+
+/* Sayfa-altı caption / son güncelleme notu */
+.metin-not {
+  margin-top: var(--bosluk-8);
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-soluk);
+}
+
+/* SPRINT 3: Sayfa-bazlı başarı/teşekkür ekranı — kart-içi (form-tesekkur)
+   ile aynı görsel dil ama bolum/section bağlamında, bağımsız kullanım için
+   (tesekkurler.html gibi). Form-render.js içinde form-tesekkur kart variantı
+   kullanılıyor; standalone sayfada bu blok kullanılır. */
+.basari-blok {
+  text-align: center;
+  padding-block: var(--bosluk-8);
+}
+.basari-blok__ikon {
+  display: inline-flex;
+  width: 88px; height: 88px;
+  align-items: center; justify-content: center;
+  margin-bottom: var(--bosluk-4);
+  color: var(--renk-basari);
+  background: rgba(22, 163, 74, 0.08);
+  border-radius: 50%;
+}
+.basari-blok__ikon svg { width: 48px; height: 48px; }
+.basari-blok__metin {
+  font-size: var(--yazi-lg);
+  color: var(--renk-yazi-acik);
+  margin-block: var(--bosluk-5);
+}
+.basari-blok .dugme-grubu { margin-top: var(--bosluk-8); }
+
+/* Bos-durum içindeki düğme — eski inline margin-top kuralı yerine */
+.bos-durum .dugme { margin-top: var(--bosluk-2); }

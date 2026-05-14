@@ -29,16 +29,24 @@
 
   <main id="main">
     <section class="bolum">
-      <div class="kapsayici kapsayici-dar metin-merkez" style="padding-block: var(--bosluk-16);">
-        <div style="font-size: 5rem; margin-bottom: var(--bosluk-4);">✅</div>
-        <h1>Başvurunuz Alındı!</h1>
-        <p style="font-size: var(--yazi-lg); color: var(--renk-yazi-acik); margin-block: var(--bosluk-5);">
-          Bilgileriniz tarafımıza ulaştı. En kısa sürede sizinle iletişime geçeceğiz.
-          İlginiz için teşekkür ederiz.
-        </p>
-        <div style="display:flex; gap: var(--bosluk-3); justify-content: center; flex-wrap: wrap; margin-top: var(--bosluk-8);">
-          <a href="/index.html" class="dugme dugme--birincil">Ana Sayfaya Dön</a>
-          <a href="#" data-float="whatsapp" class="dugme dugme--whatsapp">WhatsApp ile Yaz</a>
+      <div class="kapsayici kapsayici-dar">
+        <div class="basari-blok">
+          <div class="basari-blok__ikon" aria-hidden="true">
+            <!-- circle-check (Lucide) — başarı ikonu, .basari-blok__ikon stilini taşır -->
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"/>
+              <path d="m9 12 2 2 4-4"/>
+            </svg>
+          </div>
+          <h1>Başvurunuz Alındı!</h1>
+          <p class="basari-blok__metin">
+            Bilgileriniz tarafımıza ulaştı. En kısa sürede sizinle iletişime geçeceğiz.
+            İlginiz için teşekkür ederiz.
+          </p>
+          <div class="dugme-grubu dugme-grubu--merkez">
+            <a href="/index.html" class="dugme dugme--birincil">Ana Sayfaya Dön</a>
+            <a href="#" data-float="whatsapp" class="dugme dugme--whatsapp">WhatsApp ile Yaz</a>
+          </div>
         </div>
       </div>
     </section>

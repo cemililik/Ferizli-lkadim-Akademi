@@ -50,14 +50,14 @@
       : '';
     const placeholder = alan.placeholder ? ` placeholder="${esc(alan.placeholder)}"` : '';
     const yardim = alan.yardim
-      ? `<p style="font-size: var(--yazi-xs); color: var(--renk-yazi-soluk); margin-top: 4px;">${esc(alan.yardim)}</p>` : '';
+      ? `<span class="form-yardim">${esc(alan.yardim)}</span>` : '';
 
     switch (alan.tip) {
       case 'baslik':
         return `
-          <div style="margin: var(--bosluk-5) 0 var(--bosluk-3); padding-top: var(--bosluk-3); border-top: 1px solid var(--renk-cizgi);">
-            <h3 style="font-size: var(--yazi-lg); margin: 0;">${esc(alan.etiket)}</h3>
-            ${alan.yardim ? `<p style="color: var(--renk-yazi-acik); font-size: var(--yazi-sm); margin-top: 4px;">${esc(alan.yardim)}</p>` : ''}
+          <div class="form-altbaslik">
+            <h3 class="form-altbaslik__baslik">${esc(alan.etiket)}</h3>
+            ${alan.yardim ? `<p class="form-yardim">${esc(alan.yardim)}</p>` : ''}
           </div>
         `;
 
@@ -118,8 +118,8 @@
         // Tek checkbox: onay (KVKK gibi)
         return `
           <div class="form-grup">
-            <label style="display: flex; align-items: flex-start; gap: var(--bosluk-2); font-size: var(--yazi-sm); color: var(--renk-yazi-acik); line-height: 1.5;">
-              <input type="checkbox" id="${id}" name="${esc(alan.id)}" value="evet" ${zorunlu} style="margin-top: 4px; flex-shrink: 0;">
+            <label class="form-onay" for="${id}">
+              <input type="checkbox" id="${id}" name="${esc(alan.id)}" value="evet" ${zorunlu}>
               <span>${esc(alan.etiket)}${yildiz}</span>
             </label>
             ${yardim}
@@ -173,13 +173,13 @@
   const formRender = (yer, form) => {
     const alanlarHtml = (form.alanlar || []).map(alanHtml).join('');
     yer.innerHTML = `
-      <form id="dinamikForm" class="kart" style="padding: var(--bosluk-8);" novalidate>
-        ${form.aciklama ? `<p style="color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-6); padding-bottom: var(--bosluk-4); border-bottom: 1px solid var(--renk-cizgi);">${esc(form.aciklama)}</p>` : ''}
+      <form id="dinamikForm" class="kart kart--form" novalidate>
+        ${form.aciklama ? `<p class="form-aciklama">${esc(form.aciklama)}</p>` : ''}
         ${alanlarHtml}
-        <button type="submit" class="dugme dugme--birincil dugme--buyuk dugme--blok" style="margin-top: var(--bosluk-6);">
+        <button type="submit" class="dugme dugme--birincil dugme--buyuk dugme--blok form-aksiyon">
           Gönder
         </button>
-        <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-soluk); margin-top: var(--bosluk-4); text-align: center;">
+        <p class="form-not">
           <span class="form-zorunlu" aria-hidden="true">*</span> işaretli alanlar zorunludur.
         </p>
       </form>
@@ -193,21 +193,20 @@
 
   /* Alan-bazlı hata feedback: hata olan input/grubun yanına .form-alan-hata
      span'i ekler ve border'ı kızartır. Submit tekrar denendiğinde temizler. */
+  // SPRINT 3: inline style atamaları yerine aria-invalid + CSS class kullanılıyor.
+  // .form-girdi[aria-invalid="true"], .form-grup[aria-invalid="true"], .form-yardim--hata
+  // tanımları components.css'te.
   const alanHataIsaretle = (formEl, alan, mesaj = 'Bu alan zorunludur.') => {
     if (alan.tip === 'checkbox' || alan.tip === 'radio') {
       const grup = formEl.querySelector(`[data-alan-tip="checkbox"][data-alan-id="${alan.id}"]`)
         || formEl.querySelector(`[role="radiogroup"][aria-label="${alan.etiket}"]`)
         || formEl.querySelector(`[name="${alan.id}"]`)?.closest('.form-grup');
       if (!grup) return;
-      grup.style.outline = '2px solid var(--renk-hata)';
-      grup.style.outlineOffset = '4px';
-      grup.style.borderRadius = 'var(--yuvarlak)';
       grup.setAttribute('aria-invalid', 'true');
       _hataSpanEkle(grup, mesaj);
     } else {
       const el = formEl.querySelector(`[name="${alan.id}"]`);
       if (!el) return;
-      el.style.borderColor = 'var(--renk-hata)';
       el.setAttribute('aria-invalid', 'true');
       const grup = el.closest('.form-grup') || el.parentElement;
       _hataSpanEkle(grup, mesaj);
@@ -215,40 +214,36 @@
   };
   const _hataSpanEkle = (grup, mesaj) => {
     if (!grup) return;
-    let s = grup.querySelector('.form-alan-hata');
+    let s = grup.querySelector('.form-yardim--hata');
     if (!s) {
       s = document.createElement('span');
-      s.className = 'form-alan-hata';
-      s.style.cssText = 'display:block;color:var(--renk-hata);font-size:var(--yazi-xs);margin-top:4px;';
+      s.className = 'form-yardim form-yardim--hata';
+      s.setAttribute('role', 'alert');
       grup.appendChild(s);
     }
     s.textContent = mesaj;
   };
   const alanHatalariTemizle = (formEl) => {
-    formEl.querySelectorAll('.form-alan-hata').forEach(s => s.remove());
-    formEl.querySelectorAll('[style*="outline"]').forEach(el => {
-      el.style.outline = ''; el.style.outlineOffset = '';
-    });
-    formEl.querySelectorAll('.form-girdi, .form-secim, .form-alani').forEach(el => {
-      el.style.borderColor = '';
+    formEl.querySelectorAll('.form-yardim--hata').forEach(s => s.remove());
+    formEl.querySelectorAll('[aria-invalid="true"]').forEach(el => {
+      el.removeAttribute('aria-invalid');
     });
   };
 
-  /* Form üstünde genel hata kutusu */
+  /* Form üstünde genel hata kutusu — stil tamamen .form-hata class'ında */
   const genelHataGoster = (formEl, mesaj) => {
-    let kutu = formEl.querySelector('.form-hata.bilgi-kutusu');
+    let kutu = formEl.querySelector('.form-hata');
     if (!kutu) {
       kutu = document.createElement('div');
-      kutu.className = 'form-hata bilgi-kutusu';
+      kutu.className = 'form-hata';
       kutu.setAttribute('role', 'alert');
-      kutu.style.cssText = 'margin-bottom: var(--bosluk-4); border-left: 4px solid var(--renk-hata); background: #fef2f2; color: #991b1b; padding: var(--bosluk-3) var(--bosluk-4); border-radius: var(--yuvarlak);';
       formEl.prepend(kutu);
     }
     kutu.textContent = mesaj;
     kutu.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
   const genelHataTemizle = (formEl) => {
-    const kutu = formEl.querySelector('.form-hata.bilgi-kutusu');
+    const kutu = formEl.querySelector('.form-hata');
     if (kutu) kutu.remove();
   };
 
@@ -331,11 +326,12 @@
       return;
     }
 
-    // Submit düğmesini disable et
+    // Submit düğmesini disable et — SPRINT 3: data-loading="true" attribute'u
+    // CSS spinner'ı tetikler. textContent değiştirmiyoruz; orijinal label kalır
+    // ama görünmez olur (color:transparent), yerinde spin animasyonu döner.
     const dgm = formEl.querySelector('button[type="submit"]');
-    const eskiText = dgm.textContent;
     dgm.disabled = true;
-    dgm.textContent = 'Gönderiliyor…';
+    dgm.setAttribute('data-loading', 'true');
 
     try {
       await STORAGE.kaydet(form.id, veriler);
@@ -347,13 +343,15 @@
       yeni.setAttribute('role', 'status');
       yeni.setAttribute('aria-live', 'polite');
       yeni.tabIndex = -1; // focus alabilsin
-      yeni.style.cssText = 'padding: var(--bosluk-12); text-align: center;';
       yeni.innerHTML = `
-        <div style="font-size: 4rem; margin-bottom: var(--bosluk-4);" aria-hidden="true">✅</div>
-        <h2 style="margin-bottom: var(--bosluk-4);">Teşekkür Ederiz!</h2>
-        <p style="color: var(--renk-yazi-acik); font-size: var(--yazi-lg); margin-bottom: var(--bosluk-6); max-width: 500px; margin-inline: auto;">
-          ${esc(tesekkur)}
-        </p>
+        <div class="form-tesekkur__ikon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <path d="m9 12 2 2 4-4"/>
+          </svg>
+        </div>
+        <h2>Teşekkür Ederiz!</h2>
+        <p class="form-tesekkur__metin">${esc(tesekkur)}</p>
         <a href="/index.html" class="dugme dugme--birincil">Ana Sayfaya Dön</a>
       `;
       formEl.parentNode.replaceChild(yeni, formEl);
@@ -364,7 +362,7 @@
     } catch (err) {
       console.error('Form gönderilemedi:', err);
       dgm.disabled = false;
-      dgm.textContent = eskiText;
+      dgm.removeAttribute('data-loading');
       // Status koduna göre kullanıcı dostu mesaj
       let mesaj;
       if (err.status === 422) {
