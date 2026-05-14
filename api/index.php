@@ -40,6 +40,7 @@ $izinliEndpointler = [
     'auth', 'blog', 'uploads',
     'ayarlar', 'duyurular', 'programlar', 'kadro', 'galeri',
     'formlar', 'cevaplar', 'bildirimler', 'kullanicilar',
+    'moduller',
 ];
 
 if (!in_array($endpoint, $izinliEndpointler, true)) {

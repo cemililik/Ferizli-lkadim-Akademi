@@ -1,20 +1,22 @@
-/* kadro.js — data/kadro.json'u okur, sayfaya basar */
+/* kadro.js — data/kadro.json'u okur, sayfaya basar.
+   SPRINT 5: Eski gradient + initial-harf placeholder modernleştirildi —
+   foto yoksa Lucide user-round SVG ikonu, soft mavi zemin üzerinde. */
 
 (() => {
   'use strict';
 
-  // İsmin baş harflerini al (Ahmet Yılmaz → AY)
-  const harfler = (ad) => ad
-    .split(/\s+/)
-    .filter(Boolean)
-    .slice(0, 2)
-    .map(p => p.charAt(0).toLocaleUpperCase('tr-TR'))
-    .join('');
+  // Lucide "user-round" — foto yoksa nötr placeholder
+  const PLACEHOLDER_SVG = `
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <circle cx="12" cy="8" r="5"/>
+      <path d="M20 21a8 8 0 0 0-16 0"/>
+    </svg>
+  `;
 
   const kartHtml = (k) => {
-    const foto = k.foto
+    const fotoIcerik = k.foto
       ? `<img src="${k.foto}" alt="${k.ad}">`
-      : `<span aria-hidden="true">${harfler(k.ad || '?')}</span>`;
+      : PLACEHOLDER_SVG;
     const mottoBlok = k.motto
       ? `<p class="kadro-karti__motto">"${k.motto}"</p>`
       : '';
@@ -22,10 +24,10 @@
       .filter(Boolean).join(' • ');
     return `
       <article class="kadro-karti">
-        <div class="kadro-karti__foto">${foto}</div>
+        <div class="kadro-karti__foto">${fotoIcerik}</div>
         <h3 class="kadro-karti__ad">${k.ad}</h3>
         <div class="kadro-karti__brans">${k.brans || ''}</div>
-        ${altSatir ? `<p style="font-size: var(--yazi-sm); color: var(--renk-yazi-soluk); margin-bottom: 8px;">${altSatir}</p>` : ''}
+        ${altSatir ? `<p class="kadro-karti__detay">${altSatir}</p>` : ''}
         ${mottoBlok}
       </article>
     `;

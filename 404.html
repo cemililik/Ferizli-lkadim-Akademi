@@ -30,9 +30,50 @@
   <main id="main">
     <div class="kapsayici">
       <div class="bulunamadi">
-        <div class="bulunamadi__kod">404</div>
+        <div class="bulunamadi__kod" aria-hidden="true">404</div>
         <h1>Sayfa Bulunamadı</h1>
-        <p>Aradığınız sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir.</p>
+        <p class="bulunamadi__alt">
+          Aradığınız sayfa taşınmış, silinmiş ya da hiç var olmamış olabilir.
+        </p>
+
+        <!-- Akıllı öneri panosu — kullanıcıyı geri yönlendir -->
+        <div class="bulunamadi__oneriler" aria-label="Öneriler">
+          <p class="bulunamadi__oneriler-baslik">Belki bunlara göz atmak istersiniz:</p>
+          <div class="bulunamadi__linkler">
+            <!-- data-modul: main.js modül kapalıysa bu link'i [hidden] yapar.
+                 iletisim ve basvuru modül değil — her zaman görünür. -->
+            <a href="/programlar.html" data-modul="programlar">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
+                <path d="M22 10v6"/>
+                <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
+              </svg>
+              <span>Programlarımız</span>
+            </a>
+            <a href="/hakkimizda.html" data-modul="hakkimizda">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"/>
+                <path d="M12 16v-4"/>
+                <path d="M12 8h.01"/>
+              </svg>
+              <span>Hakkımızda</span>
+            </a>
+            <a href="/iletisim.html">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+              </svg>
+              <span>İletişim</span>
+            </a>
+            <a href="/basvuru.html">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z"/>
+                <path d="m15 5 4 4"/>
+              </svg>
+              <span>Başvuru Formu</span>
+            </a>
+          </div>
+        </div>
+
         <a href="/index.html" class="dugme dugme--birincil dugme--buyuk">Ana Sayfaya Dön</a>
       </div>
     </div>

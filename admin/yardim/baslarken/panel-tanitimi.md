@@ -25,6 +25,11 @@ Sayfanın en üstünde, koyu zeminli bir menü vardır. Bu menü panelin **her s
 - ↗ **Siteyi Aç** — siteyi yeni sekmede açar (yaptığınız değişikliği canlı görmek için)
 - 🚪 **Çıkış** — oturumu güvenli şekilde kapatır
 
+> [!İPUCU]
+> **Modülleri aç/kapa:** Hakkımızda, Programlar, Kadro, Duyurular, Galeri bölümlerinden
+> herhangi birini sitenizde gizlemek istiyorsanız: **Ayarlar → Modüller (Aç / Kapa)**
+> bölümünden tek tıkla yapabilirsiniz. Veriler silinmez. Detay: [Modüller (Aç / Kapa)](#/site-ayarlari/moduller).
+
 ## Genel akış
 
 ```mermaid

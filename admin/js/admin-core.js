@@ -365,6 +365,96 @@ ${cevaplar.map((c,i)=>`<article class="cevap"><h3>Cevap #${cevaplar.length-i} &m
     });
   }
 
+  /* ============================================================
+     MODÜL DURUM KUTUSU — paylaşılan UI komponenti
+     Her admin modül sayfasında (duyurular, programlar, kadro, vb.)
+     bir durum kutusu + toggle gösterir. Toggle değişikliği anında
+     API'ye PUT eder, başarılı/hata toast'u atar. Sekme görünür
+     olduğunda (visibilitychange) durum otomatik yenilenir → başka
+     sekmede yapılan değişiklikler eşzamanlı yansır.
+  ============================================================ */
+  const modulDurumKutusuYerlestir = (yerSelector, modulAdi, modulBaslik) => {
+    const yer = typeof yerSelector === 'string'
+      ? document.querySelector(yerSelector)
+      : yerSelector;
+    if (!yer) return;
+
+    yer.innerHTML = `
+      <div class="modul-durum-kutusu" data-yukleniyor>
+        <div class="modul-durum-kutusu__bilgi">
+          <h3>${escHtml(modulBaslik)} modülü</h3>
+          <p class="modul-durum-kutusu__mesaj">Durum yükleniyor…</p>
+          <p class="modul-durum-kutusu__alt">
+            Bu modül <a href="/admin/ayarlar.html">Site Ayarları → Modüller</a> bölümünden de yönetilebilir.
+          </p>
+        </div>
+        <label class="toggle" title="Modülü aç/kapa">
+          <input type="checkbox" data-modul-toggle aria-label="${escHtml(modulBaslik)} modülünü aç/kapa" disabled>
+          <span class="toggle__slider"></span>
+        </label>
+      </div>
+    `;
+
+    const $kutu = yer.querySelector('.modul-durum-kutusu');
+    const $toggle = yer.querySelector('[data-modul-toggle]');
+    const $mesaj = yer.querySelector('.modul-durum-kutusu__mesaj');
+
+    const yansit = (aktif) => {
+      $toggle.checked = !!aktif;
+      $kutu.classList.toggle('modul-durum-kutusu--aktif', !!aktif);
+      $kutu.classList.toggle('modul-durum-kutusu--pasif', !aktif);
+      $mesaj.textContent = aktif
+        ? `🟢 ${modulBaslik} şu anda site menüsünde görünüyor.`
+        : `🔴 ${modulBaslik} modülü kapalı — sitede menüde görünmüyor. Yayına almak için sağdaki anahtarı açın.`;
+    };
+
+    let yukleniyor = false;
+    const yukle = async () => {
+      if (yukleniyor) return;
+      yukleniyor = true;
+      try {
+        const r = await API.moduller.durumAl(modulAdi);
+        yansit(!!r.aktif);
+        $toggle.disabled = false;
+      } catch (e) {
+        $mesaj.textContent = '⚠ Modül durumu yüklenemedi. Bağlantınızı kontrol edin.';
+        console.error('Modül durum yükleme hatası:', e);
+      } finally {
+        yukleniyor = false;
+      }
+    };
+
+    $toggle.addEventListener('change', async () => {
+      const yeniDeger = $toggle.checked;
+      $toggle.disabled = true;
+      // Optimistic: önce UI'ı güncelle, sonra API
+      yansit(yeniDeger);
+      try {
+        await API.moduller.durumDegistir(modulAdi, yeniDeger);
+        toast(
+          yeniDeger ? `${modulBaslik} modülü yayında!` : `${modulBaslik} modülü gizlendi.`,
+          'basari'
+        );
+      } catch (e) {
+        // Hata: optimistic değişikliği geri al
+        yansit(!yeniDeger);
+        toast(`Modül durumu güncellenemedi: ${e.message}`, 'hata');
+      } finally {
+        $toggle.disabled = false;
+      }
+    });
+
+    // İlk yükleme
+    yukle();
+
+    // Sekme tekrar görünür olduğunda durum yenile (diğer sekmede yapılan değişiklik)
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') yukle();
+    });
+
+    return { yenile: yukle };
+  };
+
   /* ---------- DIŞA AKTAR ---------- */
   return {
     kullaniciAl, korumaliSayfaKapisi, oturumKapat,
@@ -376,5 +466,6 @@ ${cevaplar.map((c,i)=>`<article class="cevap"><h3>Cevap #${cevaplar.length-i} &m
     bildirimBadgeGuncelle,
     adminBarYukle,
     modalAc, modalKapa,
+    modulDurumKutusuYerlestir,
   };
 })();

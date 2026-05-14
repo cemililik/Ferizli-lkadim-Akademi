@@ -149,8 +149,18 @@ const API = (() => {
       istek('kullanicilar/profil', { method: 'PUT', body: veri }),
   };
 
+  const moduller = {
+    // Tüm modül durumlarını tek seferde getir
+    tumDurumlar: () => istek('moduller'),
+    // Tek modül durumu
+    durumAl: (ad) => istek(`moduller/durum?ad=${encodeURIComponent(ad)}`),
+    // Modül aç/kapa (auth)
+    durumDegistir: (ad, aktif) =>
+      istek('moduller/durum', { method: 'PUT', body: { ad, aktif: !!aktif } }),
+  };
+
   return {
     istek, auth, ayarlar, duyurular, programlar, kadro,
-    galeri, formlar, cevaplar, bildirimler, blog, kullanicilar,
+    galeri, formlar, cevaplar, bildirimler, blog, kullanicilar, moduller,
   };
 })();

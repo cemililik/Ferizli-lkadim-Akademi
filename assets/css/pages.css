@@ -6,20 +6,24 @@
 .hero {
   position: relative;
   padding: clamp(var(--bosluk-16), 12vw, var(--bosluk-24)) 0;
+  /* SPRINT 1 v2: 3-stop deep-blue spectrum.
+     Eski (v1) düz 2-stop fazla monotondu; tek-tonlu blok hissi vardı.
+     Yeni: aynı mavi ailesinde 3 yumuşak geçiş — derinlik kazanır,
+     yine de "2016 Material" canlı gradient'inden uzak kalır. */
   background:
-    linear-gradient(135deg, #1565c0 0%, #1976d2 45%, #42a5f5 100%);
+    linear-gradient(135deg, #0a3d80 0%, #1565c0 55%, #2563eb 100%);
   color: white;
   overflow: hidden;
 }
-/* Dekoratif pastel daireler — sıcak/şık hava */
+/* Dekoratif radial overlay — iki nokta, ışık-gölge dengesi.
+   Mavi düzlüğü kırar, modern subtle depth verir. */
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
   background:
-    radial-gradient(circle at 88% 12%, rgba(253, 235, 236, 0.20), transparent 35%),
-    radial-gradient(circle at 12% 88%, rgba(255, 255, 255, 0.15), transparent 40%),
-    radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.04), transparent 70%);
+    radial-gradient(ellipse at 78% 18%, rgba(253, 230, 138, 0.12), transparent 55%),
+    radial-gradient(ellipse at 15% 85%, rgba(255, 255, 255, 0.07), transparent 50%);
   pointer-events: none;
 }
 .hero::after {
@@ -35,23 +39,100 @@
   .hero { padding: var(--bosluk-12) 0 var(--bosluk-16); }
 }
 
+/* SPRINT 5: Hero iki-kolon → metin solda, illustration sağda.
+   900px altında stacklenip illustration üste alınıyor; 640 altında gizleniyor
+   (mobilde ekranı meşgul etmesin, içerik öne çıksın). */
+.hero__izgara {
+  display: grid;
+  grid-template-columns: 1.1fr 0.9fr;
+  gap: var(--bosluk-10);
+  align-items: center;
+  position: relative;
+}
 .hero__icerik {
   position: relative;
-  max-width: 800px;
+  max-width: 600px;
+  text-align: left;
+}
+
+.hero__gorsel {
+  position: relative;
+  max-width: 480px;
   margin-inline: auto;
-  text-align: center;
+  /* Tüm kompozisyon yavaşça yüzer — reduced-motion globalde durdurulur */
+  animation: hero-yuzme 6s ease-in-out infinite;
+}
+.hero__gorsel svg {
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 30px 40px rgba(8, 20, 50, 0.22));
+}
+
+/* Bullseye (hedef merkezi) — yumuşak nefes alma kırmızı glow.
+   Sadece filter kullanılıyor (SVG transform attribute'una dokunmadan). */
+.hero-svg-bullseye {
+  animation: hero-bullseye 3s ease-in-out infinite;
+}
+@keyframes hero-bullseye {
+  0%, 100% { filter: drop-shadow(0 0 0 rgba(211, 47, 47, 0)); }
+  50%      { filter: drop-shadow(0 0 10px rgba(211, 47, 47, 0.7)); }
+}
+
+/* Sparkles — kendi tempolarında parlama (opacity yalnızca) */
+.hero-svg-sparkles g:nth-child(1) { animation: hero-twinkle 3s ease-in-out 0s   infinite; }
+.hero-svg-sparkles g:nth-child(2) { animation: hero-twinkle 3s ease-in-out 0.8s infinite; }
+.hero-svg-sparkles g:nth-child(3) { animation: hero-twinkle 3s ease-in-out 1.6s infinite; }
+.hero-svg-sparkles g:nth-child(4) { animation: hero-twinkle 3s ease-in-out 2.2s infinite; }
+@keyframes hero-twinkle {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.3; }
+}
+
+@keyframes hero-yuzme {
+  0%, 100% { transform: translateY(0); }
+  50%      { transform: translateY(-12px); }
+}
+
+@media (max-width: 900px) {
+  .hero__izgara { grid-template-columns: 1fr; gap: var(--bosluk-8); }
+  .hero__icerik {
+    max-width: 640px;
+    margin-inline: auto;
+    text-align: center;
+  }
+  .hero__gorsel { max-width: 380px; order: -1; }
+}
+@media (max-width: 640px) {
+  /* Mobilde illustration'ı gizle — içerik öne çıksın, hız + odak */
+  .hero__gorsel { display: none; }
 }
 
 .hero__rozet {
-  display: inline-block;
-  padding: var(--bosluk-2) var(--bosluk-4);
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  /* SPRINT 2 v2: SVG ikon + metin için flexbox hizalama.
+     Eski inline-block + vertical-align hack guvenilir değildi; baseline'a göre
+     SVG kayıyordu. Şimdi inline-flex + gap + align-items:center → garanti hizalama. */
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.22);
   border-radius: var(--yuvarlak-tam);
   font-size: var(--yazi-sm);
   font-weight: 500;
   margin-bottom: var(--bosluk-5);
-  backdrop-filter: blur(8px);
+  letter-spacing: -0.005em;
+}
+.hero__rozet svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  /* Stroke içinde ufak halo etkisi — koyu mavi üzerinde net görünürlük */
+  opacity: 0.95;
+}
+.hero__rozet svg circle {
+  fill: currentColor;
+  fill-opacity: 0.25;
 }
 
 .hero h1 {
@@ -60,10 +141,17 @@
   font-weight: 800;
 }
 .hero h1 .vurgu {
-  color: #ffd54f;
-  text-shadow: 0 1px 2px rgba(0,0,0,0.2);
-  position: relative;
-  display: inline-block;
+  /* SPRINT 1 v2: highlighter pattern iki satırlı başlıkta "pas lekesi" hissi
+     veriyordu. Yeni: solid amber-pastel renk + kalın underline decoration.
+     Web 2.0 sarı/glow değil; eğitim sektörünün modern dilinden esinli (Tonguç,
+     Kunduz gibi). Renk #fde68a (amber-200) mavi zemin üzerinde okunaklı (kontrast OK)
+     ve marka enerjisini yansıtır. */
+  color: #fde68a;
+  font-weight: 800;
+  text-decoration: underline;
+  text-decoration-color: rgba(253, 230, 138, 0.5);
+  text-decoration-thickness: 3px;
+  text-underline-offset: 6px;
 }
 
 .hero__alt-baslik {
@@ -76,8 +164,13 @@
 .hero__cta {
   display: flex;
   gap: var(--bosluk-4);
-  justify-content: center;
+  /* SPRINT 5: Desktop iki-kolon hero'da CTA sola hizalanır (metnle aynı blok),
+     900px altında metin ortalanınca CTA da ortalanır (media query'de). */
+  justify-content: flex-start;
   flex-wrap: wrap;
+}
+@media (max-width: 900px) {
+  .hero__cta { justify-content: center; }
 }
 @media (max-width: 520px) {
   .hero__cta {
@@ -115,16 +208,21 @@
   gap: var(--bosluk-4);
 }
 .ozellik__ikon {
+  /* SPRINT 2: emoji + gradient kutu → SVG + solid soft bg.
+     "Pastel-mavi gradient pastel-pembe" iki-renk kutu çocuk siti hissi
+     veriyordu. Modern stroke SVG ikonu için minimal solid arka plan. */
   flex-shrink: 0;
-  width: 52px; height: 52px;
-  background: linear-gradient(135deg, var(--pastel-mavi), var(--pastel-pembe));
+  width: 48px; height: 48px;
+  background: var(--pastel-mavi);
   color: var(--renk-birincil);
-  border-radius: var(--yuvarlak-md);
-  display: flex;
+  border-radius: var(--yuvarlak);
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.6rem;
-  box-shadow: 0 4px 12px -4px rgba(21, 101, 192, 0.2);
+}
+.ozellik__ikon svg {
+  width: 22px; height: 22px;
+  stroke-width: 2;
 }
 .ozellik__baslik {
   font-size: var(--yazi-base);
@@ -158,6 +256,20 @@
   font-size: var(--yazi-sm);
   box-shadow: var(--golge-lg);
 }
+.iki-sutun__gorsel img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+/* Foto yokken (main.js wrapper'ı kaldırır) iki-sutun otomatik tek sütun olur.
+   :has() selector — Chrome 105+, Safari 15.4+, Firefox 121+ (~%96 destek). */
+.iki-sutun:has(> :only-child) {
+  grid-template-columns: 1fr;
+  max-width: 800px;
+  margin-inline: auto;
+}
 
 .tanitim-video {
   border-radius: var(--yuvarlak-lg);
@@ -190,35 +302,27 @@
   position: relative;
   overflow: hidden;
 }
-.program-karti::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--renk-birincil), var(--renk-vurgu));
-  transform: scaleX(0);
-  transform-origin: left;
-  transition: transform var(--gecis);
-}
+/* SPRINT 3: Gradient top-bar (scaleX 0→1) ve rotate ikon — Material 2018 dili.
+   Kaldırıldı. Hover sadece shadow lift = sade modern dil (.kart ile uyumlu). */
 .program-karti:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--golge-renk);
-  border-color: transparent;
+  box-shadow:
+    0 4px 8px -2px rgb(15 23 42 / 0.06),
+    0 8px 16px -4px rgb(15 23 42 / 0.04);
 }
-.program-karti:hover::before { transform: scaleX(1); }
 
 .program-karti__ikon {
-  font-size: 2rem;
   margin-bottom: var(--bosluk-4);
-  width: 64px; height: 64px;
+  width: 56px; height: 56px;
   display: inline-flex; align-items: center; justify-content: center;
   background: var(--pastel-mavi);
+  color: var(--renk-birincil);
   border-radius: var(--yuvarlak-md);
-  transition: all var(--gecis);
+  transition: background 200ms var(--easing-standard), color 200ms var(--easing-standard);
 }
+.program-karti__ikon svg { width: 26px; height: 26px; stroke-width: 1.75; }
 .program-karti:hover .program-karti__ikon {
-  background: var(--pastel-pembe);
-  transform: rotate(-5deg);
+  background: var(--renk-birincil);
+  color: white;
 }
 .program-karti__baslik { font-size: var(--yazi-xl); margin-bottom: var(--bosluk-1); }
 .program-karti__kitle {
@@ -258,21 +362,27 @@
   transition: all var(--gecis);
 }
 .kadro-karti:hover {
-  box-shadow: var(--golge-md);
-  transform: translateY(-4px);
+  /* SPRINT 3: translateY kaldırıldı — sadece shadow lift */
+  box-shadow:
+    0 4px 8px -2px rgb(15 23 42 / 0.06),
+    0 8px 16px -4px rgb(15 23 42 / 0.04);
 }
 .kadro-karti__foto {
-  width: 120px; height: 120px;
+  /* SPRINT 5: 120px → 144px (modern boyut), gradient → soft mavi.
+     İlletral harf placeholder (AY) yerine Lucide user-round SVG. */
+  width: 144px; height: 144px;
   margin: 0 auto var(--bosluk-4);
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--renk-birincil-acik), var(--renk-birincil));
+  background: var(--pastel-mavi);
+  color: var(--renk-birincil);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: white;
-  font-size: var(--yazi-3xl);
-  font-weight: 700;
   overflow: hidden;
+}
+.kadro-karti__foto svg {
+  width: 56px; height: 56px;
+  opacity: 0.7;
 }
 .kadro-karti__foto img { width: 100%; height: 100%; object-fit: cover; }
 .kadro-karti__ad {
@@ -286,6 +396,11 @@
   font-weight: 600;
   font-size: var(--yazi-sm);
   margin-bottom: var(--bosluk-3);
+}
+.kadro-karti__detay {
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-soluk);
+  margin-bottom: var(--bosluk-2);
 }
 .kadro-karti__motto {
   color: var(--renk-yazi-soluk);
@@ -565,8 +680,10 @@
   transition: all var(--gecis);
 }
 .blog-kart:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--golge-md);
+  /* SPRINT 3: translateY kaldırıldı — sadece shadow lift */
+  box-shadow:
+    0 4px 8px -2px rgb(15 23 42 / 0.06),
+    0 8px 16px -4px rgb(15 23 42 / 0.04);
 }
 .blog-kart__gorsel {
   display: block;
@@ -906,21 +1023,75 @@
 /* ---------- 404 ---------- */
 .bulunamadi {
   text-align: center;
-  padding: var(--bosluk-24) var(--bosluk-4);
+  padding: var(--bosluk-16) var(--bosluk-4);
+  max-width: 720px;
+  margin-inline: auto;
 }
 .bulunamadi__kod {
-  font-size: clamp(6rem, 20vw, 12rem);
-  font-weight: 900;
+  font-family: var(--yazi-aile-baslik);
+  font-size: clamp(6rem, 20vw, 11rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
   line-height: 1;
   background: linear-gradient(135deg, var(--renk-birincil), var(--renk-vurgu));
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
-  margin-bottom: var(--bosluk-4);
+  margin-bottom: var(--bosluk-2);
 }
 .bulunamadi h1 { margin-bottom: var(--bosluk-3); }
-.bulunamadi p {
+.bulunamadi__alt {
   color: var(--renk-yazi-acik);
   font-size: var(--yazi-lg);
   margin-bottom: var(--bosluk-8);
+}
+
+/* Akıllı öneri panosu — kullanıcı hedefini tahmin et, link grid göster */
+.bulunamadi__oneriler {
+  margin: var(--bosluk-2) auto var(--bosluk-8);
+  padding: var(--bosluk-6);
+  background: var(--renk-arka-yumusak);
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-md);
+  max-width: 560px;
+  text-align: left;
+}
+.bulunamadi__oneriler-baslik {
+  font-size: var(--yazi-sm);
+  font-weight: 600;
+  color: var(--renk-yazi);
+  margin-bottom: var(--bosluk-3);
+  text-align: center;
+}
+.bulunamadi__linkler {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--bosluk-2);
+}
+.bulunamadi__linkler a {
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-3);
+  padding: var(--bosluk-3) var(--bosluk-4);
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak);
+  color: var(--renk-yazi);
+  font-size: var(--yazi-sm);
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color var(--gecis-hizli), color var(--gecis-hizli), background var(--gecis-hizli);
+}
+.bulunamadi__linkler a:hover {
+  border-color: var(--renk-birincil);
+  color: var(--renk-birincil);
+  background: var(--pastel-mavi);
+}
+.bulunamadi__linkler svg {
+  width: 18px; height: 18px;
+  flex-shrink: 0;
+  color: var(--renk-birincil);
+}
+@media (max-width: 480px) {
+  .bulunamadi__linkler { grid-template-columns: 1fr; }
 }

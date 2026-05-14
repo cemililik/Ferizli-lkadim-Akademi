@@ -26,6 +26,8 @@
       </div>
     </div>
 
+    <div id="modulDurumYer"></div>
+
     <div class="yonetim-duzen">
       <aside class="yonetim-liste">
         <div class="yonetim-liste__ust">
@@ -51,6 +53,7 @@
     'use strict';
     if (!(await ADMIN.korumaliSayfaKapisi())) return;
     ADMIN.adminBarYukle('programlar');
+    ADMIN.modulDurumKutusuYerlestir('#modulDurumYer', 'programlar', 'Programlar');
 
     let liste = [];
     let secilenId = null;

@@ -12,21 +12,25 @@
   --renk-vurgu-koyu: #b71c1c;
   --renk-vurgu-acik: #e53935;
 
-  /* Pastel tonlar — bölüm arka planları, hover state'leri, vurgu kutuları */
-  --pastel-mavi: #eaf3fb;             /* Çok soft mavi */
-  --pastel-mavi-koyu: #d6e7f5;        /* Biraz daha doygun */
-  --pastel-pembe: #fdebec;            /* Logo kırmızısının pastel hali */
-  --pastel-pembe-koyu: #f9d6d8;
-  --pastel-krem: #fdf8ee;             /* Sıcak krem */
-  --pastel-yesil: #e8f5e9;            /* Soft yeşil — başarı/durum */
-  --pastel-mor: #f0ebf7;              /* Soft mor — alternatif */
-  --pastel-toprak: #f6efe7;           /* Çok hafif kum */
+  /* Pastel tonlar — bölüm arka planları, hover state'leri, vurgu kutuları
+     SPRINT 1 NOTU: Renkler önceki "yumuşak ama doygun" değerlerinden daha
+     nötr/açık tonlara çekildi. Maksat: pastel zemini hâlâ marka hissi taşısın
+     ama "2017 corporate" doygunluğunu kaybetsin. Modern (Stripe/Linear) sitelerde
+     pastel zemin yerine nötr slate tonları tercih ediliyor. */
+  --pastel-mavi: #f1f7fd;             /* eski #eaf3fb — daha açık */
+  --pastel-mavi-koyu: #e2edf7;        /* eski #d6e7f5 */
+  --pastel-pembe: #fdf4f5;            /* eski #fdebec — daha açık */
+  --pastel-pembe-koyu: #f9e0e3;       /* eski #f9d6d8 */
+  --pastel-krem: #fafaf8;             /* eski #fdf8ee — vintage tonu kalktı */
+  --pastel-yesil: #eff8f1;            /* eski #e8f5e9 */
+  --pastel-mor: #f5f1fa;              /* eski #f0ebf7 */
+  --pastel-toprak: #f8f4ef;           /* eski #f6efe7 */
 
   /* Nötr renkler — daha sıcak beyaz */
   --renk-yazi: #1a2332;
   --renk-yazi-acik: #4a5568;
-  --renk-yazi-soluk: #718096;
-  --renk-arka: #fdfcfa;               /* Saf beyaz değil — gözü yormasın */
+  --renk-yazi-soluk: #64748b;         /* eski #718096 — slate-500, AA için ≥4.5:1 */
+  --renk-arka: #ffffff;               /* eski #fdfcfa — saf beyaz; nötr pastel'lerle uyumlu */
   --renk-arka-yumusak: var(--pastel-mavi);
   --renk-arka-koyu: #0c1e3a;          /* Lacivert footer */
   --renk-cizgi: #e6ecf3;              /* Hafif mavimsi-soğuk gri çizgi */
@@ -86,10 +90,20 @@
   --golge-xl: 0 30px 60px -15px rgb(21 30 60 / 0.22);
   --golge-renk: 0 8px 24px -8px rgb(21 101 192 / 0.25);  /* mavi tinted */
 
-  /* Geçişler */
-  --gecis-hizli: 150ms ease;
-  --gecis: 250ms ease;
-  --gecis-yavas: 400ms ease;
+  /* Geçişler — SPRINT 4: easing sabitleri.
+     Varsayılan `ease` yerine cubic-bezier (Material/iOS standard) ile daha "modern" his.
+     - standard: çoğu UI geçişi (hover, focus, fade) — natural deceleration
+     - spring: dinamik feedback (button tap, popup açılış) — hafif overshoot hissi
+     - decelerate: girişler (page in, drawer open) — yavaşlayarak yerleşme
+     - accelerate: çıkışlar (kapanış, dismiss) — hızlanarak gitme */
+  --easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+
+  --gecis-hizli: 150ms var(--easing-standard);
+  --gecis: 250ms var(--easing-standard);
+  --gecis-yavas: 400ms var(--easing-standard);
 
   /* Konteyner */
   --konteyner-genislik: 1200px;
@@ -103,6 +117,12 @@
 *, *::before, *::after { box-sizing: border-box; }
 * { margin: 0; padding: 0; }
 
+/* HTML5 [hidden] attribute — UA kuralı (display:none) düşük specificity'li olduğu
+   için herhangi bir class-based display rule onu ezebiliyor (örn. .karti a {display:flex}
+   data-modul ile hide edilen <a>'yı görünür kılar). !important ile garantiye alıyoruz —
+   bu davranış HTML spec'inin de niyetidir, tarayıcılar !important koymuyor ama biz koyuyoruz. */
+[hidden] { display: none !important; }
+
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
@@ -114,6 +134,12 @@ html {
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
+  /* Tüm motion'ı azalt — accessibility & "iOS Reduce Motion" desteği */
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
 
 body {
@@ -151,13 +177,14 @@ h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   line-height: 1.2;
   color: var(--renk-yazi);
+  letter-spacing: -0.02em;            /* Modern başlık hissi — sıkışıklığı azaltır */
 }
 
-h1 { font-size: clamp(var(--yazi-3xl), 5vw, var(--yazi-5xl)); }
-h2 { font-size: clamp(var(--yazi-2xl), 4vw, var(--yazi-4xl)); }
-h3 { font-size: clamp(var(--yazi-xl), 3vw, var(--yazi-2xl)); }
-h4 { font-size: var(--yazi-xl); }
-h5 { font-size: var(--yazi-lg); }
+h1 { font-size: clamp(var(--yazi-3xl), 5vw, var(--yazi-5xl)); letter-spacing: -0.02em; }
+h2 { font-size: clamp(var(--yazi-2xl), 4vw, var(--yazi-4xl)); letter-spacing: -0.018em; }
+h3 { font-size: clamp(var(--yazi-xl), 3vw, var(--yazi-2xl)); letter-spacing: -0.015em; }
+h4 { font-size: var(--yazi-xl); letter-spacing: -0.01em; }
+h5 { font-size: var(--yazi-lg); letter-spacing: -0.005em; }
 
 p { margin-bottom: var(--bosluk-4); }
 p:last-child { margin-bottom: 0; }
@@ -233,6 +260,13 @@ p:last-child { margin-bottom: 0; }
 .metin-vurgu { color: var(--renk-vurgu); }
 .metin-birincil { color: var(--renk-birincil); }
 
+/* Giriş paragrafı (lead) — bolum-içi başlık altı açıklayıcı metin için */
+.metin-girisi {
+  color: var(--renk-yazi-acik);
+  font-size: var(--yazi-lg);
+  margin-block: var(--bosluk-5);
+}
+
 /* Focus-visible (klavye erişilebilirliği) */
 :focus-visible {
   outline: 3px solid var(--renk-vurgu);
@@ -252,9 +286,21 @@ p:last-child { margin-bottom: 0; }
   font-weight: 600;
   border-radius: var(--yuvarlak);
   text-decoration: none;
-  transition: top 150ms ease;
+  transition: top var(--gecis-hizli);
 }
 .skip-link:focus {
   top: var(--bosluk-3);
   color: #ffffff;
+}
+
+/* SPRINT 4: Sayfa girişi — main fade-up 220ms.
+   prefers-reduced-motion için global *:animation-duration override kuralı zaten
+   bu animasyonu otomatik olarak 0.01ms'ye düşürür → erişilebilirlik korunur.
+   Sticky header etkilenmesin diye sadece main hedeflenir. */
+@keyframes sayfa-giris {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+main {
+  animation: sayfa-giris 220ms var(--easing-decelerate) both;
 }

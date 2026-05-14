@@ -30,7 +30,7 @@
   <link rel="stylesheet" href="/assets/css/layout.css">
   <link rel="stylesheet" href="/assets/css/pages.css">
 </head>
-<body>
+<body data-sayfa-modul="hakkimizda">
 
   <div id="siteHeaderYer"></div>
 
@@ -47,24 +47,16 @@
       </div>
     </section>
 
+    <!-- Tüm içerik admin → Site Ayarları → "Hakkımızda İçeriği" altından yönetilir. -->
     <section class="bolum">
       <div class="kapsayici kapsayici-dar">
         <span class="serit-baslik">Kuruluş Hikâyemiz</span>
         <h2 data-veri="kurum.kisaAd">İlk Adım Akademi</h2>
 
-        <p style="font-size: var(--yazi-lg); color: var(--renk-yazi-acik); margin-top: var(--bosluk-5);">
-          <strong data-veri="kurum.ad">Özel Ferizli İlk Adım Akademi</strong>,
-          <span data-veri="kurum.kurulusYili">2023</span> yılında Ferizli'de kurulmuş bir
-          özel öğretim kursudur. Ortaokul ve lise düzeyindeki öğrencilerimize sınav
-          hazırlık, takviye ve etüt programları sunuyoruz.
-        </p>
+        <p data-veri-html="hakkimizda.hikayeMetni1"
+           style="font-size: var(--yazi-lg); color: var(--renk-yazi-acik); margin-top: var(--bosluk-5); white-space: pre-line;"></p>
 
-        <p>
-          Akademik programımız ve eğitim kadromuzla, öğrencilerimizin sadece sınav
-          başarısına değil, hayata hazırlanmasına da katkı sağlamayı hedefliyoruz.
-          Modern eğitim anlayışı ile sıcak bir kurum kültürünü birleştirerek,
-          her bir öğrencimizin potansiyelinin zirvesine ulaşması için çalışıyoruz.
-        </p>
+        <p data-veri-html="hakkimizda.hikayeMetni2" style="white-space: pre-line;"></p>
       </div>
     </section>
 
@@ -72,28 +64,42 @@
       <div class="kapsayici">
         <div class="izgara izgara--3">
           <div class="kart">
-            <div class="kart__ikon" aria-hidden="true">🎯</div>
+            <div class="kart__ikon" aria-hidden="true">
+              <!-- target (Lucide) -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"/>
+                <circle cx="12" cy="12" r="6"/>
+                <circle cx="12" cy="12" r="2"/>
+              </svg>
+            </div>
             <h3 class="kart__baslik">Misyonumuz</h3>
-            <p class="kart__metin">
-              Her öğrenciyi potansiyelinin zirvesine taşımak. Akademik başarının
-              yanında, karakter gelişimine ve sorumluluk duygusuna katkı sağlamak.
-            </p>
+            <p class="kart__metin" data-veri="hakkimizda.misyon" style="white-space: pre-line;"></p>
           </div>
           <div class="kart">
-            <div class="kart__ikon" aria-hidden="true">🌟</div>
+            <div class="kart__ikon" aria-hidden="true">
+              <!-- sparkles (Lucide) -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/>
+                <path d="M20 3v4"/>
+                <path d="M22 5h-4"/>
+                <path d="M4 17v2"/>
+                <path d="M5 18H3"/>
+              </svg>
+            </div>
             <h3 class="kart__baslik">Vizyonumuz</h3>
-            <p class="kart__metin">
-              Ferizli ve çevresinde adı güvenle anılan, mezunlarının gururla
-              andığı, sürekli kendini yenileyen bir eğitim kurumu olmak.
-            </p>
+            <p class="kart__metin" data-veri="hakkimizda.vizyon" style="white-space: pre-line;"></p>
           </div>
           <div class="kart">
-            <div class="kart__ikon" aria-hidden="true">💎</div>
+            <div class="kart__ikon" aria-hidden="true">
+              <!-- gem (Lucide) -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 3h12l4 6-10 13L2 9Z"/>
+                <path d="M11 3 8 9l4 13 4-13-3-6"/>
+                <path d="M2 9h20"/>
+              </svg>
+            </div>
             <h3 class="kart__baslik">Değerlerimiz</h3>
-            <p class="kart__metin">
-              Disiplinli çalışma ortamı, samimi öğretmen-öğrenci ilişkisi,
-              veliye karşı şeffaflık ve sürekli iyileştirme anlayışı.
-            </p>
+            <p class="kart__metin" data-veri="hakkimizda.degerler" style="white-space: pre-line;"></p>
           </div>
         </div>
       </div>
@@ -101,20 +107,21 @@
 
     <section class="bolum">
       <div class="kapsayici">
-        <div class="iki-sutun">
-          <div class="iki-sutun__gorsel"><span>📷 Kurucu fotoğrafı</span></div>
+        <div class="iki-sutun iki-sutun--kurucu">
+          <!-- Kurucu fotoğrafı: admin → Site Ayarları → Hakkımızda İçeriği → "Kurucu Fotoğrafı".
+               Foto yoksa main.js bu div'i tamamen kaldırır, grid tek sütuna düşer. -->
+          <div class="iki-sutun__gorsel kurucu-foto" data-veri-src-kaldir-bossa>
+            <img alt="Kurucu fotoğrafı" data-veri-src="hakkimizda.kurucuFoto" loading="lazy" hidden>
+          </div>
           <div>
             <span class="serit-baslik">Kurucu Mesajı</span>
-            <h2 style="margin-bottom: var(--bosluk-5);">"Eğitim, doğru adımlarla başlar."</h2>
-            <p style="color: var(--renk-yazi-acik);">
-              Sevgili veliler ve öğrenciler, kurumumuzun ilk gününden bugüne kadar
-              hedefimiz hep aynı oldu: her bir öğrencimizin akademik ve kişisel
-              gelişimine destek olmak. Modern eğitim anlayışı ile sıcak bir kurum
-              kültürünü birleştirerek, sizleri en iyi şekilde geleceğe hazırlamak için
-              buradayız.
-            </p>
+            <h2 style="margin-bottom: var(--bosluk-5);">
+              "<span data-veri="hakkimizda.kurucuMesajiBaslik">Eğitim, doğru adımlarla başlar.</span>"
+            </h2>
+            <p data-veri="hakkimizda.kurucuMesajiMetni"
+               style="color: var(--renk-yazi-acik); white-space: pre-line;"></p>
             <p style="margin-top: var(--bosluk-5); font-weight: 600;">
-              — <span style="color: var(--renk-birincil);">Kurum Yönetimi</span>
+              — <span data-veri="hakkimizda.kurucuImza" style="color: var(--renk-birincil);">Kurum Yönetimi</span>
             </p>
           </div>
         </div>
