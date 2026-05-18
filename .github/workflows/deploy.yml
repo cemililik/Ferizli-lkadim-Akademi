@@ -108,33 +108,39 @@ jobs:
           DB_PASS: ${{ secrets.DB_PASS }}
           SITE_URL: ${{ vars.SITE_URL }}
           MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
+        # NOT: `php -r 'KOD'` yaklaşımı tek tırnak kaçışları yüzünden kırılmıştı
+        # (lambda içinde "'" karakteri bash outer string'ini kapatıyordu).
+        # Heredoc ile PHP'ye stdin'den geçiyoruz — tırnak/escape sorunu yok.
+        # Tag 'PHP_EOF' (tırnaklı) ile bash PHP değişkenlerini expand etmez.
         run: |
-          php -r '
-            $tpl = file_get_contents("api/config.template.php");
-            if ($tpl === false) { fwrite(STDERR, "Template okunamadı\n"); exit(1); }
-            $esc = fn($v) => str_replace(["\\\\", "\""], ["\\\\\\\\", "\\\""], (string)$v);
-            // Sayısal alanlar tırnaksız, string alanlar tek tırnaklı placeholder
-            // → addslashes ile tek tırnak içine güvenli yerleştir.
-            $strEsc = fn($v) => str_replace(["\\\\", "'"], ["\\\\\\\\", "\\'"], (string)$v);
-            $repl = [
-              "__DB_HOST__"          => $strEsc(getenv("DB_HOST") ?: ""),
-              "__DB_PORT__"          => (string)(int)(getenv("DB_PORT") ?: 3306),
-              "__DB_NAME__"          => $strEsc(getenv("DB_NAME") ?: ""),
-              "__DB_USER__"          => $strEsc(getenv("DB_USER") ?: ""),
-              "__DB_PASS__"          => $strEsc(getenv("DB_PASS") ?: ""),
-              "__SITE_URL__"         => $strEsc(getenv("SITE_URL") ?: ""),
-              "__MIGRATION_SECRET__" => $strEsc(getenv("MIGRATION_SECRET") ?: ""),
-            ];
-            $out = strtr($tpl, $repl);
-            // Doğruluğu sözdizimi seviyesinde test et — bozuk config sunucuda hata verir
-            file_put_contents("api/config.php", $out);
-            $check = shell_exec("php -l api/config.php 2>&1");
-            if (strpos($check, "No syntax errors") === false) {
-              fwrite(STDERR, "Üretilen config.php geçersiz:\n$check\n");
-              exit(1);
-            }
-            echo "✓ api/config.php üretildi (" . strlen($out) . " bayt)\n";
-          '
+          php <<'PHP_EOF'
+          <?php
+          $tpl = file_get_contents("api/config.template.php");
+          if ($tpl === false) {
+            fwrite(STDERR, "Template okunamadı\n");
+            exit(1);
+          }
+          // Tek tırnaklı string'e güvenli yerleştirme: \ ve ' karakterlerini kaçır.
+          $strEsc = fn($v) => str_replace(['\\', "'"], ['\\\\', "\\'"], (string)$v);
+          $repl = [
+            "__DB_HOST__"          => $strEsc(getenv("DB_HOST") ?: ""),
+            "__DB_PORT__"          => (string)(int)(getenv("DB_PORT") ?: 3306),
+            "__DB_NAME__"          => $strEsc(getenv("DB_NAME") ?: ""),
+            "__DB_USER__"          => $strEsc(getenv("DB_USER") ?: ""),
+            "__DB_PASS__"          => $strEsc(getenv("DB_PASS") ?: ""),
+            "__SITE_URL__"         => $strEsc(getenv("SITE_URL") ?: ""),
+            "__MIGRATION_SECRET__" => $strEsc(getenv("MIGRATION_SECRET") ?: ""),
+          ];
+          $out = strtr($tpl, $repl);
+          file_put_contents("api/config.php", $out);
+          // Sözdizimi kontrolü — bozuk config sunucuda hata verir
+          $check = shell_exec("php -l api/config.php 2>&1");
+          if (strpos($check, "No syntax errors") === false) {
+            fwrite(STDERR, "Üretilen config.php geçersiz:\n" . $check . "\n");
+            exit(1);
+          }
+          echo "✓ api/config.php üretildi (" . strlen($out) . " bayt)\n";
+          PHP_EOF
 
       # ----- DEFAULT: FTP/FTPS deploy (paylaşımlı hosting için) -----
       - name: Dosyaları FTP/FTPS ile yükle
@@ -173,7 +179,9 @@ jobs:
             **/KURULUM_HOSTING.md
             **/KURULUM_PHP.md
             **/ANALIZ.md
+            **/ANALIZ_UI_UX.md
             **/ADMIN_REHBERI.md
+            **/README.md
             **/api/config.template.php
             **/api/config.example.php
             **/*.log
@@ -201,7 +209,9 @@ jobs:
     needs: deploy
     runs-on: ubuntu-latest
     if: ${{ !inputs.skip_migrations }}
-    environment: production
+    # NOT: 'environment: production' kasıtlı olarak yok. Repository-level
+    # secret'lar (Settings → Secrets and variables → Actions) zaten erişilebilir.
+    # Manuel onay sadece deploy job'unda — onaylandıysa migration de geçer.
     steps:
       - name: Migration endpoint'ini tetikle
         env:

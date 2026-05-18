@@ -9,7 +9,7 @@ $statik = ['', '/hakkimizda.html','/programlar.html','/kadro.html',
            '/iletisim.html','/basvuru.html','/blog.html','/kvkk.html'];
 $cfg = function_exists('get_config') ? get_config() : [];
 // Base URL: config'de explicit ve localhost değilse onu kullan; aksi halde request'ten türet.
-// Production'da SITE_URL set edilmemişse veya hâlâ localhost'sa, ferizliilkadim.com gibi
+// Production'da SITE_URL set edilmemişse veya hâlâ localhost'sa, ferizliilkadimakademi.com gibi
 // gerçek domain otomatik kullanılır — sitemap localhost URL'leriyle indekslenmez.
 $configured = $cfg['site']['url'] ?? '';
 if ($configured && !preg_match('#://(localhost|127\.0\.0\.1|0\.0\.0\.0)#i', $configured)) {
