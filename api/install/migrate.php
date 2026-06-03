@@ -27,6 +27,27 @@ require __DIR__ . '/../helpers.php';
 require __DIR__ . '/../db.php';
 
 $isCLI = php_sapi_name() === 'cli';
+
+// HTTP modunda: PHP'nin kendi timeout'u curl'ün max-time'ından önce ateşlensin
+// (curl: 120s → PHP: 90s) böylece fatal hatalar bile JSON olarak dönebilir.
+if (!$isCLI) {
+    set_time_limit(90);
+    header('Content-Type: application/json; charset=utf-8');
+
+    // Fatal hataları (E_ERROR, parse, vb.) yakala — Apache'nin boş/HTML yanıtı yerine JSON döner.
+    register_shutdown_function(function () {
+        $err = error_get_last();
+        if ($err && in_array($err['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR], true)) {
+            if (!headers_sent()) http_response_code(500);
+            echo json_encode([
+                'ok'   => false,
+                'hata' => 'PHP fatal: ' . $err['message'],
+                'dosya' => $err['file'] . ':' . $err['line'],
+            ], JSON_UNESCAPED_UNICODE);
+        }
+    });
+}
+
 $cfg = get_config();
 
 /* --------------------------------------------------------------
@@ -142,25 +163,6 @@ try {
         $pdo->exec("INSERT INTO _migrations (ad) VALUES ('000_bootstrap')");
         $log("✓ _migrations tablosu kuruldu");
 
-        // Admin seed: config'de parola tanımlıysa ve hash hâlâ *locked* ise ata.
-        // Ayrı bir HTTP endpoint yerine burada yapılıyor — hosting WAF uyumsuzluklarından kaçınmak için.
-        $seedSifre = (string)($cfg['install']['admin_seed_password'] ?? '');
-        if ($seedSifre !== '' && strlen($seedSifre) >= 8) {
-            $sel = $pdo->prepare(
-                "SELECT id, sifre_hash FROM admin_kullanicilar WHERE kullanici_adi = 'admin' LIMIT 1"
-            );
-            $sel->execute();
-            $adminKayit = $sel->fetch(PDO::FETCH_ASSOC);
-            if ($adminKayit && $adminKayit['sifre_hash'] === '*locked*') {
-                $hash = password_hash($seedSifre, PASSWORD_DEFAULT);
-                $upd  = $pdo->prepare(
-                    "UPDATE admin_kullanicilar SET sifre_hash = ?, aktif = 1 WHERE id = ?"
-                );
-                $upd->execute([$hash, (int)$adminKayit['id']]);
-                $basaril[] = 'admin_seed';
-                $log("✓ Admin parolası atandı (config'den seed)");
-            }
-        }
     }
 
     /* ---------- 2) Artımlı migration'lar ---------- */
@@ -201,7 +203,29 @@ try {
         $log("ℹ sql/migrations/ klasörü yok — ek migration uygulanmadı.");
     }
 
-    /* ---------- 3) Cevap ---------- */
+    /* ---------- 3) Admin seed ----------
+       Her çağrıda çalışır; hash *locked* değilse hiçbir şey yapmaz (idempotent).
+       Bootstrap bloğundan çıkarıldı — _migrations zaten varsa bootstrap atlanır
+       ama admin parolası hâlâ atanmamış olabilir. */
+    $seedSifre = (string)($cfg['install']['admin_seed_password'] ?? '');
+    if ($seedSifre !== '' && strlen($seedSifre) >= 8 && empty($hatalar)) {
+        $sel = $pdo->prepare(
+            "SELECT id, sifre_hash FROM admin_kullanicilar WHERE kullanici_adi = 'admin' LIMIT 1"
+        );
+        $sel->execute();
+        $adminKayit = $sel->fetch(PDO::FETCH_ASSOC);
+        if ($adminKayit && $adminKayit['sifre_hash'] === '*locked*') {
+            $hash = password_hash($seedSifre, PASSWORD_DEFAULT);
+            $upd  = $pdo->prepare(
+                "UPDATE admin_kullanicilar SET sifre_hash = ?, aktif = 1 WHERE id = ?"
+            );
+            $upd->execute([$hash, (int)$adminKayit['id']]);
+            $basaril[] = 'admin_seed';
+            $log("✓ Admin parolası atandı");
+        }
+    }
+
+    /* ---------- 4) Cevap ---------- */
     if ($isCLI) {
         echo "\n";
         echo "Başarılı: " . count($basaril) . "\n";

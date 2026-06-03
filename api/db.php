@@ -35,7 +35,7 @@ function db(): PDO {
     $d = $cfg['db'];
 
     $dsn = sprintf(
-        'mysql:host=%s;port=%d;dbname=%s;charset=%s',
+        'mysql:host=%s;port=%d;dbname=%s;charset=%s;connect_timeout=10',
         $d['host'], (int)$d['port'], $d['name'], $d['charset']
     );
 

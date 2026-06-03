@@ -208,20 +208,35 @@ jobs:
         run: |
           set -e
           echo "→ POST $SITE_URL/api/install/migrate.php"
-          response=$(curl -sS \
-            -w "\n___STATUS:%{http_code}" \
+          curl_out=$(curl -sS \
+            -w "\n___STATUS:%{http_code}\n___TIME:%{time_total}" \
             --max-time 120 \
             --insecure \
             -X POST \
             -H "X-Migration-Key: $MIGRATION_SECRET" \
-            "$SITE_URL/api/install/migrate.php")
-          status=$(echo "$response" | grep "___STATUS:" | cut -d: -f2)
-          body=$(echo "$response" | sed '/___STATUS:/d')
-          echo "HTTP $status"
-          echo "Yanıt:"
+            "$SITE_URL/api/install/migrate.php" 2>&1) || curl_exit=$?
+
+          status=$(echo "$curl_out" | grep "___STATUS:" | cut -d: -f2)
+          elapsed=$(echo "$curl_out" | grep "___TIME:" | cut -d: -f2)
+          body=$(echo "$curl_out" | grep -v "___STATUS:" | grep -v "___TIME:")
+
+          echo "HTTP $status (${elapsed}s)"
+          echo "─── Yanıt ───────────────────────────────"
           echo "$body"
+          echo "─────────────────────────────────────────"
+
+          if [[ -n "${curl_exit:-}" ]]; then
+            echo "❌ curl hatası (exit $curl_exit) — bağlantı kurulamadı veya timeout"
+            echo "   Olası nedenler: SSL sorunu, sunucu yanıt vermiyor, rate-limit"
+            exit 1
+          fi
+
           if [[ "$status" != "200" ]]; then
             echo "❌ Migration başarısız (HTTP $status)"
+            # JSON yanıtsa hatayı ayrıştır
+            if echo "$body" | python3 -c "import json,sys; d=json.load(sys.stdin); [print('  ✗',h['dosya'],':',h['mesaj']) for h in d.get('hatalar',[])]" 2>/dev/null; then
+              true
+            fi
             exit 1
           fi
           echo "✓ Migration tamamlandı"
