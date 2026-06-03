@@ -242,13 +242,16 @@ jobs:
         run: |
           set -e
           echo "→ POST $SITE_URL/api/install/seed-admin.php"
+          # Parola JSON body üzerinden gönderiliyor; WAF "X-*-Password" header'larını blokluyor.
+          SEED_BODY=$(python3 -c "import json,os; print(json.dumps({'password': os.environ['ADMIN_SEED_PASSWORD']}))")
           response=$(curl -sS \
             -w "\n___STATUS:%{http_code}" \
             --max-time 60 \
             --insecure \
             -X POST \
             -H "X-Migration-Key: $MIGRATION_SECRET" \
-            -H "X-Admin-Password: $ADMIN_SEED_PASSWORD" \
+            -H "Content-Type: application/json" \
+            -d "$SEED_BODY" \
             "$SITE_URL/api/install/seed-admin.php")
           status=$(echo "$response" | grep "___STATUS:" | cut -d: -f2)
           body=$(echo "$response" | sed '/___STATUS:/d')

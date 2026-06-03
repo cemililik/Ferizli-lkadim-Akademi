@@ -62,15 +62,19 @@ if ($beklenenAnahtar === '' || $gelenAnahtar === ''
 }
 
 /* ---------------------------------------------------------------
-   4. X-Admin-Password header'ından parolayı al
+   4. POST body (JSON) üzerinden parolayı al
+   Header yerine body kullanılıyor: bazı WAF/ModSecurity kurulumları
+   "Password" içeren özel header'ları bloklar.
 --------------------------------------------------------------- */
-$sifre = (string)($_SERVER['HTTP_X_ADMIN_PASSWORD'] ?? '');
+$body  = (string)file_get_contents('php://input');
+$input = $body !== '' ? json_decode($body, true) : null;
+$sifre = (string)($input['password'] ?? '');
 
 if ($sifre === '' || strlen($sifre) < 8) {
     http_response_code(422);
     echo json_encode([
         'ok'   => false,
-        'hata' => 'X-Admin-Password header eksik veya 8 karakterden kısa.',
+        'hata' => 'JSON body\'de "password" alanı eksik veya 8 karakterden kısa.',
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
