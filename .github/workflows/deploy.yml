@@ -227,54 +227,11 @@ jobs:
           echo "✓ Migration tamamlandı"
 
   # ====================================================================
-  # 4) Seed: ilk kurulumda admin parolasını atar
-  #    Admin kaydı zaten parola almışsa ("zaten_ayarli") sessizce geçer.
-  # ====================================================================
-  seed:
-    name: Seed admin password
-    needs: migrate
-    runs-on: ubuntu-latest
-    if: ${{ !inputs.skip_migrations }}
-    steps:
-      - name: Admin seed endpoint'ini çağır
-        env:
-          SITE_URL: ${{ vars.SITE_URL }}
-          MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
-        run: |
-          set -e
-          echo "→ POST $SITE_URL/api/install/seed-admin.php"
-          # Parola config.php'den okunuyor — request body/header gönderilmiyor.
-          response=$(curl -sS \
-            -w "\n___STATUS:%{http_code}" \
-            --max-time 60 \
-            --insecure \
-            -X POST \
-            -H "X-Migration-Key: $MIGRATION_SECRET" \
-            "$SITE_URL/api/install/seed-admin.php")
-          status=$(echo "$response" | grep "___STATUS:" | cut -d: -f2)
-          body=$(echo "$response" | sed '/___STATUS:/d')
-          echo "HTTP $status"
-          echo "Yanıt: $body"
-          if [[ "$status" != "200" ]]; then
-            echo "❌ Admin seed başarısız (HTTP $status)"
-            exit 1
-          fi
-          durum=$(echo "$body" | python3 -c "import json,sys; print(json.load(sys.stdin).get('durum',''))")
-          if [[ "$durum" == "guncellendi" ]]; then
-            echo "✓ Admin parolası atandı (ilk kurulum)"
-          elif [[ "$durum" == "zaten_ayarli" ]]; then
-            echo "✓ Admin parolası zaten ayarlı — dokunulmadı"
-          else
-            echo "❌ Beklenmedik yanıt: $body"
-            exit 1
-          fi
-
-  # ====================================================================
-  # 5) Smoke test: site açılıyor mu?
+  # 4) Smoke test: site açılıyor mu?
   # ====================================================================
   smoke-test:
     name: Smoke test
-    needs: [deploy, migrate, seed]
+    needs: [deploy, migrate]
     if: always() && needs.deploy.result == 'success'
     runs-on: ubuntu-latest
     steps:

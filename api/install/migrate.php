@@ -141,6 +141,26 @@ try {
         );
         $pdo->exec("INSERT INTO _migrations (ad) VALUES ('000_bootstrap')");
         $log("✓ _migrations tablosu kuruldu");
+
+        // Admin seed: config'de parola tanımlıysa ve hash hâlâ *locked* ise ata.
+        // Ayrı bir HTTP endpoint yerine burada yapılıyor — hosting WAF uyumsuzluklarından kaçınmak için.
+        $seedSifre = (string)($cfg['install']['admin_seed_password'] ?? '');
+        if ($seedSifre !== '' && strlen($seedSifre) >= 8) {
+            $sel = $pdo->prepare(
+                "SELECT id, sifre_hash FROM admin_kullanicilar WHERE kullanici_adi = 'admin' LIMIT 1"
+            );
+            $sel->execute();
+            $adminKayit = $sel->fetch(PDO::FETCH_ASSOC);
+            if ($adminKayit && $adminKayit['sifre_hash'] === '*locked*') {
+                $hash = password_hash($seedSifre, PASSWORD_DEFAULT);
+                $upd  = $pdo->prepare(
+                    "UPDATE admin_kullanicilar SET sifre_hash = ?, aktif = 1 WHERE id = ?"
+                );
+                $upd->execute([$hash, (int)$adminKayit['id']]);
+                $basaril[] = 'admin_seed';
+                $log("✓ Admin parolası atandı (config'den seed)");
+            }
+        }
     }
 
     /* ---------- 2) Artımlı migration'lar ---------- */
