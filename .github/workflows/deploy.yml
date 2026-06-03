@@ -207,39 +207,79 @@ jobs:
           MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
         run: |
           set -e
-          echo "→ POST $SITE_URL/api/install/migrate.php"
-          curl_out=$(curl -sS \
-            -w "\n___STATUS:%{http_code}\n___TIME:%{time_total}" \
-            --max-time 120 \
-            --insecure \
-            -X POST \
-            -H "X-Migration-Key: $MIGRATION_SECRET" \
-            "$SITE_URL/api/install/migrate.php" 2>&1) || curl_exit=$?
+          URL="$SITE_URL/api/install/migrate.php"
+          echo "→ POST $URL"
 
-          status=$(echo "$curl_out" | grep "___STATUS:" | cut -d: -f2)
-          elapsed=$(echo "$curl_out" | grep "___TIME:" | cut -d: -f2)
-          body=$(echo "$curl_out" | grep -v "___STATUS:" | grep -v "___TIME:")
+          # GoDaddy paylaşımlı hosting WAF/firewall'u, datacenter IP'lerinden
+          # (GitHub runner = Azure) ve 'curl' user-agent'ından gelen otomatik
+          # istekleri sık sık SESSİZCE düşürür (greylisting) → curl 120s boyunca
+          # hiçbir yanıt alamaz (HTTP 000). Buna karşı:
+          #   --connect-timeout 15 : bağlantı düzeyi blok 15s'de patlasın (120s değil)
+          #   -A <tarayıcı UA>     : naif WAF user-agent kurallarını aşar
+          #   3 denemeli retry     : ilk isteği greyleyip sonrakine izin veren WAF'ı geçer
+          #   timing breakdown     : takılmanın yeri (connect/tls/ttfb) loga yazılır
+          UA="Mozilla/5.0 (compatible; FerizliDeployBot/1.0; +https://ferizliilkadimakademi.com)"
+          attempt=0; max=3
+          while :; do
+            attempt=$((attempt+1))
+            echo "── Deneme $attempt/$max ──────────────────────────"
+            curl_exit=0
+            curl_out=$(curl -sS \
+              -w "\n___STATUS:%{http_code}\n___TIME:%{time_total}\n___CONNECT:%{time_connect}\n___TLS:%{time_appconnect}\n___TTFB:%{time_starttransfer}" \
+              --connect-timeout 15 \
+              --max-time 120 \
+              --insecure \
+              -A "$UA" \
+              -X POST \
+              -H "X-Migration-Key: $MIGRATION_SECRET" \
+              "$URL" 2>&1) || curl_exit=$?
 
-          echo "HTTP $status (${elapsed}s)"
-          echo "─── Yanıt ───────────────────────────────"
-          echo "$body"
-          echo "─────────────────────────────────────────"
+            status=$(echo "$curl_out"   | grep "___STATUS:"  | cut -d: -f2)
+            elapsed=$(echo "$curl_out"  | grep "___TIME:"    | cut -d: -f2)
+            tconnect=$(echo "$curl_out" | grep "___CONNECT:" | cut -d: -f2)
+            ttls=$(echo "$curl_out"     | grep "___TLS:"     | cut -d: -f2)
+            tttfb=$(echo "$curl_out"    | grep "___TTFB:"    | cut -d: -f2)
+            body=$(echo "$curl_out" | grep -vE "___(STATUS|TIME|CONNECT|TLS|TTFB):")
 
-          if [[ -n "${curl_exit:-}" ]]; then
-            echo "❌ curl hatası (exit $curl_exit) — bağlantı kurulamadı veya timeout"
-            echo "   Olası nedenler: SSL sorunu, sunucu yanıt vermiyor, rate-limit"
-            exit 1
-          fi
+            echo "HTTP ${status:-000} | total=${elapsed}s connect=${tconnect}s tls=${ttls}s ttfb=${tttfb}s"
+            echo "─── Yanıt ───────────────────────────────"
+            echo "$body"
+            echo "─────────────────────────────────────────"
 
-          if [[ "$status" != "200" ]]; then
-            echo "❌ Migration başarısız (HTTP $status)"
-            # JSON yanıtsa hatayı ayrıştır
-            if echo "$body" | python3 -c "import json,sys; d=json.load(sys.stdin); [print('  ✗',h['dosya'],':',h['mesaj']) for h in d.get('hatalar',[])]" 2>/dev/null; then
-              true
+            # Başarı
+            if [[ "$curl_exit" == "0" && "$status" == "200" ]]; then
+              echo "✓ Migration tamamlandı"
+              exit 0
             fi
-            exit 1
-          fi
-          echo "✓ Migration tamamlandı"
+
+            # Sunucu yanıt verdi ama hata (4xx/5xx) → retry anlamsız, hemen çık
+            if [[ "$curl_exit" == "0" && -n "$status" && "$status" != "000" ]]; then
+              echo "❌ Migration başarısız (HTTP $status)"
+              echo "$body" | python3 -c "import json,sys; d=json.load(sys.stdin); [print('  ✗',h.get('dosya','?'),':',h.get('mesaj','?')) for h in d.get('hatalar',[])]" 2>/dev/null || true
+              exit 1
+            fi
+
+            # Bağlantı/timeout hatası → nerede takıldığını teşhis et
+            echo "⚠ curl exit=$curl_exit (bağlantı/timeout)"
+            if [[ -z "$tconnect" || "$tconnect" == "0.000000" ]]; then
+              echo "   → TCP bağlantısı hiç kurulamadı: firewall runner IP'sini bloklamış olabilir."
+            elif [[ "$ttls" == "0.000000" ]]; then
+              echo "   → TLS handshake tamamlanamadı."
+            else
+              echo "   → Bağlantı kuruldu, sunucu yanıt vermedi (PHP/WAF tarpit)."
+            fi
+
+            if [[ $attempt -ge $max ]]; then
+              echo "❌ $max deneme de başarısız."
+              echo "   Muhtemel kök neden: GoDaddy WAF/firewall otomatik isteği bloklıyor."
+              echo "   Kalıcı çözüm seçenekleri:"
+              echo "     (1) cPanel'de /api/install/ yolunu veya runner IP'lerini whitelist'le"
+              echo "     (2) migrate.php'yi cPanel Cron Job ile sunucu-içi CLI olarak çalıştır (inbound HTTP gerekmez)"
+              echo "     (3) endpoint yolunu 'install/migrate' içermeyen bir isimle değiştir"
+              exit 1
+            fi
+            sleep $((attempt * 10))
+          done
 
   # ====================================================================
   # 4) Smoke test: site açılıyor mu?
