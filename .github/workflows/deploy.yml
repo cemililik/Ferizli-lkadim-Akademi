@@ -108,6 +108,7 @@ jobs:
           DB_PASS: ${{ secrets.DB_PASS }}
           SITE_URL: ${{ vars.SITE_URL }}
           MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
+          ADMIN_SEED_PASSWORD: ${{ secrets.ADMIN_SEED_PASSWORD }}
         # NOT: `php -r 'KOD'` yaklaşımı tek tırnak kaçışları yüzünden kırılmıştı
         # (lambda içinde "'" karakteri bash outer string'ini kapatıyordu).
         # Heredoc ile PHP'ye stdin'den geçiyoruz — tırnak/escape sorunu yok.
@@ -129,7 +130,8 @@ jobs:
             "__DB_USER__"          => $strEsc(getenv("DB_USER") ?: ""),
             "__DB_PASS__"          => $strEsc(getenv("DB_PASS") ?: ""),
             "__SITE_URL__"         => $strEsc(getenv("SITE_URL") ?: ""),
-            "__MIGRATION_SECRET__" => $strEsc(getenv("MIGRATION_SECRET") ?: ""),
+            "__MIGRATION_SECRET__"      => $strEsc(getenv("MIGRATION_SECRET") ?: ""),
+            "__ADMIN_SEED_PASSWORD__"   => $strEsc(getenv("ADMIN_SEED_PASSWORD") ?: ""),
           ];
           $out = strtr($tpl, $repl);
           file_put_contents("api/config.php", $out);
@@ -238,18 +240,16 @@ jobs:
         env:
           SITE_URL: ${{ vars.SITE_URL }}
           MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
-          ADMIN_SEED_PASSWORD: ${{ secrets.ADMIN_SEED_PASSWORD }}
         run: |
           set -e
           echo "→ POST $SITE_URL/api/install/seed-admin.php"
-          # Parola form-encoded body ile gönderiliyor (GoDaddy application/json kabul etmiyor).
+          # Parola config.php'den okunuyor — request body/header gönderilmiyor.
           response=$(curl -sS \
             -w "\n___STATUS:%{http_code}" \
             --max-time 60 \
             --insecure \
             -X POST \
             -H "X-Migration-Key: $MIGRATION_SECRET" \
-            --data-urlencode "password=$ADMIN_SEED_PASSWORD" \
             "$SITE_URL/api/install/seed-admin.php")
           status=$(echo "$response" | grep "___STATUS:" | cut -d: -f2)
           body=$(echo "$response" | sed '/___STATUS:/d')

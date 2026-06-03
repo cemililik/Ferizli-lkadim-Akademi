@@ -43,4 +43,7 @@ return [
     'migration' => [
         'secret' => '__MIGRATION_SECRET__',
     ],
+    'install' => [
+        'admin_seed_password' => '__ADMIN_SEED_PASSWORD__',
+    ],
 ];

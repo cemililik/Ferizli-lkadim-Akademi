@@ -62,23 +62,18 @@ if ($beklenenAnahtar === '' || $gelenAnahtar === ''
 }
 
 /* ---------------------------------------------------------------
-   4. POST body (JSON) üzerinden parolayı al
-   Header yerine body kullanılıyor: bazı WAF/ModSecurity kurulumları
-   "Password" içeren özel header'ları bloklar.
+   4. Admin seed parolasını config'den oku
+   Parola dışarıdan (header/body) alınmıyor: GoDaddy WAF/ModSecurity
+   request içeriğini bloklayabiliyor. Bunun yerine config.php'ye gömülü
+   değer kullanılıyor — tıpkı migration.secret gibi.
 --------------------------------------------------------------- */
-// Önce form POST ($_POST), yoksa JSON body — hosting uyumluluğu için form tercih edilir.
-$sifre = (string)($_POST['password'] ?? '');
-if ($sifre === '') {
-    $body  = (string)file_get_contents('php://input');
-    $input = $body !== '' ? json_decode($body, true) : null;
-    $sifre = (string)($input['password'] ?? '');
-}
+$sifre = (string)($cfg['install']['admin_seed_password'] ?? '');
 
 if ($sifre === '' || strlen($sifre) < 8) {
-    http_response_code(422);
+    http_response_code(500);
     echo json_encode([
         'ok'   => false,
-        'hata' => '"password" alanı eksik veya 8 karakterden kısa.',
+        'hata' => 'config.php\'de install.admin_seed_password eksik veya çok kısa.',
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
