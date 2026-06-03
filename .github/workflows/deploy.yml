@@ -209,6 +209,7 @@ jobs:
           response=$(curl -sS \
             -w "\n___STATUS:%{http_code}" \
             --max-time 120 \
+            --insecure \
             -X POST \
             -H "X-Migration-Key: $MIGRATION_SECRET" \
             "$SITE_URL/api/install/migrate.php")
@@ -244,6 +245,7 @@ jobs:
           response=$(curl -sS \
             -w "\n___STATUS:%{http_code}" \
             --max-time 60 \
+            --insecure \
             -X POST \
             -H "X-Migration-Key: $MIGRATION_SECRET" \
             -H "X-Admin-Password: $ADMIN_SEED_PASSWORD" \
