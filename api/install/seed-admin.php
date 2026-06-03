@@ -66,15 +66,19 @@ if ($beklenenAnahtar === '' || $gelenAnahtar === ''
    Header yerine body kullanılıyor: bazı WAF/ModSecurity kurulumları
    "Password" içeren özel header'ları bloklar.
 --------------------------------------------------------------- */
-$body  = (string)file_get_contents('php://input');
-$input = $body !== '' ? json_decode($body, true) : null;
-$sifre = (string)($input['password'] ?? '');
+// Önce form POST ($_POST), yoksa JSON body — hosting uyumluluğu için form tercih edilir.
+$sifre = (string)($_POST['password'] ?? '');
+if ($sifre === '') {
+    $body  = (string)file_get_contents('php://input');
+    $input = $body !== '' ? json_decode($body, true) : null;
+    $sifre = (string)($input['password'] ?? '');
+}
 
 if ($sifre === '' || strlen($sifre) < 8) {
     http_response_code(422);
     echo json_encode([
         'ok'   => false,
-        'hata' => 'JSON body\'de "password" alanı eksik veya 8 karakterden kısa.',
+        'hata' => '"password" alanı eksik veya 8 karakterden kısa.',
     ], JSON_UNESCAPED_UNICODE);
     exit;
 }
