@@ -53,7 +53,7 @@ flowchart LR
 
 ---
 
-## 2. Eklenecek Secrets (gizli, 9 adet)
+## 2. Eklenecek Secrets (gizli, 10 adet)
 
 | Ad | GoDaddy / cPanel'de nereden alınır | Örnek değer |
 |---|---|---|
@@ -66,6 +66,11 @@ flowchart LR
 | `DB_USER` | cPanel → **MySQL Databases** → "Add User to Database" | `cpaneluser_ferizli` |
 | `DB_PASS` | DB kullanıcısı oluştururken set ettiğin şifre | (şifre) |
 | `MIGRATION_SECRET` | **Biz üretiyoruz** (aşağıdaki komutla) | 64 karakter hex |
+| `ADMIN_SEED_PASSWORD` | **Biz belirliyoruz** — ilk kurulumda admin parolası | `12345678` (sonra değiştir!) |
+
+> **`ADMIN_SEED_PASSWORD` notu:** Sadece ilk kurulumda (`sifre_hash = '*locked*'`) çalışır.
+> Admin parolası bir kez atandıktan sonra bu secret'ın değiştirilmesi etki etmez —
+> şifreyi değiştirmek için admin panelinden "Şifre Değiştir" kullan.
 
 ### MIGRATION_SECRET üretmek
 
@@ -83,7 +88,7 @@ Bu değeri:
 
 ---
 
-## 3. Eklenecek Variables (gizli değil, 5 zorunlu + 1 opsiyonel)
+## 3. Eklenecek Variables (gizli değil, 5 adet)
 
 | Ad | Değer | Açıklama |
 |---|---|---|
@@ -92,35 +97,108 @@ Bu değeri:
 | `FTP_PROTOCOL` | `ftps` | `ftps` (önerilen), `sftp` veya `ftp` (son çare) |
 | `FTP_REMOTE_PATH` | `/public_html/` | GoDaddy varsayılan web kökü |
 | `DEPLOY_DRY_RUN` | `true` (ilk deneme), sonra `false` | Dosyaları yüklemeden simule eder |
-| `DEPLOY_METHOD` *(opsiyonel)* | (boş) veya `ssh` | Sadece VPS'de `ssh` yap; GoDaddy shared'da set etme |
 
 ---
 
-## 4. Opsiyonel: SSH/VPS yöntemi için ek secrets
+## 4. MIGRATION_SECRET — Nasıl çalışır?
 
-`DEPLOY_METHOD=ssh` ise yukarıdaki FTP_* yerine bunları ekle:
+Diğer secret'lar (FTP/DB credentials) basit: müşteriden alınır, GitHub'a konur,
+deploy ediliyor. `MIGRATION_SECRET` ise **paylaşılan parola** mantığıyla çalışır —
+CI ve sunucu aynı değeri bilir, eşleştirme yaparak yetkilendirme yapar.
 
-| Ad | Tipi | Açıklama |
-|---|---|---|
-| `SSH_HOST` | secret | VPS IP veya hostname |
-| `SSH_USER` | secret | SSH kullanıcı adı (genelde `deploy` veya `ubuntu`) |
-| `SSH_PRIVATE_KEY` | secret | Tam private key içeriği (BEGIN/END dahil) |
-| `SSH_PORT` | variable | Varsayılan 22 |
-| `SSH_REMOTE_PATH` | variable | `/var/www/html/` benzeri tam yol |
+### 4.1 Hangi soruna çözüm getiriyor?
 
-### SSH key üretmek
+`migrate.php` dosyası internetten erişilebilir bir endpoint'tir:
 
-```bash
-ssh-keygen -t ed25519 -C "github-deploy-ferizli" -f ~/.ssh/ferizli_deploy
-# Şifre sormaz (boş bırak — CI/CD için gerekli)
-# İki dosya oluşur:
-#   ferizli_deploy       → private key (GitHub'a)
-#   ferizli_deploy.pub   → public key (sunucuya ~/.ssh/authorized_keys'e ekle)
+```
+https://ferizliilkadimakademi.com/api/install/migrate.php
 ```
 
-`ferizli_deploy` dosyasının **tam içeriğini** `SSH_PRIVATE_KEY` secret'ına yapıştır.
-`ferizli_deploy.pub` içeriğini sunucudaki ilgili kullanıcının `~/.ssh/authorized_keys`
-dosyasına ekle.
+Eğer korumasız olsa, **herkes** bu URL'e POST atıp DB'yi sıfırlayabilir veya
+istenmeyen migration tetikleyebilir. Bu yüzden migrate.php "Sen kimsin?" sorusunu
+sorar — cevabı sadece **CI** ve **sunucudaki `config.php`** bilir.
+
+### 4.2 Üç tarafın senkron çalışması
+
+```mermaid
+sequenceDiagram
+  autonumber
+  participant Dev as Developer
+  participant GH as GitHub Secrets
+  participant CI as GitHub Actions
+  participant Srv as Sunucu (migrate.php)
+  participant DB as MySQL
+
+  Note over Dev: openssl rand -hex 32<br/>= a3f5d8...b4a3f2 (64 hex)
+  Dev->>GH: MIGRATION_SECRET secret olarak ekle
+  Note over GH: Şifreli sakla, geri okunmaz
+
+  Note over Dev: git tag v0.1.0 push
+  GH-->>CI: workflow tetiklendi
+  CI->>CI: config.php üret<br/>('migration.secret' = a3f5d8...)
+  CI->>Srv: FTPS upload api/config.php
+  Note over Srv: config.php sunucuda<br/>(web'den execute, içerik okunamaz)
+
+  CI->>Srv: POST /api/install/migrate.php<br/>Header X-Migration-Key: a3f5d8...
+  Srv->>Srv: config.php oku → beklenen secret al
+  Srv->>Srv: header'daki secret ile<br/>hash_equals() karşılaştır
+  alt secret eşleşmiyor
+    Srv-->>CI: 403 Yetki yok
+  else secret eşleşiyor
+    Srv->>DB: migration uygula
+    Srv-->>CI: 200 OK
+  end
+```
+
+### 4.3 Adım adım akış
+
+| # | Olay | Nerede |
+|---|---|---|
+| 1 | `openssl rand -hex 32` → 64 karakter hex değer üret | Senin yerel terminalin |
+| 2 | Bu değeri GitHub `MIGRATION_SECRET` secret'ı olarak ekle | GitHub Settings → Secrets |
+| 3 | Tag push → workflow başlar | GitHub Actions |
+| 4 | Workflow `api/config.php` üretir; içine `'migration' => ['secret' => '<DEĞER>']` yazar | CI runner |
+| 5 | Bu `config.php` FTPS ile sunucuya yüklenir | `/public_html/api/config.php` |
+| 6 | Workflow `POST /api/install/migrate.php` çağrısı yapar<br/>Header'da `X-Migration-Key: <DEĞER>` | CI → Sunucu |
+| 7 | `migrate.php` config'den beklenen değeri okur, header'daki ile `hash_equals()` ile karşılaştırır | Sunucu (migrate.php) |
+| 8 | Eşleşirse migration uygulanır; eşleşmezse `403 Forbidden` | Sunucu |
+
+### 4.4 Bu yöntem neden güvenli?
+
+| Özellik | Açıklama |
+|---|---|
+| **256-bit entropi** | 64 hex = 32 byte = 256 bit. Brute-force pratik olarak imkânsız |
+| **`hash_equals()`** | Timing-attack güvenli karşılaştırma — saldırgan response süresinden bilgi çıkaramaz |
+| **`X-Migration-Key` header** | URL'de değil header'da → server log'larında ve referer'da görünmez |
+| **`config.php` web'den okunamaz** | PHP dosyası direkt browse edilince **execute** olur, içeriği görünmez |
+| **Git'te yok** | `api/config.php` `.gitignore`'da; sadece sunucuda ve CI runner runtime'ında exists |
+| **GitHub at-rest encryption** | Secret store şifrelenmiş; sadece workflow runtime'da decrypt edilir |
+| **Log maskelemesi** | GitHub Actions log'larında `***` olarak gizlenir (gördüğün maskeleme bu) |
+
+### 4.5 Secret'ı değiştirmek istersem?
+
+İki yerde aynı anda değişmeli — pratikte sıralı:
+1. GitHub Secret → **Update** → yeni 64-hex değer
+2. Bir sonraki deploy'da `config.php` otomatik yeni değeri alır ve sunucuya yüklenir
+
+Geçiş anında sorun olmaz çünkü deploy zinciri sıralı: önce config.php upload,
+sonra migrate.php tetik. Aynı workflow run'ında iki tarafta aynı değer.
+
+### 4.6 Yeni MIGRATION_SECRET üretmek (zorunlu adım)
+
+```bash
+openssl rand -hex 32
+# Çıktı: 64 karakter hex, örn:
+# a3f5d8e9c2b1a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8e7d6c5b4a3f2
+```
+
+Bu değeri:
+1. **Hemen** GitHub'a `MIGRATION_SECRET` secret'ı olarak ekle (clipboard'tan paste)
+2. Hiçbir yere yazma — clipboard'ı temizle (`pbcopy < /dev/null` Mac'te)
+3. Sadece workflow ve sunucu `config.php`'i bilir
+
+> Bu secret kaybolur veya değişirse `migrate.php` çalışmaz — yeni bir tane üretip
+> hem GitHub'a hem (yeni deploy ile) sunucuya senkron yayman gerekir.
 
 ---
 
@@ -176,7 +254,7 @@ sequenceDiagram
 - [ ] SSL aktif (https://ferizliilkadimakademi.com tarayıcıda kilit ikonu)
 
 **GitHub tarafı:**
-- [ ] 9 secret set edildi: `FTP_HOST` / `FTP_USER` / `FTP_PASS` / `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASS` / `MIGRATION_SECRET`
+- [ ] 10 secret set edildi: `FTP_HOST` / `FTP_USER` / `FTP_PASS` / `DB_HOST` / `DB_PORT` / `DB_NAME` / `DB_USER` / `DB_PASS` / `MIGRATION_SECRET` / `ADMIN_SEED_PASSWORD`
 - [ ] 5 variable set edildi: `SITE_URL` / `FTP_PORT` / `FTP_PROTOCOL` / `FTP_REMOTE_PATH` / `DEPLOY_DRY_RUN`
 - [ ] `MIGRATION_SECRET` üretildi (`openssl rand -hex 32`)
 - [ ] `DEPLOY_DRY_RUN=true` ilk deneme için
@@ -199,42 +277,23 @@ git push origin v0.1.0
 
 ## 7. İlk Deploy Sonrası Admin Şifresi
 
-Bootstrap tamamlandığında `seed.sql` admin'i `*locked*` hash'le ekler.
-**Giriş yapamazsın** — gerçek şifre atamak için:
+**Bu adım artık tamamen otomatik.** Deploy zinciri şöyle çalışır:
 
 ```mermaid
 flowchart TD
-  A["İlk deploy tamamlandı<br/>admin hash: *locked*"] --> B{"Hosting'de hangi erişim var?"}
-  B -->|"SSH (VPS)"| C["Seçenek A<br/>ssh + php admin-olustur.php"]
-  B -->|"cPanel Terminal"| D["Seçenek B<br/>panel terminalden aynı komut"]
-  B -->|"Yalnızca FTP"| E["Seçenek C<br/>geçici web endpoint<br/>(güvenlik riski — son çare)"]
-  C --> Z["Giriş yapılabilir"]
-  D --> Z
-  E --> Z
+  M["migrate job<br/>schema.sql + seed.sql<br/>(admin hash: *locked*)"] --> S["seed job<br/>POST seed-admin.php<br/>X-Admin-Password: ADMIN_SEED_PASSWORD"]
+  S --> S1{"sifre_hash == *locked*?"}
+  S1 -->|"Evet (ilk kurulum)"| S2["bcrypt hash oluştur<br/>UPDATE admin_kullanicilar"]
+  S1 -->|"Hayır (zaten ayarlı)"| S3["işlem yok<br/>mevcut şifreye dokunulmaz"]
+  S2 --> Z["✅ Giriş yapılabilir<br/>admin / ADMIN_SEED_PASSWORD"]
+  S3 --> Z2["✅ Mevcut şifre korundu"]
 ```
 
-### Seçenek A: SSH varsa
-```bash
-ssh user@host
-cd /public_html/
-php api/install/admin-olustur.php
-# → kullanıcı adı, e-posta, şifre sorar
-```
+İlk açılışta `ADMIN_SEED_PASSWORD` secret'ındaki değerle (`12345678`) giriş yapabilirsin.
+**Açılıştan hemen sonra admin panelinden şifreyi değiştir.**
 
-### Seçenek B: cPanel Terminal varsa
-- cPanel → **Advanced → Terminal** → komut: `cd public_html && php api/install/admin-olustur.php`
-- ⚠️ GoDaddy'de bu özellik **genelde kapalı**. Yoksa Seçenek C'ye geç.
-
-### Seçenek C: cPanel Cron Jobs (GoDaddy için **önerilen** yöntem)
-Detaylı adımlar **§11**'de. Kısaca:
-1. Geçici `admin-girdi.txt` dosyası yarat (kullanıcı adı, e-posta, şifre satırları)
-2. Cron job: `php api/install/admin-olustur.php < admin-girdi.txt` → 1 dakika sonra çalışır
-3. Cron'u ve `admin-girdi.txt`'yi **derhal sil**
-
-### Seçenek D: Hiçbir yöntem çalışmıyorsa (en kötü senaryo)
-Geçici olarak `.htaccess`'teki "Require all denied" satırını bypass eden
-bir admin-olustur web endpoint'i ekleyebiliriz. Müşteriyle bunu konuşmadan
-yapmayalım — güvenlik riski.
+> **Mevcut sunucuya tekrar deploy:** `sifre_hash` artık `*locked*` değilse
+> `seed` adımı "zaten_ayarlı" döner ve mevcut şifreye dokunmaz — idempotent.
 
 ---
 
@@ -249,12 +308,14 @@ flowchart TD
   B --> B1["config.php üret<br/>secrets'tan"]
   B1 --> B2["FTP/FTPS upload<br/>dangerous-clean-slate=false"]
   B2 --> C["migrate<br/>POST migrate.php"]
-  C --> D["smoke-test<br/>HTTP 200? (3 deneme)"]
+  C --> S["seed<br/>POST seed-admin.php<br/>(ilk kurulumda parola atar)"]
+  S --> D["smoke-test<br/>HTTP 200? (3 deneme)"]
   D --> Z["✅ Deploy başarılı"]
 
   A -.->|hata| F["❌ FAIL"]
   B -.->|hata| F
   C -.->|hata| F
+  S -.->|hata| F
   D -.->|hata| F
 ```
 
@@ -306,7 +367,7 @@ A: Hayır. Bir kez admin oluşturduktan sonra DB'de kalır. Migration tekrar
 
 **Q: FTPS desteklemeyen bir hosting'de ne yaparım?**
 A: `FTP_PROTOCOL=ftp` yap. Ama düz FTP **güvensizdir** (şifreler clear-text).
-   Hosting değiştirmeyi öneririm. Ya da SSH varsa `DEPLOY_METHOD=ssh`'a geç.
+   Hosting değiştirmeyi öneririm.
 
 **Q: Migration başarısız olursa ne olur?**
 A: `migrate.php` her migration'ı transaction içinde çalıştırır → hata olursa
@@ -414,7 +475,7 @@ Eğer bağlı değilse:
 
 | Konu | GoDaddy davranışı |
 |---|---|
-| **SSH erişimi** | "Deluxe" ve üstü paketlerde var, "Economy"de yok. Çoğu shared paketinde **yok** → `DEPLOY_METHOD=ssh` set etme. |
+| **SSH erişimi** | Bu workflow yalnızca FTPS kullanır. SSH gerekmez. |
 | **Terminal (cPanel)** | Genelde devre dışı. Admin şifre atama için **Cron Jobs** kullan (aşağıda). |
 | **Remote MySQL** | Default **kapalı**. CI içinden DB'ye direkt erişmiyoruz zaten — migrate.php HTTPS üzerinden çalışır. |
 | **Mod_rewrite** | Açık ✓ (`.htaccess` çalışır) |
@@ -468,6 +529,7 @@ GitHub Actions extension'ı `deploy.yml`'i açtığında şu **uyarılar (warnin
 Context access might be invalid: FTP_HOST
 Context access might be invalid: SITE_URL
 Context access might be invalid: MIGRATION_SECRET
+Context access might be invalid: ADMIN_SEED_PASSWORD
 ...
 ```
 

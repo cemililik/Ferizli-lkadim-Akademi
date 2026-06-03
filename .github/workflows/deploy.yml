@@ -142,22 +142,21 @@ jobs:
           echo "✓ api/config.php üretildi (" . strlen($out) . " bayt)\n";
           PHP_EOF
 
-      # ----- DEFAULT: FTP/FTPS deploy (paylaşımlı hosting için) -----
-      - name: Dosyaları FTP/FTPS ile yükle
-        if: vars.DEPLOY_METHOD != 'ssh'
+      # FTP/FTPS deploy (GoDaddy shared hosting)
+      - name: Dosyaları FTPS ile yükle
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
           server: ${{ secrets.FTP_HOST }}
           port: ${{ vars.FTP_PORT || 21 }}
           username: ${{ secrets.FTP_USER }}
           password: ${{ secrets.FTP_PASS }}
-          # 'ftps' = FTP over TLS (port 21, AUTH TLS). Hosting destekliyorsa
-          # mutlaka kullanın. Düz 'ftp' güvensiz — şifreler clear-text gider.
+          # 'ftps' = FTP over TLS (port 21, AUTH TLS) — şifreli, GoDaddy destekler.
+          # Düz 'ftp' güvensiz; sadece son çare olarak kullan.
           protocol: ${{ vars.FTP_PROTOCOL || 'ftps' }}
           local-dir: ./
           server-dir: ${{ vars.FTP_REMOTE_PATH }}
-          # Sunucuda olmayan dosyaları yükle, mevcut dosyaları sadece değiştiyse güncelle.
-          # Sunucudaki kullanıcı yüklemelerini silmesin diye dangerous-clean-slate=false.
+          # Sunucudaki kullanıcı yüklemeleri (assets/uploads/) korunsun diye
+          # dangerous-clean-slate=false: git'te olmayan dosyalar silinmez.
           dangerous-clean-slate: false
           dry-run: ${{ vars.DEPLOY_DRY_RUN == 'true' }}
           exclude: |
@@ -187,19 +186,6 @@ jobs:
             **/*.log
             **/.DS_Store
             **/Thumbs.db
-
-      # ----- ALTERNATIF: VPS / SSH ile rsync (DEPLOY_METHOD=ssh ise) -----
-      - name: Dosyaları SSH/rsync ile yükle (VPS)
-        if: vars.DEPLOY_METHOD == 'ssh'
-        uses: easingthemes/ssh-deploy@v5.1.2
-        with:
-          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-          REMOTE_HOST: ${{ secrets.SSH_HOST }}
-          REMOTE_USER: ${{ secrets.SSH_USER }}
-          REMOTE_PORT: ${{ vars.SSH_PORT || 22 }}
-          TARGET: ${{ vars.SSH_REMOTE_PATH }}
-          ARGS: "-rltgoDzvO --delete-after"
-          EXCLUDE: ".git*, .github/, docker/, docker-compose.yml, node_modules/, vendor/, *.log, KURUMA_*.md, KURULUM_*.md, ANALIZ.md, api/config.template.php, api/config.example.php"
 
   # ====================================================================
   # 3) Migration: web endpoint'i üzerinden DB güncellemesi
@@ -238,11 +224,54 @@ jobs:
           echo "✓ Migration tamamlandı"
 
   # ====================================================================
-  # 4) Smoke test: site açılıyor mu?
+  # 4) Seed: ilk kurulumda admin parolasını atar
+  #    Admin kaydı zaten parola almışsa ("zaten_ayarli") sessizce geçer.
+  # ====================================================================
+  seed:
+    name: Seed admin password
+    needs: migrate
+    runs-on: ubuntu-latest
+    if: ${{ !inputs.skip_migrations }}
+    steps:
+      - name: Admin seed endpoint'ini çağır
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+          MIGRATION_SECRET: ${{ secrets.MIGRATION_SECRET }}
+          ADMIN_SEED_PASSWORD: ${{ secrets.ADMIN_SEED_PASSWORD }}
+        run: |
+          set -e
+          echo "→ POST $SITE_URL/api/install/seed-admin.php"
+          response=$(curl -sS \
+            -w "\n___STATUS:%{http_code}" \
+            --max-time 60 \
+            -X POST \
+            -H "X-Migration-Key: $MIGRATION_SECRET" \
+            -H "X-Admin-Password: $ADMIN_SEED_PASSWORD" \
+            "$SITE_URL/api/install/seed-admin.php")
+          status=$(echo "$response" | grep "___STATUS:" | cut -d: -f2)
+          body=$(echo "$response" | sed '/___STATUS:/d')
+          echo "HTTP $status"
+          echo "Yanıt: $body"
+          if [[ "$status" != "200" ]]; then
+            echo "❌ Admin seed başarısız (HTTP $status)"
+            exit 1
+          fi
+          durum=$(echo "$body" | python3 -c "import json,sys; print(json.load(sys.stdin).get('durum',''))")
+          if [[ "$durum" == "guncellendi" ]]; then
+            echo "✓ Admin parolası atandı (ilk kurulum)"
+          elif [[ "$durum" == "zaten_ayarli" ]]; then
+            echo "✓ Admin parolası zaten ayarlı — dokunulmadı"
+          else
+            echo "❌ Beklenmedik yanıt: $body"
+            exit 1
+          fi
+
+  # ====================================================================
+  # 5) Smoke test: site açılıyor mu?
   # ====================================================================
   smoke-test:
     name: Smoke test
-    needs: [deploy, migrate]
+    needs: [deploy, migrate, seed]
     if: always() && needs.deploy.result == 'success'
     runs-on: ubuntu-latest
     steps:

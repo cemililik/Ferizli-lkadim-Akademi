@@ -12,3 +12,7 @@ Require all denied
 <Files "migrate.php">
     Require all granted
 </Files>
+
+<Files "seed-admin.php">
+    Require all granted
+</Files>
