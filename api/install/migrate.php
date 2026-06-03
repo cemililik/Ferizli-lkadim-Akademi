@@ -165,7 +165,9 @@ try {
                 $execFile($yol, $log);
                 $ins = $pdo->prepare("INSERT INTO _migrations (ad) VALUES (?)");
                 $ins->execute([$ad]);
-                $pdo->commit();
+                // DDL deyimleri (CREATE INDEX, ALTER TABLE vb.) MariaDB'de
+                // implicit commit tetikler — transaction zaten kapandıysa commit() hata verir.
+                if ($pdo->inTransaction()) $pdo->commit();
                 $basaril[] = $ad;
                 $log("✓ $ad");
             } catch (Throwable $e) {
