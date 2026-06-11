@@ -126,6 +126,9 @@
 html {
   scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+  /* Mobilde her dokunmada çıkan tarayıcı varsayılanı gri/mavi flaş'ı kapat —
+     tasarlanmış :active geri bildirimleri (butonlar, çipler, nokta vb.) görünür kalsın. */
+  -webkit-tap-highlight-color: transparent;
   /* Sticky header (96px) + küçük nefes payı; mobilde 80px + 12px */
   scroll-padding-top: 108px;
 }
@@ -243,6 +246,12 @@ p:last-child { margin-bottom: 0; }
   color: var(--renk-yazi-acik);
   max-width: 700px;
   margin-inline: auto;
+}
+/* Mobilde başlık-altı boşluğu kıs — bölüm padding'i 48px'e inerken
+   başlık bloğu 48px'lik masaüstü boşluğunu korumasın (dikey yoğunluk). */
+@media (max-width: 520px) {
+  .bolum-baslik { margin-bottom: var(--bosluk-8); }
+  .bolum-baslik h2 { margin-bottom: var(--bosluk-2); }
 }
 
 /* Yardımcı sınıflar */

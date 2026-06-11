@@ -13,20 +13,25 @@
     </svg>
   `;
 
+  // Güvenli HTML kaçışı (diğer render dosyalarıyla tutarlı)
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
   const kartHtml = (k) => {
     const fotoIcerik = k.foto
-      ? `<img src="${k.foto}" alt="${k.ad}">`
+      ? `<img src="${esc(k.foto)}" alt="${esc(k.ad)}" loading="lazy" decoding="async" width="320" height="320">`
       : PLACEHOLDER_SVG;
     const mottoBlok = k.motto
-      ? `<p class="kadro-karti__motto">"${k.motto}"</p>`
+      ? `<p class="kadro-karti__motto">"${esc(k.motto)}"</p>`
       : '';
     const altSatir = [k.mezuniyet, k.deneyimYil ? `${k.deneyimYil} yıl deneyim` : null]
-      .filter(Boolean).join(' • ');
+      .filter(Boolean).map(esc).join(' • ');
     return `
       <article class="kadro-karti">
         <div class="kadro-karti__foto">${fotoIcerik}</div>
-        <h3 class="kadro-karti__ad">${k.ad}</h3>
-        <div class="kadro-karti__brans">${k.brans || ''}</div>
+        <h3 class="kadro-karti__ad">${esc(k.ad)}</h3>
+        <div class="kadro-karti__brans">${esc(k.brans || '')}</div>
         ${altSatir ? `<p class="kadro-karti__detay">${altSatir}</p>` : ''}
         ${mottoBlok}
       </article>

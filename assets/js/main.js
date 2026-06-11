@@ -349,9 +349,16 @@
 
     const mq = window.matchMedia('(max-width: 960px)');
 
+    let kayitliScroll = 0;
     const menuKapat = () => {
-      document.body.classList.remove('menu-acik');
+      const kilitli = document.body.classList.contains('menu-kilit');
+      document.body.classList.remove('menu-acik', 'menu-kilit');
       dugme.setAttribute('aria-expanded', 'false');
+      if (kilitli) {
+        // Scroll kilidini aç ve sayfayı eski konumuna döndür (iOS-güvenli)
+        document.body.style.top = '';
+        window.scrollTo(0, kayitliScroll);
+      }
     };
 
     const navTasi = () => {
@@ -390,24 +397,32 @@
     const odakSec = 'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])';
     let oncekiOdak = null;
 
-    // Hamburger toggle
+    // Hamburger toggle (açık<->kapalı). Kapatma menuKapat() üzerinden tek yoldan
+    // yapılır ki scroll kilidi her zaman doğru açılsın.
     dugme.addEventListener('click', () => {
-      const acik = document.body.classList.toggle('menu-acik');
-      dugme.setAttribute('aria-expanded', acik ? 'true' : 'false');
-      if (acik && mq.matches) {
+      if (document.body.classList.contains('menu-acik')) {
+        menuKapat();
+        if (oncekiOdak && typeof oncekiOdak.focus === 'function') { oncekiOdak.focus(); oncekiOdak = null; }
+        else dugme.focus();
+        return;
+      }
+      // Aç
+      document.body.classList.add('menu-acik');
+      dugme.setAttribute('aria-expanded', 'true');
+      if (mq.matches) {
+        // iOS-güvenli scroll kilidi: konumu sakla + body'yi sabitle
+        kayitliScroll = window.scrollY;
+        document.body.style.top = `-${kayitliScroll}px`;
+        document.body.classList.add('menu-kilit');
         oncekiOdak = document.activeElement;
-        // İlk odaklanabilir elemana focus (animasyon bitsin diye küçük gecikme)
         const ilk = nav.querySelector(odakSec);
         if (ilk) setTimeout(() => ilk.focus(), 80);
-      } else if (!acik && oncekiOdak && typeof oncekiOdak.focus === 'function') {
-        oncekiOdak.focus();
-        oncekiOdak = null;
       }
     });
 
-    // Linke tıklayınca menüyü kapa
+    // Linke veya kapatma (X) butonuna tıklayınca menüyü kapa
     nav.addEventListener('click', (e) => {
-      if (e.target.closest('a')) menuKapat();
+      if (e.target.closest('a') || e.target.closest('.site-nav__kapat')) menuKapat();
     });
 
     // Tab içeride kalsın (focus trap) + ESC ile kapat
@@ -532,7 +547,7 @@
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
         <div class="hero-slider__noktalar" role="tablist" aria-label="Slayt seçimi">
-          ${slaytlar.map((s, i) => `<button class="hero-slider__nokta${i === 0 ? ' aktif' : ''}" type="button" role="tab" aria-selected="${i === 0 ? 'true' : 'false'}" aria-label="Slayt ${i + 1}"></button>`).join('')}
+          ${slaytlar.map((s, i) => `<button class="hero-slider__nokta${i === 0 ? ' aktif' : ''}" type="button" role="tab" aria-selected="${i === 0 ? 'true' : 'false'}" tabindex="${i === 0 ? '0' : '-1'}" aria-label="Slayt ${i + 1}"></button>`).join('')}
         </div>` : ''}
     `;
 
@@ -556,6 +571,7 @@
         const a = idx === aktif;
         el.classList.toggle('aktif', a);
         el.setAttribute('aria-selected', a ? 'true' : 'false');
+        el.tabIndex = a ? 0 : -1;   // roving tabindex (tablist a11y)
       });
     };
     const sonraki = () => goster(aktif + 1);
@@ -578,6 +594,25 @@
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'hidden') durdur(); else baslatOto();
     });
+
+    // Dokunmatik kaydırma (swipe) — mobilde oklar gizli olduğundan kritik.
+    // Yatay kaydırma slaytı değiştirir; dikey kaydırma sayfa scroll'u olarak kalır.
+    let dokunX = 0, dokunY = 0, kaydiriyor = false;
+    yer.addEventListener('touchstart', (e) => {
+      const t = e.changedTouches[0];
+      dokunX = t.clientX; dokunY = t.clientY; kaydiriyor = true;
+      durdur();
+    }, { passive: true });
+    yer.addEventListener('touchend', (e) => {
+      if (!kaydiriyor) return;
+      kaydiriyor = false;
+      const t = e.changedTouches[0];
+      const dx = t.clientX - dokunX, dy = t.clientY - dokunY;
+      if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy)) {
+        if (dx < 0) sonraki(); else onceki();
+      }
+      baslatOto();
+    }, { passive: true });
 
     baslatOto();
   };
@@ -715,6 +750,39 @@
       </details>`).join('');
   };
 
+  /* ----- Mobil alt CTA çubuğu (Ara / WhatsApp / Ön Kayıt) -----
+     Sadece mobilde (CSS) görünür; iletişim ayarlarından üretilir.
+     Çubuk varken sağ-alt floating ikonlar gizlenir (body.mobil-cta-var). */
+  const mobilCtaCubugu = (ayarlar) => {
+    if (document.querySelector('.mobil-cta-bar')) return;
+    if (document.body.getAttribute('data-sayfa') === 'tesekkurler') return;
+    const il = ayarlar.iletisim || {};
+    const tel = (il.telefon || '').toString().trim();
+    const wa = (il.whatsapp || '').toString().trim();
+    if (!tel && !wa) return;
+
+    const oge = [];
+    if (tel) oge.push(`<a class="mobil-cta-bar__dugme mobil-cta-bar__dugme--ara" href="tel:${escapeHtml(tel)}" aria-label="Telefonla ara">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+      <span>Ara</span></a>`);
+    if (wa) {
+      const mesaj = encodeURIComponent(ayarlar.whatsappMesaj || '');
+      oge.push(`<a class="mobil-cta-bar__dugme mobil-cta-bar__dugme--wa" href="https://wa.me/${escapeHtml(wa)}?text=${mesaj}" aria-label="WhatsApp ile yaz">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 0 1 8.413 3.488 11.824 11.824 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24z"/></svg>
+        <span>WhatsApp</span></a>`);
+    }
+    oge.push(`<a class="mobil-cta-bar__dugme mobil-cta-bar__dugme--kayit" href="/basvuru.html" aria-label="Ön kayıt formu">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><rect x="9" y="3" width="6" height="4" rx="1"/><path d="m9 14 2 2 4-4"/></svg>
+      <span>Ön Kayıt</span></a>`);
+
+    const bar = document.createElement('nav');
+    bar.className = 'mobil-cta-bar';
+    bar.setAttribute('aria-label', 'Hızlı iletişim');
+    bar.innerHTML = oge.join('');
+    document.body.appendChild(bar);
+    document.body.classList.add('mobil-cta-var');
+  };
+
   // Ana çalıştırıcı
   const baslat = async () => {
     // 1. Partial'ları yükle (paralel)
@@ -747,6 +815,7 @@
     istatistikRender(ayarlar);
     goruslerRender(ayarlar);
     sssRender(ayarlar);
+    mobilCtaCubugu(ayarlar);   // tüm sayfalarda mobil alt CTA çubuğu
 
     aktifMenu();
     mobilMenu();

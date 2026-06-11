@@ -230,7 +230,9 @@
   display: inline-flex;
   align-items: center;
   gap: var(--bosluk-2);
-  padding: var(--bosluk-2) var(--bosluk-4);
+  /* Dikey padding 8→12px: dokunma yüksekliği ~44px (mobil hedef) */
+  padding: var(--bosluk-3) var(--bosluk-4);
+  min-height: 44px;
   background: white;
   color: var(--renk-yazi-acik);
   border: 1px solid var(--renk-cizgi);
@@ -239,11 +241,16 @@
   font-size: var(--yazi-sm);
   font-weight: 500;
   cursor: pointer;
-  transition: border-color var(--gecis-hizli), color var(--gecis-hizli), background var(--gecis-hizli);
+  transition: border-color var(--gecis-hizli), color var(--gecis-hizli), background var(--gecis-hizli), transform 80ms var(--easing-standard);
 }
 .cip:hover {
   border-color: var(--renk-birincil);
   color: var(--renk-birincil);
+}
+/* Dokunmatik basma geri bildirimi (hover dokunmatikte tetiklenmez) */
+.cip:active {
+  background: var(--pastel-mavi);
+  transform: scale(0.97);
 }
 .cip--aktif {
   background: var(--renk-birincil);
@@ -376,8 +383,11 @@
   cursor: pointer;
 }
 .form-onay input[type="checkbox"] {
-  margin-top: 4px;
+  margin-top: 2px;
   flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  accent-color: var(--renk-birincil);
 }
 
 /* Submit alanı — düğmenin form-grup'tan bağımsız üst boşluğu */
@@ -455,12 +465,20 @@
 }
 .form-secenek input[type="radio"],
 .form-secenek input[type="checkbox"] {
-  margin-top: 4px;
+  margin-top: 1px;
   flex-shrink: 0;
+  /* Native kutuyu büyüt + marka rengi (WCAG 2.5.8 hedef boyutu) */
+  width: 20px;
+  height: 20px;
+  accent-color: var(--renk-birincil);
 }
 .form-secenek:hover {
   border-color: var(--renk-birincil-acik);
   background: var(--renk-arka-yumusak);
+}
+/* Mobilde seçenek satırını rahat dokunulur yükseklikte tut */
+@media (max-width: 640px) {
+  .form-secenek { min-height: 44px; align-items: center; padding-block: var(--bosluk-3); }
 }
 .form-secenek:has(input:checked) {
   border-color: var(--renk-birincil);
@@ -521,7 +539,8 @@
 .istatistik__sayi {
   display: block;
   font-family: var(--yazi-aile-baslik);
-  font-size: var(--yazi-5xl);
+  /* Sabit 48px yerine clamp — küçük ekranda 36px'e iner (dikey yoğunluk) */
+  font-size: clamp(var(--yazi-4xl), 9vw, var(--yazi-5xl));
   font-weight: 800;
   background: linear-gradient(135deg, var(--renk-birincil), var(--renk-vurgu));
   -webkit-background-clip: text;
@@ -611,6 +630,10 @@
   font-weight: 600;
   font-size: var(--yazi-sm);
   align-self: flex-start;
+  /* Salt-metin link yerine ~44px dokunma yüksekliği (mobil) */
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 .duyuru-karti__link::after {
   content: "→";
