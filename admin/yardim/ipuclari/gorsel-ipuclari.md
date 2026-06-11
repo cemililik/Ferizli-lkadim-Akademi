@@ -21,6 +21,7 @@ JPG çoğu durumda yeterli.
 | **Profil fotoğrafı** | 400×400 piksel, JPG |
 | **Duyuru kapağı** | 1200×630 piksel, JPG (yatay) |
 | **Blog kapağı** | 1200×630 piksel, JPG |
+| **Hero slider görseli** | 1600×900 piksel (yatay 16:9), JPG |
 | **Galeri fotoğrafı** | 1600×1200 piksel, JPG |
 | **Program/Kadro görseli** | 800×600 piksel, JPG |
 
@@ -63,6 +64,8 @@ PC'de:
 > - Kurumun **kendi çektiği fotoğraflar** (en garanti)
 > - **Ücretsiz stok siteleri**: unsplash.com, pexels.com, pixabay.com
 > - Ünlü temalar için **Wikimedia Commons**
+
+Aynı kural **hero slider görselleri** için de geçerlidir: kurumun kendi fotoğrafı yoksa unsplash.com veya pexels.com gibi ücretsiz stok sitelerinden indirdiğiniz görselleri rahatlıkla kullanabilirsiniz.
 
 İnsan fotoğrafları için **modelin izni** alınmalı (özellikle çocuklar için **velinin imzalı izni**).
 

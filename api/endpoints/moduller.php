@@ -20,8 +20,13 @@ $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
    /api/moduller/durum — tek modül durum sorgu/güncelleme
 ============================================================ */
 if ($alt === 'durum') {
-    // Yönetilen modüllerin beyaz listesi
-    $izinli = ['hakkimizda', 'programlar', 'kadro', 'duyurular', 'galeri', 'blog'];
+    // Yönetilen modüllerin beyaz listesi.
+    // İlk grup: sayfa modülleri (nav + sayfa + anasayfa bölümü).
+    // İkinci grup: anasayfa bölüm anahtarları (sadece ilgili anasayfa bölümünü gösterir/gizler).
+    $izinli = [
+        'hakkimizda', 'programlar', 'kadro', 'duyurular', 'galeri', 'blog',
+        'hero', 'istatistik', 'gorusler', 'sss',
+    ];
 
     if ($method === 'GET') {
         $ad = trim((string)($_GET['ad'] ?? ''));
@@ -78,6 +83,8 @@ if ($alt === '') {
     $varsayilanlar = [
         'hakkimizda' => true, 'programlar' => true, 'kadro' => true,
         'duyurular' => true, 'galeri' => true, 'blog' => false,
+        // Anasayfa bölümleri — varsayılan açık (içerik yoksa frontend zaten gizler)
+        'hero' => true, 'istatistik' => true, 'gorusler' => true, 'sss' => true,
     ];
     foreach ($varsayilanlar as $ad => $varsayilan) {
         if (!isset($sonuc[$ad])) $sonuc[$ad] = $varsayilan;
