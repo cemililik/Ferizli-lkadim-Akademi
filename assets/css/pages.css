@@ -166,9 +166,20 @@
 @media (max-width: 900px) {
   .neden-biz__izgara { grid-template-columns: repeat(2, 1fr); }
 }
-@media (max-width: 480px) {
+/* Telefonda: 4 özellik kartı 2x2 kompakt grid + içerik DİKEY ORTALI (dengeli).
+   `.neden-biz .ozellik` (0,2,0) > base `.ozellik` (0,1,0) → base sonra gelse de ezer
+   (eski sıralama hatası: base .ozellik media query'den sonraydı, ortalamayı eziyordu). */
+@media (max-width: 520px) {
+  .neden-biz__izgara { gap: var(--bosluk-4) var(--bosluk-3); }
+  .neden-biz .ozellik {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+    gap: var(--bosluk-2);
+  }
+}
+@media (max-width: 360px) {
   .neden-biz__izgara { grid-template-columns: 1fr; }
-  .ozellik { flex-direction: column; text-align: center; align-items: center; }
 }
 
 .ozellik {
@@ -319,6 +330,20 @@
   left: 0;
   color: var(--renk-birincil);
   font-weight: 700;
+}
+
+/* ---------- Telefonda tek-kolon kart dengesi ----------
+   Tek kolon kartlar sola yaslı olunca dengesiz duruyordu. Çözüm:
+   ikon + başlık + alt başlık ORTALI, gövde metni/liste SOLA (okunabilirlik;
+   justify mobilde nehir/boşluk yaptığından kullanılmadı). */
+@media (max-width: 520px) {
+  .program-karti { align-items: center; text-align: center; }
+  .program-karti__aciklama,
+  .program-karti__ozellikler { align-self: stretch; text-align: left; }
+
+  .izgara .kart { align-items: center; text-align: center; }
+  .izgara .kart .kart__metin,
+  .izgara .kart .kart__liste { align-self: stretch; text-align: left; }
 }
 
 /* ---------- Kadro kartları ---------- */
