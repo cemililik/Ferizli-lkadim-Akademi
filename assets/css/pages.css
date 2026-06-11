@@ -115,20 +115,31 @@
   bottom: clamp(16px, 3vw, 28px);
   display: flex;
   justify-content: center;
-  gap: 10px;
+  gap: 14px;   /* genişletilmiş dokunma alanları çakışmasın diye 10→14px */
 }
 .hero-slider__nokta {
+  position: relative;
   width: 12px; height: 12px;
   border-radius: var(--yuvarlak-tam);
   background: rgba(255, 255, 255, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.65);
   transition: all var(--gecis-hizli);
 }
+/* Görünür nokta 12px kalır; etrafına ~44px görünmez dokunma alanı
+   (mobilde oklar gizli olduğundan slayt gezinmenin tek yolu nokta). */
+.hero-slider__nokta::after {
+  content: "";
+  position: absolute;
+  inset: -16px;
+}
 .hero-slider__nokta:hover { background: rgba(255, 255, 255, 0.7); }
+.hero-slider__nokta:active { transform: scale(0.85); }
 .hero-slider__nokta.aktif { background: white; width: 30px; }
 
 @media (max-width: 640px) {
   .hero-slider__ok { display: none; }
+  /* Mobilde hero biraz alçalsın → altındaki bölümün ucu görünür (scroll ipucu) */
+  .hero-slider__sahne { min-height: clamp(420px, 64vh, 560px); }
   .hero-slayt__baslik { max-width: 100%; }
   .hero-slayt__cta { flex-direction: column; align-items: stretch; }
   .hero-slayt__cta .dugme { width: 100%; }
@@ -590,11 +601,11 @@
 .filtre-chip__deger { font-weight: 600; color: var(--renk-yazi); }
 .filtre-chip__kaldir {
   display: inline-flex;
-  width: 18px; height: 18px;
+  width: 24px; height: 24px;
   align-items: center; justify-content: center;
   background: var(--renk-arka-yumusak);
   border-radius: 50%;
-  font-size: 14px; line-height: 1;
+  font-size: 16px; line-height: 1;
   text-decoration: none;
   color: var(--renk-yazi-acik);
   transition: all var(--gecis-hizli);
@@ -917,7 +928,10 @@
   flex-wrap: wrap;
 }
 .duyuru-filtre__dugme {
-  padding: var(--bosluk-2) var(--bosluk-4);
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;                       /* dokunma hedefi (8→12px dikey padding) */
+  padding: var(--bosluk-3) var(--bosluk-4);
   background: var(--renk-arka-yumusak);
   color: var(--renk-yazi-acik);
   border-radius: var(--yuvarlak-tam);
@@ -927,6 +941,7 @@
   transition: all var(--gecis-hizli);
 }
 .duyuru-filtre__dugme:hover { background: var(--renk-cizgi); }
+.duyuru-filtre__dugme:active { transform: scale(0.97); transition-duration: 80ms; }
 .duyuru-filtre__dugme.aktif {
   background: var(--renk-birincil);
   color: white;
@@ -1058,6 +1073,10 @@
   background: var(--pastel-mavi);
 }
 .sayac-izgara { gap: var(--bosluk-5); }
+/* Mobilde 4 sayaç tek kolon (alt alta) yerine 2x2 kompakt grid */
+@media (max-width: 640px) {
+  .sayac-izgara { grid-template-columns: 1fr 1fr; gap: var(--bosluk-4); }
+}
 
 /* ---------- Görüşler (testimonials) ---------- */
 .gorusler-izgara { gap: var(--bosluk-6); }

@@ -90,6 +90,7 @@
   color: var(--renk-birincil);
   background: var(--renk-arka-yumusak);
 }
+.site-nav__link:active { background: var(--pastel-mavi-koyu); }
 .site-nav__link.aktif {
   color: var(--renk-birincil);
   font-weight: 700;
@@ -127,6 +128,10 @@
   transition: background var(--gecis-hizli);
 }
 .menu-dugmesi:hover { background: var(--renk-arka-yumusak); }
+.menu-dugmesi:active { background: var(--pastel-mavi-koyu); }
+
+/* Drawer içindeki kapatma (X) butonu — sadece mobil drawer'da görünür */
+.site-nav__kapat { display: none; }
 .menu-dugmesi__cizgi {
   display: block;
   width: 22px; height: 2px;
@@ -192,6 +197,21 @@
                 visibility 0s;
   }
 
+  /* Drawer kapatma (X) butonu — drawer'ın sağ üstünde */
+  .site-nav--mobil .site-nav__kapat {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    align-self: flex-end;
+    width: 44px; height: 44px;
+    margin: 0 var(--bosluk-3) var(--bosluk-2);
+    border-radius: var(--yuvarlak);
+    color: var(--renk-yazi-acik);
+  }
+  .site-nav--mobil .site-nav__kapat:hover { background: var(--renk-arka-yumusak); }
+  .site-nav--mobil .site-nav__kapat:active { background: var(--pastel-mavi-koyu); }
+  .site-nav--mobil .site-nav__kapat svg { width: 22px; height: 22px; }
+
   /* Backdrop — sidebar dışı tıklama yakalayıcı */
   .mobil-menu-backdrop {
     position: fixed;
@@ -212,9 +232,16 @@
     transition: opacity 260ms var(--easing-standard), visibility 0s;
   }
 
-  /* Site genelinde scroll'u kilitle */
+  /* Site genelinde scroll'u kilitle.
+     overflow:hidden tek başına iOS Safari'de touchmove'u kilitlemez; JS
+     (main.js) menü açılınca body'yi position:fixed yapıp scroll konumunu saklar. */
   body.menu-acik {
     overflow: hidden;
+  }
+  body.menu-kilit {
+    position: fixed;
+    left: 0; right: 0;
+    width: 100%;
   }
 
   /* Mobil menü içeriği */
@@ -290,6 +317,7 @@
   transform: translateY(-4px) scale(1.05);
   color: white;
 }
+.float-ikon:active { transform: scale(0.94); transition-duration: 80ms; }
 .float-ikon svg { width: 26px; height: 26px; }
 
 .float-ikon--whatsapp { background: var(--renk-whatsapp); }
@@ -337,12 +365,56 @@ body[data-sayfa="tesekkurler"] .float-ikon--whatsapp {
 @media (max-width: 640px) {
   .float-ikonlar {
     right: var(--bosluk-4);
-    bottom: var(--bosluk-4);
+    /* iPhone home-indicator güvenli alanını ez (viewport-fit=cover ile birlikte) */
+    bottom: calc(var(--bosluk-4) + env(safe-area-inset-bottom));
     gap: var(--bosluk-2);
   }
   .float-ikon { width: 50px; height: 50px; }
   .float-ikon svg { width: 22px; height: 22px; }
   .float-ikon::before { display: none; }
+}
+
+/* ---------- Mobil alt CTA çubuğu (Ara / WhatsApp / Ön Kayıt) ---------- */
+/* main.js iletişim ayarlarından üretip body'ye ekler; sadece mobilde görünür.
+   Çubuk varken sağ-alt floating ikonlar gizlenir (çakışma + tekrar önlenir). */
+.mobil-cta-bar { display: none; }
+@media (max-width: 640px) {
+  .mobil-cta-bar {
+    position: fixed;
+    left: 0; right: 0; bottom: 0;
+    z-index: 95;
+    display: flex;
+    background: #ffffff;
+    border-top: 1px solid var(--renk-cizgi);
+    box-shadow: 0 -4px 16px rgba(12, 30, 58, 0.10);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mobil-cta-bar__dugme {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 56px;
+    padding: var(--bosluk-2);
+    font-size: var(--yazi-xs);
+    font-weight: 600;
+    color: var(--renk-yazi);
+    text-decoration: none;
+    border: 0;
+    background: transparent;
+  }
+  .mobil-cta-bar__dugme svg { width: 22px; height: 22px; }
+  .mobil-cta-bar__dugme:active { background: var(--renk-arka-yumusak); }
+  .mobil-cta-bar__dugme--ara { color: var(--renk-telefon); }
+  .mobil-cta-bar__dugme--wa { color: var(--renk-whatsapp); }
+  .mobil-cta-bar__dugme--kayit { background: var(--renk-vurgu); color: #fff; }
+  .mobil-cta-bar__dugme--kayit:active { background: var(--renk-vurgu-koyu); }
+
+  /* CTA çubuğu varken floating ikonları gizle + içerik son butonların altında kalmasın */
+  body.mobil-cta-var .float-ikonlar { display: none; }
+  body.mobil-cta-var { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- Footer ---------- */
@@ -401,6 +473,15 @@ body[data-sayfa="tesekkurler"] .float-ikon--whatsapp {
   transition: color var(--gecis-hizli);
 }
 .site-footer__menu a:hover { color: var(--renk-vurgu); }
+/* Mobilde footer linklerine dokunma payı (iletişim linkleriyle tutarlı) */
+@media (max-width: 540px) {
+  .site-footer__menu a,
+  .site-footer__alt a {
+    display: inline-block;
+    min-height: 44px;
+    padding-block: 8px;
+  }
+}
 
 .site-footer__iletisim li {
   display: flex;
