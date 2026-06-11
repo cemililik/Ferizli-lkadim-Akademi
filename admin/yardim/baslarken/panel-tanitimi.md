@@ -28,7 +28,11 @@ Sayfanın en üstünde, koyu zeminli bir menü vardır. Bu menü panelin **her s
 > [!İPUCU]
 > **Modülleri aç/kapa:** Hakkımızda, Programlar, Kadro, Duyurular, Galeri bölümlerinden
 > herhangi birini sitenizde gizlemek istiyorsanız: **Ayarlar → Modüller (Aç / Kapa)**
-> bölümünden tek tıkla yapabilirsiniz. Veriler silinmez. Detay: [Modüller (Aç / Kapa)](#/site-ayarlari/moduller).
+> bölümünden tek tıkla yapabilirsiniz. Aynı bölümün altından anasayfadaki
+> **Hero Slider, Sayaç, Görüşler ve SSS** bölümlerini de tek tek gösterip gizleyebilirsiniz.
+> Tüm anasayfa düzeni (slider, görüşler, SSS vb.) Ayarlar sayfasından yönetilir; detaylı yardım
+> için Ana Sayfa Düzeni bölümüne bakın: [Hero Slider](#/anasayfa/hero-slider).
+> Veriler silinmez. Detay: [Modüller (Aç / Kapa)](#/site-ayarlari/moduller).
 
 ## Genel akış
 

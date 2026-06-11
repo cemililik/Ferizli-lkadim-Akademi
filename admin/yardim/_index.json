@@ -28,6 +28,18 @@
       ]
     },
     {
+      "id": "anasayfa",
+      "baslik": "Ana Sayfa Düzeni",
+      "ikon": "🏠",
+      "sayfalar": [
+        { "id": "hero-slider", "baslik": "Hero Slider" },
+        { "id": "neden-biz", "baslik": "'Neden Biz' Kartları" },
+        { "id": "gorusler", "baslik": "Görüşler" },
+        { "id": "sss", "baslik": "Sıkça Sorulan Sorular" },
+        { "id": "bolum-basliklari", "baslik": "Bölüm Başlıkları & CTA" }
+      ]
+    },
+    {
       "id": "duyurular",
       "baslik": "Duyurular",
       "ikon": "📢",

@@ -71,6 +71,12 @@ Browser cache. Birkaç dakika bekleyin veya zorla yenileyin.
 
 ## İçerik üretimi
 
+### Ana sayfadaki slider / görseller nasıl değişir?
+
+Üst menü → **Ayarlar** → "Ana Sayfa — Hero Slider" bölümünden. Her slayt için görsel, başlık, rozet ve butonlar düzenlenir.
+
+Detaylı anlatım: [Hero Slider](#/anasayfa/hero-slider).
+
 ### Duyuru sıralaması garip
 
 Duyurular **tarih sırasına** göredir. Önemli bir duyuruyu öne çıkarmak için:
