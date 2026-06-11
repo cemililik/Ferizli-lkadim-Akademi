@@ -36,6 +36,75 @@
   // Nokta-yollu nesne getirici: "iletisim.adres" gibi
   const noktaYol = (obj, yol) => yol.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
 
+  // Güvenli HTML kaçışı (innerHTML ile yazılan dinamik metinler için)
+  const escapeHtml = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
+  const azaltilmisHareket = () =>
+    window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Çoklu-format bool çözücü (admin '1'/'0' string, JSON true/false saklayabilir)
+  const dogruMu = (v, varsayilan = true) => {
+    if (v === undefined || v === null || v === '') return varsayilan;
+    return v === true || v === 1 || v === '1' || v === 'true';
+  };
+
+  // İkon haritası — "neden biz" kartları admin'den ikon ADI seçer (emoji değil, modern SVG).
+  // Lucide stroke ikonları; yeni ikon eklemek için buraya path eklenir + admin select'ine option.
+  const IKONLAR = {
+    'graduation-cap': '<path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/><path d="M22 10v6"/><path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>',
+    'users': '<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>',
+    'trending-up': '<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>',
+    'message-square': '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    'book-open': '<path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/>',
+    'target': '<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>',
+    'award': '<path d="m15.477 12.89 1.515 8.526a.5.5 0 0 1-.81.47l-3.58-2.687a1 1 0 0 0-1.197 0l-3.586 2.686a.5.5 0 0 1-.81-.469l1.514-8.526"/><circle cx="12" cy="8" r="6"/>',
+    'clock': '<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+    'check-circle': '<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>',
+    'heart': '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.29 1.5 4.04 3 5.5l7 7Z"/>',
+    'lightbulb': '<path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/>',
+    'pencil': '<path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/>',
+    'shield-check': '<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+    'smile': '<circle cx="12" cy="12" r="10"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><line x1="9" x2="9.01" y1="9" y2="9"/><line x1="15" x2="15.01" y1="9" y2="9"/>',
+    'star': '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>',
+    // Hero rozeti için ek ikonlar (konum, takvim, duyuru vb.)
+    'map-pin': '<path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>',
+    'calendar': '<rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M16 2v4"/>',
+    'megaphone': '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+    'sparkles': '<path d="M9.94 14.06A2 2 0 0 0 8.5 12.6L2.4 11a.5.5 0 0 1 0-1l6.1-1.56A2 2 0 0 0 9.94 6.94L11.5.84a.5.5 0 0 1 1 0l1.56 6.1A2 2 0 0 0 15.5 8.4L21.6 10a.5.5 0 0 1 0 1l-6.1 1.56a2 2 0 0 0-1.44 1.44L12.5 20.1a.5.5 0 0 1-1 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/>',
+    'flame': '<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.07-2.14-.22-4.05 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.15.43-2.29 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>',
+    'tag': '<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.41l8.7 8.71a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
+    'info': '<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  };
+  const ikonSvg = (ad) => {
+    const ic = IKONLAR[ad] || IKONLAR['check-circle'];
+    return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ic}</svg>`;
+  };
+  // Hero rozet ikonu — 'none'/'yok' ise ikon gösterme; tanımsızsa konum (geriye dönük uyum)
+  const rozetIkonSvg = (ad) => {
+    if (ad === 'none' || ad === 'yok') return '';
+    return ikonSvg(ad || 'map-pin');
+  };
+
+  // Frontend varsayılanları — DB/ayarlar henüz doldurulmamışsa site yine de dolu görünür.
+  // Admin panelinden kaydedilen değerler bunları geçersiz kılar.
+  const HERO_VARSAYILAN = {
+    gecisSuresiSn: 6,
+    otomatikGecis: true,
+    slaytlar: [
+      { gorsel: '/assets/img/hero/slayt-1.svg', rozet: 'Ferizli, Sakarya', rozetIkon: 'map-pin', baslik: 'Sınava emin adımlarla hazırlanın', altBaslik: 'Ortaokul ve lise öğrencileri için LGS–YKS hazırlık, takviye ve etüt programları.', butonMetin: 'Ücretsiz Görüşme Talep Et', butonLink: '/basvuru.html', buton2Metin: "WhatsApp'tan Sor", buton2Link: 'whatsapp', overlayKoyuluk: 55 },
+      { gorsel: '/assets/img/hero/slayt-2.svg', rozet: 'Birebir İlgi', rozetIkon: 'sparkles', baslik: 'Küçük sınıflar, deneyimli öğretmenler', altBaslik: 'Her öğrenciye birebir ilgi gösterebildiğimiz küçük mevcutlu sınıflar.', butonMetin: 'Programlarımızı İncele', butonLink: '/programlar.html', buton2Metin: 'Kadromuzu Tanıyın', buton2Link: '/kadro.html', overlayKoyuluk: 55 },
+      { gorsel: '/assets/img/hero/slayt-3.svg', rozet: 'Ön Kayıt Başladı', rozetIkon: 'megaphone', baslik: 'Geleceğe ilk adımı bizimle atın', altBaslik: 'Yeni dönem ön kayıtlarımız başladı. Ön kayıt formunu doldurun, sizinle iletişime geçelim.', butonMetin: 'Hemen Ön Kayıt Ol', butonLink: '/basvuru.html', buton2Metin: 'Bize Ulaşın', buton2Link: '/iletisim.html', overlayKoyuluk: 50 },
+    ],
+  };
+  const NEDENBIZ_VARSAYILAN = [
+    { ikon: 'graduation-cap', baslik: 'Deneyimli Kadro', metin: 'Alanında uzman branş öğretmenleri' },
+    { ikon: 'users', baslik: 'Küçük Sınıflar', metin: 'Her öğrenciye birebir ilgi' },
+    { ikon: 'trending-up', baslik: 'Düzenli Deneme', metin: 'Haftalık deneme sınavları ve analiz' },
+    { ikon: 'message-square', baslik: 'Veli İletişimi', metin: 'Şeffaf takip ve düzenli bilgilendirme' },
+  ];
+
   // HTML partial yükleyici (yer tutucu div'in içine basar)
   const partialYukle = async (yer, url) => {
     const el = document.querySelector(yer);
@@ -242,31 +311,8 @@
       `;
     });
 
-    // İstatistikler — admin'den yönetilen liste. Yoksa bölüm tamamen gizlenir.
-    const istatistikListesi = Array.isArray(ayarlar.istatistikler) ? ayarlar.istatistikler : [];
-    const istatistikGorunenler = istatistikListesi.filter(s => s && (s.deger || '').toString().trim() !== '');
-    const escapeHtml = (s) => String(s == null ? '' : s)
-      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    document.querySelectorAll('[data-istatistik-yer]').forEach(yer => {
-      const kapsayan = yer.closest('[data-istatistik-bolum]') || yer.closest('section');
-      if (istatistikGorunenler.length === 0) {
-        if (kapsayan) kapsayan.hidden = true;
-        return;
-      }
-      if (kapsayan) kapsayan.hidden = false;
-      yer.innerHTML = istatistikGorunenler.map(s => `
-        <div class="istatistik">
-          ${s.ikon ? `<div class="istatistik__ikon" aria-hidden="true">${escapeHtml(s.ikon)}</div>` : ''}
-          <span class="istatistik__sayi">${escapeHtml(s.deger)}</span>
-          <span class="istatistik__etiket">${escapeHtml(s.etiket || '')}</span>
-        </div>
-      `).join('');
-    });
-    // Başarılarımız sayfasında: istatistik varsa "boş durum" bölümünü gizle
-    const basariBosBolum = document.querySelector('[data-basarilar-bos]');
-    if (basariBosBolum && istatistikGorunenler.length > 0) {
-      basariBosBolum.hidden = true;
-    }
+    // İstatistik (sayaç) render'ı ayrı fonksiyonda — count-up animasyonu + modül kontrolü için.
+    // baslat() içinde veriBagla'dan sonra çağrılır.
 
     // Sayfa başlığı: kurum adı
     if (ayarlar.kurum && ayarlar.kurum.ad) {
@@ -416,6 +462,259 @@
   // (eski blogModuluKontrol kaldırıldı — blog artık ayarlar.moduller.blog ile
   // diğer modüllerle birlikte modulleriUygula üzerinden yönetiliyor.)
 
+  /* ============================================================
+     HERO SLIDER — admin "Ana Sayfa / Hero" bölümünden yönetilir.
+     Kütüphanesiz vanilla JS: fade geçiş, otomatik oynatma (hover/focus'ta durur),
+     noktalar + oklar, klavye (←/→), prefers-reduced-motion'da otomatik kapalı.
+  ============================================================ */
+  const heroSlider = (ayarlar) => {
+    const yer = document.querySelector('[data-hero-slider]');
+    if (!yer) return;
+
+    const hero = (ayarlar.hero && typeof ayarlar.hero === 'object') ? ayarlar.hero : null;
+    // hero hiç tanımlı değilse (DB boş) → varsayılan slaytlar; tanımlıysa admin'in seçimi geçerli.
+    let slaytlar = hero && Array.isArray(hero.slaytlar)
+      ? hero.slaytlar.filter(s => s && s.aktif !== false && (s.gorsel || s.baslik))
+      : null;
+    if (slaytlar === null) slaytlar = HERO_VARSAYILAN.slaytlar;
+
+    if (!slaytlar.length) {
+      const bolum = yer.closest('.hero');
+      if (bolum) bolum.hidden = true;
+      return;
+    }
+
+    const linkCoz = (link) => {
+      if (!link || link === '#') return '#';
+      if (link === 'whatsapp') {
+        const wa = ayarlar.iletisim && ayarlar.iletisim.whatsapp;
+        if (!wa) return '#';
+        return `https://wa.me/${wa}?text=${encodeURIComponent(ayarlar.whatsappMesaj || '')}`;
+      }
+      return link;
+    };
+    const gorselTemiz = (u) => String(u || '').replace(/["'()\\]/g, '');
+    const n = slaytlar.length;
+    const cokSlayt = n > 1;
+
+    const slaytHtml = (s, i) => {
+      const bg = gorselTemiz(s.gorsel);
+      const overlay = Math.max(0, Math.min(90, Number(s.overlayKoyuluk ?? 50))) / 100;
+      const basTag = i === 0 ? 'h1' : 'h2';
+      const b1 = (s.butonMetin || '').trim();
+      const b2 = (s.buton2Metin || '').trim();
+      return `
+        <div class="hero-slayt${i === 0 ? ' aktif' : ''}" role="group" aria-roledescription="slayt"
+             aria-label="${i + 1} / ${n}" aria-hidden="${i === 0 ? 'false' : 'true'}"
+             style="--hero-bg:url('${bg}'); --hero-overlay:${overlay};">
+          <div class="hero-slayt__katman"></div>
+          <div class="kapsayici hero-slayt__icerik">
+            ${s.rozet ? `<span class="hero-slayt__rozet">
+              ${rozetIkonSvg(s.rozetIkon)}
+              <span>${escapeHtml(s.rozet)}</span></span>` : ''}
+            <${basTag} class="hero-slayt__baslik">${escapeHtml(s.baslik || '')}</${basTag}>
+            ${s.altBaslik ? `<p class="hero-slayt__alt">${escapeHtml(s.altBaslik)}</p>` : ''}
+            ${(b1 || b2) ? `<div class="hero-slayt__cta">
+              ${b1 ? `<a class="dugme dugme--vurgu dugme--buyuk" href="${escapeHtml(linkCoz(s.butonLink))}">${escapeHtml(b1)}</a>` : ''}
+              ${b2 ? `<a class="dugme dugme--cerceve-acik dugme--buyuk" href="${escapeHtml(linkCoz(s.buton2Link))}">${escapeHtml(b2)}</a>` : ''}
+            </div>` : ''}
+          </div>
+        </div>`;
+    };
+
+    yer.innerHTML = `
+      <div class="hero-slider__sahne">${slaytlar.map(slaytHtml).join('')}</div>
+      ${cokSlayt ? `
+        <button class="hero-slider__ok hero-slider__ok--onceki" type="button" aria-label="Önceki slayt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <button class="hero-slider__ok hero-slider__ok--sonraki" type="button" aria-label="Sonraki slayt">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <div class="hero-slider__noktalar" role="tablist" aria-label="Slayt seçimi">
+          ${slaytlar.map((s, i) => `<button class="hero-slider__nokta${i === 0 ? ' aktif' : ''}" type="button" role="tab" aria-selected="${i === 0 ? 'true' : 'false'}" aria-label="Slayt ${i + 1}"></button>`).join('')}
+        </div>` : ''}
+    `;
+
+    if (!cokSlayt) return;
+
+    const slaytEl = Array.from(yer.querySelectorAll('.hero-slayt'));
+    const noktaEl = Array.from(yer.querySelectorAll('.hero-slider__nokta'));
+    let aktif = 0;
+    let zaman = null;
+    const sure = Math.max(2, Number(hero?.gecisSuresiSn ?? HERO_VARSAYILAN.gecisSuresiSn)) * 1000;
+    const otomatik = dogruMu(hero ? hero.otomatikGecis : true, true) && !azaltilmisHareket();
+
+    const goster = (i) => {
+      aktif = (i + n) % n;
+      slaytEl.forEach((el, idx) => {
+        const a = idx === aktif;
+        el.classList.toggle('aktif', a);
+        el.setAttribute('aria-hidden', a ? 'false' : 'true');
+      });
+      noktaEl.forEach((el, idx) => {
+        const a = idx === aktif;
+        el.classList.toggle('aktif', a);
+        el.setAttribute('aria-selected', a ? 'true' : 'false');
+      });
+    };
+    const sonraki = () => goster(aktif + 1);
+    const onceki = () => goster(aktif - 1);
+    const durdur = () => { if (zaman) { clearInterval(zaman); zaman = null; } };
+    const baslatOto = () => { durdur(); if (otomatik) zaman = setInterval(sonraki, sure); };
+
+    yer.querySelector('.hero-slider__ok--sonraki').addEventListener('click', () => { sonraki(); baslatOto(); });
+    yer.querySelector('.hero-slider__ok--onceki').addEventListener('click', () => { onceki(); baslatOto(); });
+    noktaEl.forEach((el, idx) => el.addEventListener('click', () => { goster(idx); baslatOto(); }));
+
+    yer.addEventListener('mouseenter', durdur);
+    yer.addEventListener('mouseleave', baslatOto);
+    yer.addEventListener('focusin', durdur);
+    yer.addEventListener('focusout', baslatOto);
+    yer.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowLeft') { onceki(); baslatOto(); }
+      else if (e.key === 'ArrowRight') { sonraki(); baslatOto(); }
+    });
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') durdur(); else baslatOto();
+    });
+
+    baslatOto();
+  };
+
+  /* ----- NEDEN BİZ (özellik kartları) — admin'den düzenlenebilir ----- */
+  const nedenBizRender = (ayarlar) => {
+    const yer = document.querySelector('[data-nedenbiz-yer]');
+    if (!yer) return;
+    const a = (ayarlar.anasayfa && typeof ayarlar.anasayfa === 'object') ? ayarlar.anasayfa : null;
+    let liste = a && Array.isArray(a.nedenBiz)
+      ? a.nedenBiz.filter(x => x && (x.baslik || x.metin))
+      : null;
+    if (liste === null) liste = NEDENBIZ_VARSAYILAN;
+    const bolum = yer.closest('[data-nedenbiz-bolum]');
+    if (!liste.length) { if (bolum) bolum.hidden = true; return; }
+    if (bolum) bolum.hidden = false;
+    yer.innerHTML = liste.map(o => `
+      <div class="ozellik">
+        <div class="ozellik__ikon" aria-hidden="true">${ikonSvg(o.ikon)}</div>
+        <div>
+          <div class="ozellik__baslik">${escapeHtml(o.baslik || '')}</div>
+          <div class="ozellik__metin">${escapeHtml(o.metin || '')}</div>
+        </div>
+      </div>`).join('');
+  };
+
+  /* ----- İSTATİSTİK (sayaç) — count-up + modül kontrolü ----- */
+  const sayacAnimasyon = (el) => {
+    const metin = (el.dataset.deger || el.textContent || '').trim();
+    const m = metin.match(/^(\D*)(\d[\d.,]*)(.*)$/s);
+    if (!m || azaltilmisHareket()) { el.textContent = metin; return; }
+    const on = m[1], sayiStr = m[2], son = m[3];
+    const ayirici = /[.,]/.test(sayiStr);
+    const hedef = parseFloat(sayiStr.replace(/[.,]/g, ''));
+    if (!isFinite(hedef)) { el.textContent = metin; return; }
+    const bicim = (v) => ayirici ? v.toLocaleString('tr-TR') : String(v);
+    const sure = 1200;
+    let bas = null;
+    const adim = (t) => {
+      if (bas === null) bas = t;
+      const ilerle = Math.min(1, (t - bas) / sure);
+      const kolay = 1 - Math.pow(1 - ilerle, 3);
+      el.textContent = on + bicim(Math.round(hedef * kolay)) + son;
+      if (ilerle < 1) requestAnimationFrame(adim);
+      else el.textContent = on + bicim(hedef) + son;
+    };
+    requestAnimationFrame(adim);
+  };
+
+  const istatistikRender = (ayarlar) => {
+    const liste = (Array.isArray(ayarlar.istatistikler) ? ayarlar.istatistikler : [])
+      .filter(s => s && (s.deger || '').toString().trim() !== '');
+    const aktifModul = modulAktif(ayarlar, 'istatistik');
+
+    document.querySelectorAll('[data-istatistik-yer]').forEach(yer => {
+      const kapsayan = yer.closest('[data-istatistik-bolum]') || yer.closest('section');
+      if (!aktifModul || liste.length === 0) {
+        if (kapsayan) kapsayan.hidden = true;
+        return;
+      }
+      if (kapsayan) kapsayan.hidden = false;
+      yer.innerHTML = liste.map(s => `
+        <div class="istatistik">
+          ${s.ikon ? `<div class="istatistik__ikon" aria-hidden="true">${escapeHtml(s.ikon)}</div>` : ''}
+          <span class="istatistik__sayi" data-deger="${escapeHtml(s.deger)}">${escapeHtml(s.deger)}</span>
+          <span class="istatistik__etiket">${escapeHtml(s.etiket || '')}</span>
+        </div>`).join('');
+
+      // Sayaç animasyonu: bölüm ekrana girince bir kez tetikle
+      const sayilar = yer.querySelectorAll('.istatistik__sayi');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver((girisler, ob) => {
+          girisler.forEach(g => {
+            if (g.isIntersecting) {
+              sayilar.forEach(sayacAnimasyon);
+              ob.disconnect();
+            }
+          });
+        }, { threshold: 0.4 });
+        io.observe(yer);
+      } else {
+        sayilar.forEach(sayacAnimasyon);
+      }
+    });
+
+    // Başarılarımız sayfasında: istatistik varsa "boş durum" bölümünü gizle
+    const basariBosBolum = document.querySelector('[data-basarilar-bos]');
+    if (basariBosBolum && aktifModul && liste.length > 0) basariBosBolum.hidden = true;
+  };
+
+  /* ----- GÖRÜŞLER (testimonials) ----- */
+  const goruslerRender = (ayarlar) => {
+    const yer = document.querySelector('[data-gorusler-yer]');
+    if (!yer) return;
+    const aktifModul = modulAktif(ayarlar, 'gorusler');
+    const liste = (Array.isArray(ayarlar.gorusler) ? ayarlar.gorusler : [])
+      .filter(g => g && g.aktif !== false && (g.metin || '').toString().trim() !== '');
+    const bolum = yer.closest('[data-gorusler-bolum]');
+    if (!aktifModul || liste.length === 0) { if (bolum) bolum.hidden = true; return; }
+    if (bolum) bolum.hidden = false;
+    yer.innerHTML = liste.map(g => {
+      const adBas = (g.ad || '?').toString().trim().charAt(0).toUpperCase();
+      return `
+        <figure class="gorus-karti">
+          <div class="gorus-karti__yildiz" aria-hidden="true">★★★★★</div>
+          <blockquote class="gorus-karti__metin">${escapeHtml(g.metin)}</blockquote>
+          <figcaption class="gorus-karti__kisi">
+            <div class="gorus-karti__avatar" aria-hidden="true">${g.foto ? `<img src="${escapeHtml(g.foto)}" alt="">` : escapeHtml(adBas)}</div>
+            <div>
+              <div class="gorus-karti__ad">${escapeHtml(g.ad || '')}</div>
+              ${g.rol ? `<div class="gorus-karti__rol">${escapeHtml(g.rol)}</div>` : ''}
+            </div>
+          </figcaption>
+        </figure>`;
+    }).join('');
+  };
+
+  /* ----- SSS (accordion) ----- */
+  const sssRender = (ayarlar) => {
+    const yer = document.querySelector('[data-sss-yer]');
+    if (!yer) return;
+    const aktifModul = modulAktif(ayarlar, 'sss');
+    const liste = (Array.isArray(ayarlar.sss) ? ayarlar.sss : [])
+      .filter(s => s && s.aktif !== false && (s.soru || '').toString().trim() !== '');
+    const bolum = yer.closest('[data-sss-bolum]');
+    if (!aktifModul || liste.length === 0) { if (bolum) bolum.hidden = true; return; }
+    if (bolum) bolum.hidden = false;
+    yer.innerHTML = liste.map(s => `
+      <details class="sss-oge">
+        <summary class="sss-oge__soru">
+          <span>${escapeHtml(s.soru)}</span>
+          <svg class="sss-oge__ok" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>
+        </summary>
+        <div class="sss-oge__cevap">${escapeHtml(s.cevap || '')}</div>
+      </details>`).join('');
+  };
+
   // Ana çalıştırıcı
   const baslat = async () => {
     // 1. Partial'ları yükle (paralel)
@@ -441,6 +740,14 @@
     // 404'e yönlendiren bu fonksiyon çalışsın, gereksiz veri bağlama yapılmasın.
     modulleriUygula(ayarlar);
     veriBagla(ayarlar);
+
+    // Anasayfa dinamik bölümleri (yer tutucular yoksa fonksiyonlar sessizce çıkar)
+    heroSlider(ayarlar);
+    nedenBizRender(ayarlar);
+    istatistikRender(ayarlar);
+    goruslerRender(ayarlar);
+    sssRender(ayarlar);
+
     aktifMenu();
     mobilMenu();
     headerScroll();

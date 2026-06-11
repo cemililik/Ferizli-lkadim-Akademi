@@ -53,245 +53,35 @@
   <div id="siteHeaderYer"></div>
 
   <main id="main">
-    <!-- HERO -->
-    <section class="hero">
+    <!-- HERO SLIDER — admin panelindeki "Ana Sayfa / Hero" bölümünden yönetilir.
+         Slaytları (görsel + başlık + buton) ekleyebilir, sıralayabilir, tek tek
+         açıp kapatabilirsiniz. Veri yoksa main.js varsayılan slaytları gösterir.
+         Tüm bölüm "Modüller → Hero" ile gizlenebilir. -->
+    <section class="hero" data-modul="hero">
+      <div class="hero-slider" data-hero-slider aria-roledescription="carousel" aria-label="Tanıtım görselleri">
+        <!-- main.js dolduracak -->
+      </div>
+    </section>
+
+    <!-- NEDEN BİZ — admin'den düzenlenebilir özellik kartları (eski "hero altı"). -->
+    <section class="neden-biz" data-nedenbiz-bolum>
       <div class="kapsayici">
-        <div class="hero__izgara">
-          <div class="hero__icerik">
-            <span class="hero__rozet">
-              <!-- map-pin (Lucide) — boyut/hizalama .hero__rozet svg ile yönetiliyor -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                <path d="M20 10c0 7-8 12-8 12s-8-5-8-12a8 8 0 0 1 16 0Z"/>
-                <circle cx="12" cy="10" r="3"/>
-              </svg>
-              <span>Ferizli, Sakarya</span>
-            </span>
-            <h1>İlk Adım Akademi — Sınava <span class="vurgu">emin adımlarla</span> hazırlanın.</h1>
-            <p class="hero__alt-baslik">
-              Ortaokul ve lise öğrencileri için sınav hazırlık, takviye ve etüt programları.
-              Deneyimli kadromuzla öğrencilerimizi hedeflerine taşıyoruz.
-            </p>
-            <div class="hero__cta">
-              <a href="/basvuru.html" class="dugme dugme--vurgu dugme--buyuk">
-                Ücretsiz Görüşme Talep Et
-              </a>
-              <a href="#" data-float="whatsapp" class="dugme dugme--cerceve-acik dugme--buyuk">
-                <svg viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
-                  <path d="M.057 24l1.687-6.163a11.867 11.867 0 0 1-1.587-5.946C.16 5.335 5.495 0 12.05 0a11.817 11.817 0 0 1 8.413 3.488 11.824 11.824 0 0 1 3.48 8.414c-.003 6.557-5.338 11.892-11.893 11.892a11.9 11.9 0 0 1-5.688-1.448L.057 24z"/>
-                </svg>
-                WhatsApp'tan Sor
-              </a>
-            </div>
-          </div>
-
-          <!-- HERO GÖRSEL — SPRINT 5 v2: soyut eğitim sembolleri.
-               Ampul (fikir) + açık kitap (öğrenme) + mezuniyet kepi (hedef) + sparkles.
-               Tamamen dekoratif (aria-hidden); aynı mesaj solda metin olarak var.
-               Mobilde gizleniyor (640px altında display:none). -->
-          <div class="hero__gorsel" aria-hidden="true">
-            <svg viewBox="0 0 500 480" xmlns="http://www.w3.org/2000/svg" role="img" aria-hidden="true">
-              <!-- Arka dekoratif yumuşak blob (kompozisyon merkezini bağlar) -->
-              <ellipse cx="250" cy="240" rx="220" ry="200" fill="rgba(255,255,255,0.05)"/>
-
-              <!-- HEDEF + OK — "Sınava emin adımlarla hazırlanın" temasıyla birebir
-                   görsel anlam. Concentric ringler + bullseye'a saplı ok. Ok arkası
-                   sarı tüyler (palette ile uyumlu); bullseye nefes alan glow ile canlı. -->
-              <g class="hero-svg-hedef">
-                <!-- Yumuşak arka glow halkası — derinlik için -->
-                <circle cx="250" cy="130" r="80" fill="rgba(255,255,255,0.08)"/>
-
-                <!-- Concentric rings (dış → iç) -->
-                <circle cx="250" cy="130" r="64" fill="white" stroke="rgba(8,20,50,0.12)" stroke-width="1.5"/>
-                <circle cx="250" cy="130" r="51" fill="#dbeafe"/>
-                <circle cx="250" cy="130" r="38" fill="white"/>
-                <circle cx="250" cy="130" r="25" fill="#fef3c7"/>
-
-                <!-- Bullseye (kırmızı merkez) — CSS ile drop-shadow nefes glow -->
-                <circle class="hero-svg-bullseye" cx="250" cy="130" r="12" fill="#d32f2f"/>
-                <!-- Bullseye iç parlama noktası -->
-                <circle cx="250" cy="130" r="3" fill="#fef3c7"/>
-
-                <!-- Ok gövdesi — sağ üstten merkeze diyagonal trajectory -->
-                <line x1="250" y1="130" x2="340" y2="40"
-                      stroke="#0f172a" stroke-width="3.5" stroke-linecap="round"/>
-
-                <!-- Ok ucu (bullseye'a saplı, küçük üçgen) -->
-                <polygon points="250,130 260,124 258,138" fill="#0f172a"/>
-
-                <!-- Ok arka tüyleri — sarı vurgu, 3 katmanlı -->
-                <path d="M 340 40 L 326 33 L 330 24 Z" fill="#fde68a"/>
-                <path d="M 340 40 L 351 44 L 343 54 Z" fill="#fde68a"/>
-                <path d="M 340 40 L 348 28 L 358 36 Z" fill="#f59e0b"/>
-
-                <!-- Ok arka düğümü (nock) -->
-                <circle cx="340" cy="40" r="3" fill="#0f172a"/>
-
-                <!-- İsabet pırıltısı — bullseye üstünde küçük 4-uçlu yıldız -->
-                <g transform="translate(250 130)" opacity="0.9">
-                  <path d="M 0 -8 Q 1 -1 8 0 Q 1 1 0 8 Q -1 1 -8 0 Q -1 -1 0 -8 Z" fill="#fde68a"/>
-                </g>
-              </g>
-
-              <!-- AÇIK KİTAP (öğrenme — merkez alt) -->
-              <g transform="translate(125 235)">
-                <!-- Kitap altı yumuşak gölge -->
-                <ellipse cx="125" cy="185" rx="125" ry="9" fill="rgba(8, 20, 50, 0.28)"/>
-
-                <!-- Üst kapak şeridi — kitap derinliği -->
-                <path d="M 5 24 L 245 24 L 250 30 L 0 30 Z" fill="#1565c0"/>
-
-                <!-- Sol sayfa -->
-                <path d="M 0 30 L 0 168 Q 0 178 10 178 L 122 178 L 125 38 Z"
-                      fill="white" stroke="rgba(8,20,50,0.15)" stroke-width="1"/>
-                <!-- Sağ sayfa -->
-                <path d="M 250 30 L 250 168 Q 250 178 240 178 L 128 178 L 125 38 Z"
-                      fill="white" stroke="rgba(8,20,50,0.15)" stroke-width="1"/>
-                <!-- Sayfa kıvrımı (orta) -->
-                <path d="M 125 38 L 125 178" stroke="rgba(8,20,50,0.2)" stroke-width="1.5"/>
-
-                <!-- Sol sayfa metin satırları -->
-                <g fill="#cbd5e1">
-                  <rect x="18" y="55"  width="85" height="4" rx="2"/>
-                  <rect x="18" y="68"  width="75" height="4" rx="2"/>
-                  <rect x="18" y="81"  width="90" height="4" rx="2"/>
-                  <rect x="18" y="94"  width="65" height="4" rx="2"/>
-                  <rect x="18" y="107" width="80" height="4" rx="2"/>
-                  <rect x="18" y="120" width="70" height="4" rx="2"/>
-                  <rect x="18" y="133" width="85" height="4" rx="2"/>
-                </g>
-
-                <!-- Sağ sayfa metin satırları -->
-                <g fill="#cbd5e1">
-                  <rect x="142" y="55"  width="85" height="4" rx="2"/>
-                  <rect x="142" y="68"  width="75" height="4" rx="2"/>
-                  <rect x="142" y="81"  width="90" height="4" rx="2"/>
-                </g>
-
-                <!-- Sağ sayfada vurgulu formül/örnek bloğu — eğitim teması -->
-                <rect x="142" y="100" width="92" height="38" rx="6" fill="#dbeafe"/>
-                <rect x="150" y="110" width="60" height="4" rx="2" fill="#1565c0" opacity="0.6"/>
-                <rect x="150" y="120" width="44" height="4" rx="2" fill="#1565c0" opacity="0.4"/>
-                <rect x="150" y="130" width="50" height="4" rx="2" fill="#1565c0" opacity="0.45"/>
-
-                <!-- Kırmızı yer imi şeridi — sol sayfada -->
-                <path d="M 92 30 L 104 30 L 104 75 L 98 68 L 92 75 Z" fill="#d32f2f"/>
-              </g>
-
-              <!-- MEZUNİYET KEPİ (hedef — sağ üst aksaman) -->
-              <g class="hero-svg-cap" transform="translate(378 60) rotate(-12)">
-                <!-- Mortarboard (üst karo plaka) -->
-                <path d="M 0 18 L 45 0 L 90 18 L 45 36 Z" fill="#0f172a"/>
-                <!-- Alt taban (cap base) -->
-                <path d="M 15 24 L 15 44 Q 45 52 75 44 L 75 24 L 45 36 Z" fill="#1e293b"/>
-                <!-- Tepe düğmesi -->
-                <circle cx="45" cy="18" r="3.5" fill="#fde68a"/>
-                <!-- Sarkan saçak -->
-                <path d="M 90 18 L 93 42" stroke="#fde68a" stroke-width="2.5" stroke-linecap="round" fill="none"/>
-                <circle cx="93" cy="46" r="5" fill="#fde68a"/>
-                <!-- Saçak gölge detay -->
-                <circle cx="93" cy="46" r="5" fill="#f59e0b" opacity="0.3"/>
-              </g>
-
-              <!-- SPARKLES (4-uçlu yıldız parıltıları — "ışıltı" hissi) -->
-              <g class="hero-svg-sparkles">
-                <g transform="translate(75 105)" fill="#fde68a">
-                  <path d="M 0 -11 Q 1.5 -1.5 11 0 Q 1.5 1.5 0 11 Q -1.5 1.5 -11 0 Q -1.5 -1.5 0 -11 Z"/>
-                </g>
-                <g transform="translate(450 200)" fill="rgba(255,255,255,0.85)">
-                  <path d="M 0 -8 Q 1 -1 8 0 Q 1 1 0 8 Q -1 1 -8 0 Q -1 -1 0 -8 Z"/>
-                </g>
-                <g transform="translate(70 290)" fill="#fde68a">
-                  <path d="M 0 -7 Q 1 -1 7 0 Q 1 1 0 7 Q -1 1 -7 0 Q -1 -1 0 -7 Z"/>
-                </g>
-                <g transform="translate(440 380)" fill="rgba(255,255,255,0.75)">
-                  <path d="M 0 -9 Q 1.2 -1.2 9 0 Q 1.2 1.2 0 9 Q -1.2 1.2 -9 0 Q -1.2 -1.2 0 -9 Z"/>
-                </g>
-              </g>
-
-              <!-- DEKORATIF NOKTALAR (kompozisyon dengesi) -->
-              <g>
-                <circle cx="105" cy="390" r="5" fill="rgba(253,230,138,0.55)"/>
-                <circle cx="445" cy="120" r="6" fill="rgba(255,255,255,0.45)"/>
-                <circle cx="440" cy="440" r="4" fill="rgba(253,230,138,0.55)"/>
-                <circle cx="50"  cy="430" r="5" fill="rgba(255,255,255,0.4)"/>
-                <circle cx="475" cy="270" r="3" fill="rgba(255,255,255,0.55)"/>
-              </g>
-
-              <!-- "+" küçük aksaman (formül/matematik göndermesi) -->
-              <g transform="translate(48 235)" stroke="rgba(253,230,138,0.7)" stroke-width="2.5" stroke-linecap="round">
-                <line x1="-6" y1="0" x2="6" y2="0"/>
-                <line x1="0" y1="-6" x2="0" y2="6"/>
-              </g>
-              <g transform="translate(465 330)" stroke="rgba(255,255,255,0.5)" stroke-width="2.5" stroke-linecap="round">
-                <line x1="-6" y1="0" x2="6" y2="0"/>
-                <line x1="0" y1="-6" x2="0" y2="6"/>
-              </g>
-            </svg>
-          </div>
+        <div class="neden-biz__bas">
+          <span class="serit-baslik" data-veri="anasayfa.nedenBizUst">Neden İlk Adım?</span>
+          <h2 data-veri="anasayfa.nedenBizBaslik">Öğrencilerimizi farkla hazırlıyoruz</h2>
+        </div>
+        <div class="neden-biz__izgara" data-nedenbiz-yer>
+          <!-- main.js dolduracak -->
         </div>
       </div>
     </section>
 
-    <!-- HERO ALTI ÖZELLİKLER -->
-    <section class="hero-altı">
+    <!-- SAYAÇ / İSTATİSTİK — admin "İstatistik Kartları"ndan yönetilir.
+         Veri yoksa veya "Modüller → İstatistik" kapalıysa bölüm gizlenir.
+         Sayılar ekrana girince yukarı doğru sayar (count-up). -->
+    <section class="bolum sayac-bolum" data-modul="istatistik" data-istatistik-bolum hidden>
       <div class="kapsayici">
-        <div class="hero-altı__izgara">
-          <div class="ozellik">
-            <div class="ozellik__ikon" aria-hidden="true">
-              <!-- graduation-cap (Lucide) -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M21.42 10.922a1 1 0 0 0-.019-1.838L12.83 5.18a2 2 0 0 0-1.66 0L2.6 9.08a1 1 0 0 0 0 1.832l8.57 3.908a2 2 0 0 0 1.66 0z"/>
-                <path d="M22 10v6"/>
-                <path d="M6 12.5V16a6 3 0 0 0 12 0v-3.5"/>
-              </svg>
-            </div>
-            <div>
-              <div class="ozellik__baslik">Deneyimli Kadro</div>
-              <div class="ozellik__metin">Alanında uzman branş öğretmenleri</div>
-            </div>
-          </div>
-          <div class="ozellik">
-            <div class="ozellik__ikon" aria-hidden="true">
-              <!-- users (Lucide) -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/>
-                <circle cx="9" cy="7" r="4"/>
-                <path d="M22 21v-2a4 4 0 0 0-3-3.87"/>
-                <path d="M16 3.13a4 4 0 0 1 0 7.75"/>
-              </svg>
-            </div>
-            <div>
-              <div class="ozellik__baslik">Küçük Sınıflar</div>
-              <div class="ozellik__metin">Her öğrenciye birebir ilgi</div>
-            </div>
-          </div>
-          <div class="ozellik">
-            <div class="ozellik__ikon" aria-hidden="true">
-              <!-- trending-up (Lucide) -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/>
-                <polyline points="16 7 22 7 22 13"/>
-              </svg>
-            </div>
-            <div>
-              <div class="ozellik__baslik">Düzenli Deneme</div>
-              <div class="ozellik__metin">Haftalık deneme sınavları ve analiz</div>
-            </div>
-          </div>
-          <div class="ozellik">
-            <div class="ozellik__ikon" aria-hidden="true">
-              <!-- messages-square (Lucide) -->
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M14 9a2 2 0 0 1-2 2H6l-4 4V4c0-1.1.9-2 2-2h8a2 2 0 0 1 2 2z"/>
-                <path d="M18 9h2a2 2 0 0 1 2 2v11l-4-4h-6a2 2 0 0 1-2-2v-1"/>
-              </svg>
-            </div>
-            <div>
-              <div class="ozellik__baslik">Veli İletişimi</div>
-              <div class="ozellik__metin">Şeffaf takip ve düzenli bilgilendirme</div>
-            </div>
-          </div>
-        </div>
+        <div class="izgara izgara--4 sayac-izgara" data-istatistik-yer></div>
       </div>
     </section>
 
@@ -302,15 +92,11 @@
           <div>
             <span class="serit-baslik">Kurumumuz</span>
             <h2 style="margin-bottom: var(--bosluk-5);">Eğitime <span class="metin-vurgu">ilk adımı</span> bizimle atın.</h2>
-            <p style="font-size: var(--yazi-lg); color: var(--renk-yazi-acik);">
+            <p style="font-size: var(--yazi-lg); color: var(--renk-yazi-acik);" data-veri-html="hakkimizda.hikayeMetni1">
               <strong>İlk Adım Akademi</strong>, 2023 yılında Ferizli'de kurulan bir
               özel öğretim kursudur. Ortaokul ve lise düzeyindeki öğrencilerimizi
               sınavlara ve hayata hazırlarken, akademik başarının yanında karakter
               gelişimini de önemsiyoruz.
-            </p>
-            <p style="color: var(--renk-yazi-acik);">
-              Modern eğitim anlayışı, deneyimli kadromuz ve aile sıcaklığındaki
-              ortamımızla öğrencilerimizin ikinci yuvası olmaktan gurur duyuyoruz.
             </p>
             <a href="/hakkimizda.html" class="dugme dugme--cerceve" style="margin-top: var(--bosluk-5);">
               Daha Fazla Bilgi
@@ -327,9 +113,9 @@
     <section class="bolum bolum-yumusak" data-modul="programlar">
       <div class="kapsayici">
         <div class="bolum-baslik">
-          <span class="serit-baslik">Programlarımız</span>
-          <h2>Her Seviyeye Uygun Eğitim</h2>
-          <p>Ortaokul, lise ve sınav hazırlık programlarımızla öğrencilerimizi hedeflerine taşıyoruz.</p>
+          <span class="serit-baslik" data-veri="anasayfa.programlarUst">Programlarımız</span>
+          <h2 data-veri="anasayfa.programlarBaslik">Her Seviyeye Uygun Eğitim</h2>
+          <p data-veri="anasayfa.programlarAciklama">Ortaokul, lise ve sınav hazırlık programlarımızla öğrencilerimizi hedeflerine taşıyoruz.</p>
         </div>
         <div class="izgara izgara--3" data-program-yer>
           <!-- programlar.js dolduracak -->
@@ -340,10 +126,16 @@
       </div>
     </section>
 
-    <!-- İSTATİSTİK — admin/ayarlar üzerinden yönetilir. Veri yoksa bölüm gizlenir. -->
-    <section class="bolum" data-istatistik-bolum hidden>
+    <!-- GÖRÜŞLER (testimonials) — admin "Görüşler" bölümünden yönetilir.
+         Görüş yoksa veya "Modüller → Görüşler" kapalıysa bölüm gizlenir. -->
+    <section class="bolum" data-modul="gorusler" data-gorusler-bolum hidden>
       <div class="kapsayici">
-        <div class="izgara izgara--4" data-istatistik-yer></div>
+        <div class="bolum-baslik">
+          <span class="serit-baslik" data-veri="anasayfa.goruslerUst">Görüşler</span>
+          <h2 data-veri="anasayfa.goruslerBaslik">Veli ve Öğrencilerimiz Ne Diyor?</h2>
+          <p data-veri="anasayfa.goruslerAciklama">Kurumumuzu tercih eden ailelerimizin ve öğrencilerimizin deneyimleri.</p>
+        </div>
+        <div class="izgara izgara--3 gorusler-izgara" data-gorusler-yer></div>
       </div>
     </section>
 
@@ -351,9 +143,9 @@
     <section class="bolum bolum-krem" data-modul="duyurular">
       <div class="kapsayici">
         <div class="bolum-baslik">
-          <span class="serit-baslik">Güncel</span>
-          <h2>Son Duyurular</h2>
-          <p>Etkinliklerimiz, sınav takvimimiz ve kurumumuzdan önemli haberler.</p>
+          <span class="serit-baslik" data-veri="anasayfa.duyurularUst">Güncel</span>
+          <h2 data-veri="anasayfa.duyurularBaslik">Son Duyurular</h2>
+          <p data-veri="anasayfa.duyurularAciklama">Etkinliklerimiz, sınav takvimimiz ve kurumumuzdan önemli haberler.</p>
         </div>
         <div class="izgara izgara--3" data-duyuru-yer="anasayfa">
           <!-- duyurular.js dolduracak -->
@@ -364,15 +156,28 @@
       </div>
     </section>
 
+    <!-- SSS — admin "Sıkça Sorulan Sorular" bölümünden yönetilir (accordion).
+         Soru yoksa veya "Modüller → SSS" kapalıysa bölüm gizlenir. -->
+    <section class="bolum bolum-yumusak" data-modul="sss" data-sss-bolum hidden>
+      <div class="kapsayici kapsayici-dar">
+        <div class="bolum-baslik">
+          <span class="serit-baslik" data-veri="anasayfa.sssUst">Merak Edilenler</span>
+          <h2 data-veri="anasayfa.sssBaslik">Sıkça Sorulan Sorular</h2>
+          <p data-veri="anasayfa.sssAciklama">Kayıt, programlar ve işleyiş hakkında en çok sorulan sorular.</p>
+        </div>
+        <div class="sss-liste" data-sss-yer></div>
+      </div>
+    </section>
+
     <!-- CTA -->
     <section class="bolum">
       <div class="kapsayici">
         <div class="cta-bolumu">
-          <h2>Hayalinizdeki başarıya bir adım uzaklıktasınız.</h2>
-          <p>Ön kayıt formumuzu doldurun, en kısa sürede sizinle iletişime geçelim.</p>
+          <h2 data-veri="anasayfa.ctaBaslik">Hayalinizdeki başarıya bir adım uzaklıktasınız.</h2>
+          <p data-veri="anasayfa.ctaMetin">Ön kayıt formumuzu doldurun, en kısa sürede sizinle iletişime geçelim.</p>
           <div class="cta-bolumu__dugmeler">
-            <a href="/basvuru.html" class="dugme dugme--vurgu dugme--buyuk">Ön Kayıt Ol</a>
-            <a href="/iletisim.html" class="dugme dugme--cerceve-acik dugme--buyuk">Bize Ulaşın</a>
+            <a href="/basvuru.html" class="dugme dugme--vurgu dugme--buyuk" data-veri="anasayfa.ctaButon1Metin" data-veri-href="anasayfa.ctaButon1Link">Ön Kayıt Ol</a>
+            <a href="/iletisim.html" class="dugme dugme--cerceve-acik dugme--buyuk" data-veri="anasayfa.ctaButon2Metin" data-veri-href="anasayfa.ctaButon2Link">Bize Ulaşın</a>
           </div>
         </div>
       </div>

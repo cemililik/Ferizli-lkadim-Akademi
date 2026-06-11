@@ -236,6 +236,203 @@
               </span>
             </label>
           </div>
+
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin: var(--bosluk-5) 0 var(--bosluk-3);">
+            <strong>Ana sayfa bölümleri:</strong> Anasayfadaki bölümleri tek tek gösterip gizleyin.
+            (İçeriği aşağıdaki ilgili bölümlerden düzenlersiniz.)
+          </p>
+          <div class="modul-toggle-izgara">
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.hero" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">🖼️</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Hero Slider</span>
+                <span class="modul-toggle__aciklama">Anasayfa üstündeki büyük görsel slider</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.istatistik" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">📊</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Sayaç / İstatistik</span>
+                <span class="modul-toggle__aciklama">Rakamlarla kurum (count-up sayaç bandı)</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.gorusler" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">💬</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Görüşler</span>
+                <span class="modul-toggle__aciklama">Veli ve öğrenci yorumları bölümü</span>
+              </span>
+            </label>
+            <label class="modul-toggle">
+              <input type="checkbox" data-yol="moduller.sss" data-bool>
+              <span class="modul-toggle__ikon" aria-hidden="true">❓</span>
+              <span class="modul-toggle__metin">
+                <span class="modul-toggle__baslik">Sıkça Sorulan Sorular</span>
+                <span class="modul-toggle__aciklama">SSS accordion bölümü</span>
+              </span>
+            </label>
+          </div>
+        </div>
+      </details>
+
+      <!-- 4b) ANA SAYFA — HERO SLIDER -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">🖼️</span>
+          <span>
+            Ana Sayfa — Hero Slider
+            <span class="ayarlar-bolum__alt">Üst slider görselleri, başlıkları ve butonları</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            Anasayfa üstündeki büyük slider. Her slayt için <strong>görsel + başlık + buton</strong> ekleyebilir,
+            sıralayabilir, tek tek yayından kaldırabilirsiniz. Önerilen görsel: yatay (16:9), en az 1600×900 piksel.
+            <strong>Telifsiz fotoğraf</strong> için Unsplash / Pexels kullanabilir veya kurumun kendi fotoğraflarını yükleyebilirsiniz.
+            Tüm bölümü <em>Modüller → Hero Slider</em>'dan kapatabilirsiniz.
+          </p>
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-secenek" style="display:flex; align-items:center; gap:8px; padding:var(--bosluk-3); border:1px solid var(--renk-cizgi); border-radius:var(--yuvarlak);">
+                <input type="checkbox" data-yol="hero.otomatikGecis" data-bool>
+                <span>Otomatik geçiş (slaytlar kendiliğinden ilerlesin)</span>
+              </label>
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="hero-sure">Geçiş Süresi (saniye)</label>
+              <input class="form-girdi" type="number" id="hero-sure" data-yol="hero.gecisSuresiSn" min="2" max="20" placeholder="6">
+            </div>
+          </div>
+          <div id="slaytListe" style="display:flex; flex-direction:column; gap: var(--bosluk-4);"></div>
+          <button type="button" id="slaytEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
+            + Yeni Slayt Ekle
+          </button>
+        </div>
+      </details>
+
+      <!-- 4c) ANA SAYFA — NEDEN BİZ KARTLARI -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">⭐</span>
+          <span>
+            Ana Sayfa — "Neden Biz" Kartları
+            <span class="ayarlar-bolum__alt">Hero altındaki özellik kartları (ikon + başlık + metin)</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            Kurumun öne çıkan özellikleri. Her kart için bir ikon seçip kısa başlık ve açıklama yazın.
+          </p>
+          <div class="admin-form-satir">
+            <div class="form-grup">
+              <label class="form-etiket" for="ab-nb-ust">Üst Etiket</label>
+              <input class="form-girdi" type="text" id="ab-nb-ust" data-yol="anasayfa.nedenBizUst" placeholder="Neden İlk Adım?">
+            </div>
+            <div class="form-grup">
+              <label class="form-etiket" for="ab-nb-baslik">Başlık</label>
+              <input class="form-girdi" type="text" id="ab-nb-baslik" data-yol="anasayfa.nedenBizBaslik" placeholder="Öğrencilerimizi farkla hazırlıyoruz">
+            </div>
+          </div>
+          <div id="nedenBizListe" style="display:flex; flex-direction:column; gap: var(--bosluk-3);"></div>
+          <button type="button" id="nedenBizEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
+            + Yeni Kart Ekle
+          </button>
+        </div>
+      </details>
+
+      <!-- 4d) ANA SAYFA — BÖLÜM BAŞLIKLARI & CTA -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">📄</span>
+          <span>
+            Ana Sayfa — Bölüm Başlıkları & Çağrı (CTA)
+            <span class="ayarlar-bolum__alt">Bölüm başlık metinleri ve alttaki kayıt çağrısı</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <h4 style="margin-bottom: var(--bosluk-3); font-size: var(--yazi-base); color: var(--renk-yazi-acik);">Alt Çağrı (CTA) Bölümü</h4>
+          <div class="form-grup">
+            <label class="form-etiket" for="ab-cta-baslik">CTA Başlık</label>
+            <input class="form-girdi" type="text" id="ab-cta-baslik" data-yol="anasayfa.ctaBaslik">
+          </div>
+          <div class="form-grup">
+            <label class="form-etiket" for="ab-cta-metin">CTA Metin</label>
+            <textarea class="form-alani" id="ab-cta-metin" data-yol="anasayfa.ctaMetin" rows="2"></textarea>
+          </div>
+          <div class="admin-form-satir">
+            <div class="form-grup"><label class="form-etiket" for="ab-cta-b1m">1. Buton Metni</label><input class="form-girdi" type="text" id="ab-cta-b1m" data-yol="anasayfa.ctaButon1Metin"></div>
+            <div class="form-grup"><label class="form-etiket" for="ab-cta-b1l">1. Buton Linki</label><input class="form-girdi" type="text" id="ab-cta-b1l" data-yol="anasayfa.ctaButon1Link" placeholder="/basvuru.html"></div>
+          </div>
+          <div class="admin-form-satir">
+            <div class="form-grup"><label class="form-etiket" for="ab-cta-b2m">2. Buton Metni</label><input class="form-girdi" type="text" id="ab-cta-b2m" data-yol="anasayfa.ctaButon2Metin"></div>
+            <div class="form-grup"><label class="form-etiket" for="ab-cta-b2l">2. Buton Linki</label><input class="form-girdi" type="text" id="ab-cta-b2l" data-yol="anasayfa.ctaButon2Link" placeholder="/iletisim.html"></div>
+          </div>
+
+          <h4 style="margin-top: var(--bosluk-5); margin-bottom: var(--bosluk-3); font-size: var(--yazi-base); color: var(--renk-yazi-acik);">Bölüm Başlıkları <small style="font-weight:normal; color:var(--renk-yazi-soluk);">(üst etiket · başlık · açıklama)</small></h4>
+          <div class="admin-form-satir">
+            <div class="form-grup"><label class="form-etiket" for="ab-pr-ust">Programlar — Üst Etiket</label><input class="form-girdi" type="text" id="ab-pr-ust" data-yol="anasayfa.programlarUst"></div>
+            <div class="form-grup"><label class="form-etiket" for="ab-pr-baslik">Programlar — Başlık</label><input class="form-girdi" type="text" id="ab-pr-baslik" data-yol="anasayfa.programlarBaslik"></div>
+          </div>
+          <div class="form-grup"><label class="form-etiket" for="ab-pr-acik">Programlar — Açıklama</label><input class="form-girdi" type="text" id="ab-pr-acik" data-yol="anasayfa.programlarAciklama"></div>
+          <div class="admin-form-satir">
+            <div class="form-grup"><label class="form-etiket" for="ab-du-ust">Duyurular — Üst Etiket</label><input class="form-girdi" type="text" id="ab-du-ust" data-yol="anasayfa.duyurularUst"></div>
+            <div class="form-grup"><label class="form-etiket" for="ab-du-baslik">Duyurular — Başlık</label><input class="form-girdi" type="text" id="ab-du-baslik" data-yol="anasayfa.duyurularBaslik"></div>
+          </div>
+          <div class="form-grup"><label class="form-etiket" for="ab-du-acik">Duyurular — Açıklama</label><input class="form-girdi" type="text" id="ab-du-acik" data-yol="anasayfa.duyurularAciklama"></div>
+          <div class="admin-form-satir">
+            <div class="form-grup"><label class="form-etiket" for="ab-go-ust">Görüşler — Üst Etiket</label><input class="form-girdi" type="text" id="ab-go-ust" data-yol="anasayfa.goruslerUst"></div>
+            <div class="form-grup"><label class="form-etiket" for="ab-go-baslik">Görüşler — Başlık</label><input class="form-girdi" type="text" id="ab-go-baslik" data-yol="anasayfa.goruslerBaslik"></div>
+          </div>
+          <div class="form-grup"><label class="form-etiket" for="ab-go-acik">Görüşler — Açıklama</label><input class="form-girdi" type="text" id="ab-go-acik" data-yol="anasayfa.goruslerAciklama"></div>
+          <div class="admin-form-satir">
+            <div class="form-grup"><label class="form-etiket" for="ab-ss-ust">SSS — Üst Etiket</label><input class="form-girdi" type="text" id="ab-ss-ust" data-yol="anasayfa.sssUst"></div>
+            <div class="form-grup"><label class="form-etiket" for="ab-ss-baslik">SSS — Başlık</label><input class="form-girdi" type="text" id="ab-ss-baslik" data-yol="anasayfa.sssBaslik"></div>
+          </div>
+          <div class="form-grup"><label class="form-etiket" for="ab-ss-acik">SSS — Açıklama</label><input class="form-girdi" type="text" id="ab-ss-acik" data-yol="anasayfa.sssAciklama"></div>
+        </div>
+      </details>
+
+      <!-- 4e) ANA SAYFA — GÖRÜŞLER -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">💬</span>
+          <span>
+            Ana Sayfa — Görüşler
+            <span class="ayarlar-bolum__alt">Veli ve öğrenci yorumları (isim, rol, metin, foto)</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            Kurumunuzu tercih eden veli ve öğrencilerin görüşleri. <strong>Gerçek olmayan/uydurma yorumlardan kaçının.</strong>
+            Fotoğraf opsiyoneldir; yoksa ismin baş harfi gösterilir. Bölümü <em>Modüller → Görüşler</em>'den kapatabilirsiniz.
+          </p>
+          <div id="gorusListe" style="display:flex; flex-direction:column; gap: var(--bosluk-3);"></div>
+          <button type="button" id="gorusEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
+            + Yeni Görüş Ekle
+          </button>
+        </div>
+      </details>
+
+      <!-- 4f) ANA SAYFA — SSS -->
+      <details class="ayarlar-bolum">
+        <summary>
+          <span class="ayarlar-bolum__icon" aria-hidden="true">❓</span>
+          <span>
+            Ana Sayfa — Sıkça Sorulan Sorular
+            <span class="ayarlar-bolum__alt">Soru–cevap listesi (anasayfada accordion)</span>
+          </span>
+        </summary>
+        <div class="ayarlar-bolum__icerik">
+          <p style="font-size: var(--yazi-sm); color: var(--renk-yazi-acik); margin-bottom: var(--bosluk-4);">
+            Velilerin en çok merak ettiği sorular ve cevapları. Bölümü <em>Modüller → SSS</em>'den kapatabilirsiniz.
+          </p>
+          <div id="sssListe" style="display:flex; flex-direction:column; gap: var(--bosluk-3);"></div>
+          <button type="button" id="sssEkle" class="dugme dugme--cerceve dugme--kucuk" style="margin-top: var(--bosluk-4);">
+            + Yeni Soru Ekle
+          </button>
         </div>
       </details>
 
@@ -486,6 +683,283 @@
       }
     });
 
+    /* ============================================================
+       ANA SAYFA dinamik listeleri: Hero slaytları, Neden Biz, Görüşler, SSS
+    ============================================================ */
+    const $slaytListe = document.getElementById('slaytListe');
+    const $nedenBizListe = document.getElementById('nedenBizListe');
+    const $gorusListe = document.getElementById('gorusListe');
+    const $sssListe = document.getElementById('sssListe');
+
+    // Ortak yukarı/aşağı/sil davranışı (.dizi-satir + [data-tasi] / [data-sil])
+    const diziAraclari = (liste, e) => {
+      const satir = e.target.closest('.dizi-satir');
+      if (!satir || !liste.contains(satir)) return false;
+      if (e.target.closest('[data-sil]')) { satir.remove(); return true; }
+      if (e.target.closest('[data-tasi="yukari"]')) {
+        const o = satir.previousElementSibling; if (o) liste.insertBefore(satir, o); return true;
+      }
+      if (e.target.closest('[data-tasi="asagi"]')) {
+        const s = satir.nextElementSibling; if (s) liste.insertBefore(s, satir); return true;
+      }
+      return false;
+    };
+    const satirAraclarHtml = `
+      <div style="display:flex; gap:4px;">
+        <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-tasi="yukari" title="Yukarı taşı" aria-label="Yukarı taşı">↑</button>
+        <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-tasi="asagi" title="Aşağı taşı" aria-label="Aşağı taşı">↓</button>
+        <button type="button" class="dugme dugme--kucuk" data-sil title="Sil" aria-label="Sil" style="background:transparent; color:var(--renk-hata); border:1px solid var(--renk-hata);">Sil</button>
+      </div>`;
+    const satirKutu = (ic) => {
+      const div = document.createElement('div');
+      div.className = 'dizi-satir';
+      div.style.cssText = 'border:1px solid var(--renk-cizgi); border-radius:var(--yuvarlak); padding:var(--bosluk-4); background:#fff;';
+      div.innerHTML = ic;
+      return div;
+    };
+
+    // Hero rozeti için ikon seçenekleri (frontend IKONLAR ile eşleşir; 'none' = ikon yok)
+    const ROZET_IKON_SECENEKLERI = [
+      ['none','— İkon yok —'], ['map-pin','📍 Konum'], ['star','⭐ Yıldız'], ['sparkles','✨ Işıltı'],
+      ['calendar','📅 Takvim'], ['megaphone','📣 Duyuru'], ['flame','🔥 Popüler'], ['tag','🏷️ Etiket'],
+      ['award','🏅 Ödül'], ['clock','🕐 Saat'], ['check-circle','✅ Onay'], ['info','ℹ️ Bilgi'],
+    ];
+    const rozetIkonOptionlar = (secili) => ROZET_IKON_SECENEKLERI
+      .map(([d, l]) => `<option value="${d}"${d === secili ? ' selected' : ''}>${l}</option>`).join('');
+
+    /* ----- HERO SLAYTLARI ----- */
+    const slaytOnizlemeYenile = (satir) => {
+      const url = satir.querySelector('[data-s="gorsel"]').value;
+      const onz = satir.querySelector('[data-onizleme]');
+      onz.innerHTML = url ? `<img src="${url}" alt="" style="width:100%; height:100%; object-fit:cover;">` : '<span>📷 Görsel yok</span>';
+    };
+    const slaytSatir = (item = {}) => {
+      const satir = satirKutu(`
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:var(--bosluk-2); margin-bottom:var(--bosluk-3);">
+          <label class="form-secenek" style="margin:0; display:flex; align-items:center; gap:6px;"><input type="checkbox" data-s="aktif"> <span>Yayında</span></label>
+          ${satirAraclarHtml}
+        </div>
+        <div style="display:grid; grid-template-columns:170px 1fr; gap:var(--bosluk-3);">
+          <div>
+            <div class="gorsel-yukleme__onizleme" data-onizleme style="aspect-ratio:16/9; width:100%; display:flex; align-items:center; justify-content:center; background:var(--renk-arka-yumusak); border-radius:var(--yuvarlak); overflow:hidden; font-size:var(--yazi-xs); color:var(--renk-yazi-soluk);"><span>📷 Görsel yok</span></div>
+            <div style="display:flex; gap:4px; margin-top:6px;">
+              <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-foto-sec>📁 Görsel</button>
+              <button type="button" class="dugme dugme--kucuk" data-foto-sil title="Görseli kaldır" style="background:transparent; color:var(--renk-hata); border:1px solid var(--renk-hata);">×</button>
+            </div>
+            <input type="hidden" data-s="gorsel">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:var(--bosluk-2);">
+            <div style="display:grid; grid-template-columns:1fr 150px; gap:var(--bosluk-2);">
+              <input class="form-girdi" data-s="rozet" type="text" placeholder="Rozet metni (örn. Ferizli, Sakarya)">
+              <select class="form-girdi" data-s="rozetIkon" title="Rozet ikonu" aria-label="Rozet ikonu">${rozetIkonOptionlar('')}</select>
+            </div>
+            <input class="form-girdi" data-s="baslik" type="text" placeholder="Başlık *">
+            <textarea class="form-alani" data-s="altBaslik" rows="2" placeholder="Alt başlık"></textarea>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--bosluk-2);">
+              <input class="form-girdi" data-s="butonMetin" type="text" placeholder="1. Buton metni">
+              <input class="form-girdi" data-s="butonLink" type="text" placeholder="1. Buton linki (/basvuru.html · whatsapp)">
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--bosluk-2);">
+              <input class="form-girdi" data-s="buton2Metin" type="text" placeholder="2. Buton metni (opsiyonel)">
+              <input class="form-girdi" data-s="buton2Link" type="text" placeholder="2. Buton linki">
+            </div>
+            <label class="form-etiket" style="font-size:var(--yazi-xs); margin:0;">Görsel karartma (okunabilirlik): <span data-overlay-deger>50</span>%
+              <input type="range" min="0" max="90" step="5" data-s="overlayKoyuluk" style="width:100%;">
+            </label>
+          </div>
+        </div>`);
+      const set = (k, v) => { const el = satir.querySelector(`[data-s="${k}"]`); if (el) el.value = v == null ? '' : v; };
+      satir.querySelector('[data-s="aktif"]').checked = item.aktif !== false;
+      ['gorsel','rozet','baslik','altBaslik','butonMetin','butonLink','buton2Metin','buton2Link'].forEach(k => set(k, item[k]));
+      satir.querySelector('[data-s="rozetIkon"]').value = item.rozetIkon || 'map-pin';
+      const ov = item.overlayKoyuluk == null ? 50 : item.overlayKoyuluk;
+      set('overlayKoyuluk', ov);
+      satir.querySelector('[data-overlay-deger]').textContent = ov;
+      slaytOnizlemeYenile(satir);
+      return satir;
+    };
+    const slaytlariYaz = (liste) => {
+      $slaytListe.innerHTML = '';
+      (Array.isArray(liste) ? liste : []).forEach(it => $slaytListe.appendChild(slaytSatir(it)));
+    };
+    const slaytlariOku = () => Array.from($slaytListe.children).map(r => {
+      const g = (k) => r.querySelector(`[data-s="${k}"]`);
+      return {
+        aktif: g('aktif').checked,
+        gorsel: g('gorsel').value.trim(),
+        rozet: g('rozet').value.trim(),
+        rozetIkon: g('rozetIkon').value,
+        baslik: g('baslik').value.trim(),
+        altBaslik: g('altBaslik').value.trim(),
+        butonMetin: g('butonMetin').value.trim(),
+        butonLink: g('butonLink').value.trim(),
+        buton2Metin: g('buton2Metin').value.trim(),
+        buton2Link: g('buton2Link').value.trim(),
+        overlayKoyuluk: Number(g('overlayKoyuluk').value) || 0,
+      };
+    }).filter(s => s.gorsel || s.baslik);
+
+    $slaytListe.addEventListener('input', (e) => {
+      if (e.target.matches('[data-s="overlayKoyuluk"]')) {
+        const g = e.target.closest('.dizi-satir').querySelector('[data-overlay-deger]');
+        if (g) g.textContent = e.target.value;
+      }
+    });
+    $slaytListe.addEventListener('click', async (e) => {
+      if (diziAraclari($slaytListe, e)) return;
+      const satir = e.target.closest('.dizi-satir');
+      if (!satir) return;
+      if (e.target.closest('[data-foto-sil]')) {
+        satir.querySelector('[data-s="gorsel"]').value = '';
+        slaytOnizlemeYenile(satir);
+      } else if (e.target.closest('[data-foto-sec]')) {
+        try {
+          const r = await ADMIN.gorselSec({ maxGenislik: 1920, maxYukseklik: 1080, klasor: 'hero' });
+          satir.querySelector('[data-s="gorsel"]').value = r.src || r.dataUrl || '';
+          slaytOnizlemeYenile(satir);
+          ADMIN.toast('Görsel yüklendi — kaydetmeyi unutmayın', 'basari');
+        } catch (err) { if (err.message !== 'İptal edildi') ADMIN.toast(err.message, 'hata'); }
+      }
+    });
+    document.getElementById('slaytEkle').addEventListener('click', () => $slaytListe.appendChild(slaytSatir()));
+
+    /* ----- NEDEN BİZ KARTLARI ----- */
+    const IKON_SECENEKLERI = [
+      ['graduation-cap','🎓 Mezuniyet kepi'], ['users','👥 Öğrenci/Grup'], ['trending-up','📈 Yükseliş'],
+      ['message-square','💬 Mesaj/İletişim'], ['book-open','📖 Açık kitap'], ['target','🎯 Hedef'],
+      ['award','🏅 Ödül'], ['clock','🕐 Saat'], ['check-circle','✅ Onay'], ['heart','❤️ Kalp'],
+      ['lightbulb','💡 Fikir'], ['pencil','✏️ Kalem'], ['shield-check','🛡️ Güven'], ['smile','🙂 Memnuniyet'], ['star','⭐ Yıldız'],
+    ];
+    const ikonOptionlar = (secili) => IKON_SECENEKLERI
+      .map(([d, l]) => `<option value="${d}"${d === secili ? ' selected' : ''}>${l}</option>`).join('');
+    const nedenBizSatir = (item = {}) => {
+      const satir = satirKutu(`
+        <div style="display:grid; grid-template-columns:170px 1fr 1.4fr auto; gap:var(--bosluk-2); align-items:start;">
+          <div class="form-grup" style="margin:0;">
+            <label class="form-etiket" style="font-size:var(--yazi-xs);">İkon</label>
+            <select class="form-girdi" data-n="ikon">${ikonOptionlar(item.ikon)}</select>
+          </div>
+          <div class="form-grup" style="margin:0;">
+            <label class="form-etiket" style="font-size:var(--yazi-xs);">Başlık *</label>
+            <input class="form-girdi" data-n="baslik" type="text" placeholder="Deneyimli Kadro">
+          </div>
+          <div class="form-grup" style="margin:0;">
+            <label class="form-etiket" style="font-size:var(--yazi-xs);">Açıklama</label>
+            <input class="form-girdi" data-n="metin" type="text" placeholder="Alanında uzman branş öğretmenleri">
+          </div>
+          <div style="padding-top:20px;">${satirAraclarHtml}</div>
+        </div>`);
+      satir.querySelector('[data-n="ikon"]').value = item.ikon || 'check-circle';
+      satir.querySelector('[data-n="baslik"]').value = item.baslik || '';
+      satir.querySelector('[data-n="metin"]').value = item.metin || '';
+      return satir;
+    };
+    const nedenBizYaz = (liste) => {
+      $nedenBizListe.innerHTML = '';
+      (Array.isArray(liste) ? liste : []).forEach(it => $nedenBizListe.appendChild(nedenBizSatir(it)));
+    };
+    const nedenBizOku = () => Array.from($nedenBizListe.children).map(r => ({
+      ikon: r.querySelector('[data-n="ikon"]').value,
+      baslik: r.querySelector('[data-n="baslik"]').value.trim(),
+      metin: r.querySelector('[data-n="metin"]').value.trim(),
+    })).filter(o => o.baslik || o.metin);
+    $nedenBizListe.addEventListener('click', (e) => diziAraclari($nedenBizListe, e));
+    document.getElementById('nedenBizEkle').addEventListener('click', () => $nedenBizListe.appendChild(nedenBizSatir()));
+
+    /* ----- GÖRÜŞLER ----- */
+    const gorusOnizlemeYenile = (satir) => {
+      const url = satir.querySelector('[data-g="foto"]').value;
+      const onz = satir.querySelector('[data-onizleme]');
+      onz.innerHTML = url ? `<img src="${url}" alt="" style="width:100%; height:100%; object-fit:cover;">` : '<span>👤</span>';
+    };
+    const gorusSatir = (item = {}) => {
+      const satir = satirKutu(`
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:var(--bosluk-2); margin-bottom:var(--bosluk-3);">
+          <label class="form-secenek" style="margin:0; display:flex; align-items:center; gap:6px;"><input type="checkbox" data-g="aktif"> <span>Yayında</span></label>
+          ${satirAraclarHtml}
+        </div>
+        <div style="display:grid; grid-template-columns:88px 1fr; gap:var(--bosluk-3);">
+          <div>
+            <div class="gorsel-yukleme__onizleme" data-onizleme style="width:88px; height:88px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:var(--renk-arka-yumusak); overflow:hidden; font-size:24px;"><span>👤</span></div>
+            <div style="display:flex; gap:4px; margin-top:6px;">
+              <button type="button" class="dugme dugme--cerceve dugme--kucuk" data-foto-sec>📁</button>
+              <button type="button" class="dugme dugme--kucuk" data-foto-sil style="background:transparent; color:var(--renk-hata); border:1px solid var(--renk-hata);">×</button>
+            </div>
+            <input type="hidden" data-g="foto">
+          </div>
+          <div style="display:flex; flex-direction:column; gap:var(--bosluk-2);">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:var(--bosluk-2);">
+              <input class="form-girdi" data-g="ad" type="text" placeholder="İsim (örn. Ayşe T.)">
+              <input class="form-girdi" data-g="rol" type="text" placeholder="Rol (örn. 8. Sınıf Velisi)">
+            </div>
+            <textarea class="form-alani" data-g="metin" rows="3" placeholder="Görüş metni *"></textarea>
+          </div>
+        </div>`);
+      satir.querySelector('[data-g="aktif"]').checked = item.aktif !== false;
+      satir.querySelector('[data-g="foto"]').value = item.foto || '';
+      satir.querySelector('[data-g="ad"]').value = item.ad || '';
+      satir.querySelector('[data-g="rol"]').value = item.rol || '';
+      satir.querySelector('[data-g="metin"]').value = item.metin || '';
+      gorusOnizlemeYenile(satir);
+      return satir;
+    };
+    const goruslerYaz = (liste) => {
+      $gorusListe.innerHTML = '';
+      (Array.isArray(liste) ? liste : []).forEach(it => $gorusListe.appendChild(gorusSatir(it)));
+    };
+    const goruslerOku = () => Array.from($gorusListe.children).map(r => ({
+      aktif: r.querySelector('[data-g="aktif"]').checked,
+      foto: r.querySelector('[data-g="foto"]').value.trim(),
+      ad: r.querySelector('[data-g="ad"]').value.trim(),
+      rol: r.querySelector('[data-g="rol"]').value.trim(),
+      metin: r.querySelector('[data-g="metin"]').value.trim(),
+    })).filter(g => g.metin || g.ad);
+    $gorusListe.addEventListener('click', async (e) => {
+      if (diziAraclari($gorusListe, e)) return;
+      const satir = e.target.closest('.dizi-satir');
+      if (!satir) return;
+      if (e.target.closest('[data-foto-sil]')) {
+        satir.querySelector('[data-g="foto"]').value = '';
+        gorusOnizlemeYenile(satir);
+      } else if (e.target.closest('[data-foto-sec]')) {
+        try {
+          const r = await ADMIN.gorselSec({ maxGenislik: 400, maxYukseklik: 400, klasor: 'gorusler' });
+          satir.querySelector('[data-g="foto"]').value = r.src || r.dataUrl || '';
+          gorusOnizlemeYenile(satir);
+          ADMIN.toast('Fotoğraf yüklendi — kaydetmeyi unutmayın', 'basari');
+        } catch (err) { if (err.message !== 'İptal edildi') ADMIN.toast(err.message, 'hata'); }
+      }
+    });
+    document.getElementById('gorusEkle').addEventListener('click', () => $gorusListe.appendChild(gorusSatir()));
+
+    /* ----- SSS ----- */
+    const sssSatir = (item = {}) => {
+      const satir = satirKutu(`
+        <div style="display:flex; justify-content:space-between; align-items:center; gap:var(--bosluk-2); margin-bottom:var(--bosluk-3);">
+          <label class="form-secenek" style="margin:0; display:flex; align-items:center; gap:6px;"><input type="checkbox" data-q="aktif"> <span>Yayında</span></label>
+          ${satirAraclarHtml}
+        </div>
+        <div style="display:flex; flex-direction:column; gap:var(--bosluk-2);">
+          <input class="form-girdi" data-q="soru" type="text" placeholder="Soru *">
+          <textarea class="form-alani" data-q="cevap" rows="3" placeholder="Cevap"></textarea>
+        </div>`);
+      satir.querySelector('[data-q="aktif"]').checked = item.aktif !== false;
+      satir.querySelector('[data-q="soru"]').value = item.soru || '';
+      satir.querySelector('[data-q="cevap"]').value = item.cevap || '';
+      return satir;
+    };
+    const sssYaz = (liste) => {
+      $sssListe.innerHTML = '';
+      (Array.isArray(liste) ? liste : []).forEach(it => $sssListe.appendChild(sssSatir(it)));
+    };
+    const sssOku = () => Array.from($sssListe.children).map(r => ({
+      aktif: r.querySelector('[data-q="aktif"]').checked,
+      soru: r.querySelector('[data-q="soru"]').value.trim(),
+      cevap: r.querySelector('[data-q="cevap"]').value.trim(),
+    })).filter(s => s.soru);
+    $sssListe.addEventListener('click', (e) => diziAraclari($sssListe, e));
+    document.getElementById('sssEkle').addEventListener('click', () => $sssListe.appendChild(sssSatir()));
+
     /* --- Form yaz/oku --- */
     const boolCoz = (v) => {
       if (v === true || v === 1 || v === '1' || v === 'true') return true;
@@ -503,6 +977,10 @@
         }
       });
       istatistikleriYaz(mevcut.istatistikler);
+      slaytlariYaz(mevcut.hero && mevcut.hero.slaytlar);
+      nedenBizYaz(mevcut.anasayfa && mevcut.anasayfa.nedenBiz);
+      goruslerYaz(mevcut.gorusler);
+      sssYaz(mevcut.sss);
       fotoOnizlemeYenile();
     };
 
@@ -525,6 +1003,14 @@
         ayarla(yeni, el.dataset.yol, d);
       });
       yeni.istatistikler = istatistikleriOku();
+      // Ana sayfa dinamik listeleri
+      if (!yeni.hero) yeni.hero = {};
+      yeni.hero.mod = 'slider';
+      yeni.hero.slaytlar = slaytlariOku();
+      if (!yeni.anasayfa) yeni.anasayfa = {};
+      yeni.anasayfa.nedenBiz = nedenBizOku();
+      yeni.gorusler = goruslerOku();
+      yeni.sss = sssOku();
       return yeni;
     };
 

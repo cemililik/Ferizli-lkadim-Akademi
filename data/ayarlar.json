@@ -34,15 +34,143 @@
   },
   "whatsappMesaj": "Merhaba, web sitesi üzerinden ulaşıyorum. Bilgi almak istiyorum.",
   "footerNot": "Bu site Özel Ferizli İlk Adım Akademi'nin resmi web sitesidir.",
-  "istatistikler": [],
+  "istatistikler": [
+    { "ikon": "🎓", "deger": "2023", "etiket": "Kuruluş Yılı" },
+    { "ikon": "📚", "deger": "6+", "etiket": "Branş Programı" },
+    { "ikon": "👨‍🏫", "deger": "12", "etiket": "Maksimum Sınıf Mevcudu" },
+    { "ikon": "📝", "deger": "Haftalık", "etiket": "Deneme Sınavı" }
+  ],
   "moduller": {
     "hakkimizda": true,
     "programlar": true,
     "kadro": true,
     "duyurular": true,
     "galeri": true,
-    "blog": false
+    "blog": false,
+    "hero": true,
+    "istatistik": true,
+    "gorusler": true,
+    "sss": true
   },
+  "hero": {
+    "mod": "slider",
+    "otomatikGecis": true,
+    "gecisSuresiSn": 6,
+    "slaytlar": [
+      {
+        "aktif": true,
+        "gorsel": "/assets/img/hero/slayt-1.svg",
+        "rozet": "Ferizli, Sakarya",
+        "rozetIkon": "map-pin",
+        "baslik": "Sınava emin adımlarla hazırlanın",
+        "altBaslik": "Ortaokul ve lise öğrencileri için LGS–YKS hazırlık, takviye ve etüt programları. Deneyimli kadromuzla öğrencilerimizi hedeflerine taşıyoruz.",
+        "butonMetin": "Ücretsiz Görüşme Talep Et",
+        "butonLink": "/basvuru.html",
+        "buton2Metin": "WhatsApp'tan Sor",
+        "buton2Link": "whatsapp",
+        "overlayKoyuluk": 55
+      },
+      {
+        "aktif": true,
+        "gorsel": "/assets/img/hero/slayt-2.svg",
+        "rozet": "Birebir İlgi",
+        "rozetIkon": "sparkles",
+        "baslik": "Küçük sınıflar, deneyimli öğretmenler",
+        "altBaslik": "Her öğrenciye birebir ilgi gösterebildiğimiz küçük mevcutlu sınıflar ve alanında uzman branş öğretmenleriyle kaliteli eğitim.",
+        "butonMetin": "Programlarımızı İncele",
+        "butonLink": "/programlar.html",
+        "buton2Metin": "Kadromuzu Tanıyın",
+        "buton2Link": "/kadro.html",
+        "overlayKoyuluk": 55
+      },
+      {
+        "aktif": true,
+        "gorsel": "/assets/img/hero/slayt-3.svg",
+        "rozet": "Ön Kayıt Başladı",
+        "rozetIkon": "megaphone",
+        "baslik": "Geleceğe ilk adımı bizimle atın",
+        "altBaslik": "Yeni dönem ön kayıtlarımız başladı. Ön kayıt formunu doldurun, en kısa sürede sizinle iletişime geçelim.",
+        "butonMetin": "Hemen Ön Kayıt Ol",
+        "butonLink": "/basvuru.html",
+        "buton2Metin": "Bize Ulaşın",
+        "buton2Link": "/iletisim.html",
+        "overlayKoyuluk": 50
+      }
+    ]
+  },
+  "anasayfa": {
+    "nedenBizUst": "Neden İlk Adım?",
+    "nedenBizBaslik": "Öğrencilerimizi farkla hazırlıyoruz",
+    "nedenBiz": [
+      { "ikon": "graduation-cap", "baslik": "Deneyimli Kadro", "metin": "Alanında uzman branş öğretmenleri" },
+      { "ikon": "users", "baslik": "Küçük Sınıflar", "metin": "Her öğrenciye birebir ilgi" },
+      { "ikon": "trending-up", "baslik": "Düzenli Deneme", "metin": "Haftalık deneme sınavları ve analiz" },
+      { "ikon": "message-square", "baslik": "Veli İletişimi", "metin": "Şeffaf takip ve düzenli bilgilendirme" }
+    ],
+    "ctaBaslik": "Hayalinizdeki başarıya bir adım uzaklıktasınız.",
+    "ctaMetin": "Ön kayıt formumuzu doldurun, en kısa sürede sizinle iletişime geçelim.",
+    "ctaButon1Metin": "Ön Kayıt Ol",
+    "ctaButon1Link": "/basvuru.html",
+    "ctaButon2Metin": "Bize Ulaşın",
+    "ctaButon2Link": "/iletisim.html",
+    "programlarUst": "Programlarımız",
+    "programlarBaslik": "Her Seviyeye Uygun Eğitim",
+    "programlarAciklama": "Ortaokul, lise ve sınav hazırlık programlarımızla öğrencilerimizi hedeflerine taşıyoruz.",
+    "duyurularUst": "Güncel",
+    "duyurularBaslik": "Son Duyurular",
+    "duyurularAciklama": "Etkinliklerimiz, sınav takvimimiz ve kurumumuzdan önemli haberler.",
+    "goruslerUst": "Görüşler",
+    "goruslerBaslik": "Veli ve Öğrencilerimiz Ne Diyor?",
+    "goruslerAciklama": "Kurumumuzu tercih eden ailelerimizin ve öğrencilerimizin deneyimleri.",
+    "sssUst": "Merak Edilenler",
+    "sssBaslik": "Sıkça Sorulan Sorular",
+    "sssAciklama": "Kayıt, programlar ve işleyiş hakkında en çok sorulan sorular."
+  },
+  "gorusler": [
+    {
+      "aktif": true,
+      "ad": "Ayşe T.",
+      "rol": "8. Sınıf Velisi",
+      "metin": "Oğlumun LGS sürecinde gösterdikleri ilgi ve düzenli geri bildirimler sayesinde içimiz çok rahat etti. Deneme analizleri gerçekten fark yarattı.",
+      "foto": ""
+    },
+    {
+      "aktif": true,
+      "ad": "Mehmet K.",
+      "rol": "Lise Öğrencisi",
+      "metin": "Küçük sınıflar sayesinde anlamadığım konuyu çekinmeden sorabiliyorum. Öğretmenlerimiz her zaman ulaşılabilir.",
+      "foto": ""
+    },
+    {
+      "aktif": true,
+      "ad": "Fatma Y.",
+      "rol": "6. Sınıf Velisi",
+      "metin": "Aile sıcaklığında ama disiplinli bir ortam. Kızım okula gelmeyi seviyor, biz de gelişimini yakından takip edebiliyoruz.",
+      "foto": ""
+    }
+  ],
+  "sss": [
+    {
+      "aktif": true,
+      "soru": "Kayıtlar ne zaman başlıyor?",
+      "cevap": "Ön kayıtlarımız yıl boyunca devam etmektedir. Dönem başı kontenjanları sınırlı olduğundan erken başvuru öneririz. Ön kayıt formunu doldurmanız yeterli; ekibimiz sizinle iletişime geçer."
+    },
+    {
+      "aktif": true,
+      "soru": "Sınıf mevcutları kaç kişi?",
+      "cevap": "Her öğrenciye birebir ilgi gösterebilmek için sınıf mevcutlarımızı sınırlı tutuyoruz. Bu sayede öğrencilerimizin eksik konuları yakından takip edilir."
+    },
+    {
+      "aktif": true,
+      "soru": "Deneme sınavları yapılıyor mu?",
+      "cevap": "Evet. Düzenli (haftalık) deneme sınavları uyguluyor, sonuçları öğrenci ve velilerle birlikte analiz ediyoruz. Böylece eksikler erkenden tespit edilip giderilir."
+    },
+    {
+      "aktif": true,
+      "soru": "Veliler öğrencinin gelişimini nasıl takip ediyor?",
+      "cevap": "Düzenli veli bilgilendirme görüşmeleri ve deneme sonuç paylaşımlarıyla sürecin tamamında şeffaf bir iletişim sağlıyoruz."
+    }
+  ],
   "hakkimizda": {
     "hikayeMetni1": "<strong>Özel Ferizli İlk Adım Akademi</strong>, 2023 yılında Ferizli'de kurulmuş bir özel öğretim kursudur. Ortaokul ve lise düzeyindeki öğrencilerimize sınav hazırlık, takviye ve etüt programları sunuyoruz.",
     "hikayeMetni2": "Akademik programımız ve eğitim kadromuzla, öğrencilerimizin sadece sınav başarısına değil, hayata hazırlanmasına da katkı sağlamayı hedefliyoruz. Modern eğitim anlayışı ile sıcak bir kurum kültürünü birleştirerek, her bir öğrencimizin potansiyelinin zirvesine ulaşması için çalışıyoruz.",
