@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="/assets/css/base.css">
   <link rel="stylesheet" href="/assets/css/components.css">
   <link rel="stylesheet" href="/admin/css/admin.css">
+  <link rel="stylesheet" href="/admin/css/hero-cropper.css?v=1.2.0">
 </head>
 <body>
   <div id="adminBar"></div>
@@ -561,6 +562,7 @@
 
   <script src="/admin/js/api-client.js"></script>
   <script src="/admin/js/admin-core.js"></script>
+  <script src="/admin/js/hero-cropper.js?v=1.2.0"></script>
   <script>
   (async () => {
     'use strict';
@@ -814,10 +816,17 @@
         slaytOnizlemeYenile(satir);
       } else if (e.target.closest('[data-foto-sec]')) {
         try {
-          const r = await ADMIN.gorselSec({ maxGenislik: 1920, maxYukseklik: 1080, klasor: 'hero' });
-          satir.querySelector('[data-s="gorsel"]').value = r.src || r.dataUrl || '';
+          // Photo cropper: dosya seç → 16:9 kırp + web/tablet/mobil önizleme → yükle.
+          const g = (k) => satir.querySelector(`[data-s="${k}"]`)?.value.trim() || '';
+          const r = await HERO_CROPPER.sec({
+            klasor: 'hero',
+            baslik: g('baslik') || 'Sınava emin adımlarla hazırlanın',
+            rozet: g('rozet'),
+            buton: g('butonMetin') || 'Ücretsiz Görüşme',
+          });
+          satir.querySelector('[data-s="gorsel"]').value = r.url || '';
           slaytOnizlemeYenile(satir);
-          ADMIN.toast('Görsel yüklendi — kaydetmeyi unutmayın', 'basari');
+          ADMIN.toast('Görsel kırpıldı ve yüklendi — kaydetmeyi unutmayın', 'basari');
         } catch (err) { if (err.message !== 'İptal edildi') ADMIN.toast(err.message, 'hata'); }
       }
     });

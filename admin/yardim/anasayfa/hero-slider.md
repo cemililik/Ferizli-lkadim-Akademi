@@ -56,18 +56,35 @@ Slaytın başındaki **"Yayında"** kutusu. İşaretliyse slayt sitede gösteril
 - İşareti **kaldırırsanız** o slayt sitede **görünmez** — ama silinmez, listede kalır. İleride tekrar işaretleyip yayına alabilirsiniz.
 - Hazırlamakta olduğunuz, henüz bitmemiş bir slaytı "Yayında" işaretini kaldırarak gizli tutmak iyi bir yöntemdir.
 
-### Görsel
+### Görsel ve kırpma aracı (YENİ)
 
-Slaytın arka plan fotoğrafı.
+Slaytın arka plan fotoğrafı. Bir fotoğraf seçtiğinizde dosya **doğrudan yüklenmez** — önce **"Hero Görselini Kırp" penceresi** (kırpma aracı) açılır. Burada fotoğrafı konumlandırır, yakınlaştırır ve **her cihazda nasıl görüneceğini canlı görerek** onaylarsınız. Böylece "sitede böyle görüneceğini bilmiyordum" sürprizinin önüne geçilir.
 
 <ol class="adim-listesi">
-<li><strong>📁 Görsel</strong> düğmesine basın ve bilgisayarınızdan bir fotoğraf seçin/yükleyin.</li>
-<li>Yüklenince küçük bir önizleme görürsünüz.</li>
-<li>Fotoğrafı değiştirmek isterseniz tekrar <strong>📁 Görsel</strong>; kaldırmak için yanındaki <strong>×</strong> düğmesine basın.</li>
+<li><strong>📁 Görsel</strong> düğmesine basın ve bilgisayarınızdan bir fotoğraf seçin.</li>
+<li><strong>Kırpma penceresi açılır.</strong> Soldaki alanda fotoğrafı <strong>sürükleyerek konumlandırın</strong>; <strong>+ / −</strong> düğmeleri, kaydırıcı ya da fare tekerleğiyle <strong>yakınlaştırın</strong>. Baştan başlamak için <strong>Sıfırla</strong>.</li>
+<li>Sağdaki <strong>Web · Tablet · Mobil</strong> önizlemelerine bakın: bunlar fotoğrafın her ekranda nasıl duracağını başlık, rozet ve butonla birlikte gösteren <strong>küçük bir provadır</strong> ve siz kırptıkça <strong>anında güncellenir</strong>.</li>
+<li>Beğendiğinizde <strong>Uygula ve Yükle</strong>'ye basın — fotoğraf kırpılıp yüklenir ve önizlemesi slayta gelir. Vazgeçerseniz <strong>İptal</strong>.</li>
+<li>Fotoğrafı değiştirmek için tekrar <strong>📁 Görsel</strong>; kaldırmak için yanındaki <strong>×</strong> düğmesine basın.</li>
 </ol>
 
+```mermaid
+flowchart LR
+  A[📁 Görsel seç] --> B[Kırpma penceresi açılır]
+  B --> C[Sürükle / yakınlaştır]
+  C --> D[Web · Tablet · Mobil<br/>önizlemeyi kontrol et]
+  D --> E[Uygula ve Yükle]
+  E --> F[💾 Değişiklikleri Kaydet]
+```
+
+> [!İPUCU]
+> **Orta şerit önemlidir.** Kırpma alanında ortadaki açık bölgenin iki yanı hafifçe karartılmıştır; bu **orta şerit, telefonda görünen kısımdır** (telefon ekranı dar olduğu için kenarlar kırpılır). Yüz, logo, önemli detay gibi şeyleri **ortada tutun** ki her cihazda görünsün. Sağdaki **Mobil** önizleme bunu birebir gösterir.
+
 > [!UYARI]
-> Görsel için **YATAY (16:9)** ve **en az 1600×900 piksel** bir fotoğraf kullanın. Dikey (telefonla çekilmiş ayakta) ya da küçük/bulanık fotoğraflar üst alanda kötü görünür, kenarlardan kırpılır. Ayrıca görseli yükledikten **sonra da** mutlaka **💾 Değişiklikleri Kaydet**'e basın — yalnızca yüklemek yeterli değildir.
+> Fotoğrafı **çok fazla yakınlaştırırsanız** pencerede **"düşük çözünürlük" uyarısı** çıkar. Bu, fotoğrafın o kadar büyütülünce büyük ekranlarda **bulanık** çıkacağı anlamına gelir. Uyarıyı görünce biraz uzaklaşın ya da **daha büyük (en az 1600×900) bir fotoğraf** kullanın.
+
+> [!UYARI]
+> Kırpma aracı her zaman **yatay (16:9)** bir görsel üretir; dikey/kare fotoğraflarda kenarlardan bir kısım kırpılır. En iyi sonuç için baştan **yatay ve en az 1600×900 piksel** bir fotoğraf seçin. Ayrıca kırpıp yükledikten **sonra da** mutlaka **💾 Değişiklikleri Kaydet**'e basın — yalnızca yüklemek/kırpmak yeterli değildir.
 
 **Telifsiz fotoğraf** bulmak için **Unsplash** veya **Pexels** sitelerini kullanabilir ya da kurumun **kendi çektiği fotoğrafları** yükleyebilirsiniz. Detaylı anlatım: [Görsel İpuçları](#/ipuclari/gorsel-ipuclari).
 
@@ -163,6 +180,8 @@ flowchart LR
 
 - "Yayında" işareti kaldırılmış slayt sitede **gösterilmez** ama listede durur.
 - **Rozet metni boşsa** rozet (ikon dahil) hiç görünmez.
+- Hero görseli seçince **kırpma penceresi** açılır; "Uygula ve Yükle" demeden fotoğraf yüklenmez. Bu pencere yalnızca **hero görselleri** içindir (galeri, kadro vb. görsellerde çıkmaz).
+- Kırpma alanındaki **orta şerit telefonda görünen kısımdır** — önemli detayları ortada tutun.
 - Görsel yüklemek tek başına yeterli değildir — **Kaydet** şarttır.
 - 2. Buton istemiyorsanız boş bırakabilirsiniz.
 - Slider'ı komple kapatmak için **Modüller → Hero Slider** anahtarını kullanın.

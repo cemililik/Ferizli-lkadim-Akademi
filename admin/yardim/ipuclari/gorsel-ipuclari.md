@@ -28,6 +28,9 @@ JPG çoğu durumda yeterli.
 > [!İPUCU]
 > Sistem yüklediğiniz görseli **otomatik küçültür ve optimize eder**. Yine de gerekenden çok büyük yüklemek (örneğin 5000×3000) yükleme süresini uzatır.
 
+> [!İPUCU]
+> **Hero (anasayfa üst görseli) için kırpma aracı.** Hero slaytına görsel seçtiğinizde, fotoğraf doğrudan yüklenmez; önce bir **kırpma penceresi** açılır. Orada fotoğrafı sürükleyip yakınlaştırır ve **Web · Tablet · Mobil** önizlemelerinden her cihazda nasıl görüneceğini görerek onaylarsınız. Çok yakınlaştırınca **düşük çözünürlük uyarısı** çıkar. Bu araç yalnızca **hero görselleri** içindir. Ayrıntı: [Hero Slider](#/anasayfa/hero-slider).
+
 ## Dosya boyutu
 
 - **500 KB – 2 MB** ideal aralık.

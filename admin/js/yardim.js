@@ -65,15 +65,17 @@
     });
   };
 
-  // TOC üret
-  const tocUret = (kok) => {
+  // TOC üret. rotaStr = "<bolum>/<sayfa>" → linkler TAM rota + anchor formatında
+  // (#/<bolum>/<sayfa>#<baslik>) olur; böylece hash router doğru sayfada kalır,
+  // çıplak #baslik hash'i varsayılan sayfaya düşürmez.
+  const tocUret = (kok, rotaStr) => {
     const toc = document.getElementById('yardimToc');
     if (!toc) return;
     const basliklar = kok.querySelectorAll('h2, h3');
     if (basliklar.length < 2) { toc.innerHTML = ''; return; }
     const items = Array.from(basliklar).map(h => {
       const cls = h.tagName === 'H3' ? 'h3' : 'h2';
-      return `<li class="${cls}"><a href="#${h.id}" data-toc-link>${h.textContent}</a></li>`;
+      return `<li class="${cls}"><a href="#/${rotaStr}#${h.id}" data-toc-link data-hedef="${h.id}">${h.textContent}</a></li>`;
     }).join('');
     toc.innerHTML = `
       <div class="yardim-toc__baslik">Bu Sayfada</div>
@@ -84,8 +86,7 @@
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(e => {
         if (e.isIntersecting) {
-          linkler.forEach(l => l.classList.toggle('aktif',
-            l.getAttribute('href') === '#' + e.target.id));
+          linkler.forEach(l => l.classList.toggle('aktif', l.dataset.hedef === e.target.id));
         }
       });
     }, { rootMargin: '-20% 0px -70% 0px' });
@@ -93,6 +94,7 @@
   };
 
   let _index = null;
+  let _aktifRota = null;   // şu an yüklü sayfa rotası — anchor-only hash değişiminde sayfayı yeniden yüklememek için
 
   const indexYukle = async () => {
     if (_index) return _index;
@@ -245,7 +247,8 @@
     calloutIsle(article);
     mermaidIsle(article);
     baslikIdEkle(article);
-    tocUret(article);
+    tocUret(article, `${meta.bolum}/${meta.id}`);
+    _aktifRota = `${meta.bolum}/${meta.id}`;
 
     // Sayfa başlığını güncelle
     document.title = `${meta.baslik} — Yardım — İlk Adım Akademi`;
@@ -272,6 +275,16 @@
     if (!h || !h.includes('/')) return VARSAYILAN_ROTA;
     // Sayfa içi anchor için bölümü ayır (#/duyurular/yeni-duyuru#header → duyurular/yeni-duyuru)
     return h.split('#')[0];
+  };
+
+  // Geçerli hash'teki #<baslik> anchor'ına kaydır (aynı sayfada TOC tıklaması).
+  // Anchor yoksa içeriğin başına gider.
+  const anchorKaydir = () => {
+    const parcalar = location.hash.split('#');   // ["", "/bolum/sayfa", "baslik"?]
+    const id = parcalar.length > 2 ? parcalar[parcalar.length - 1] : '';
+    const el = id ? document.getElementById(id) : null;
+    const hedef = el || document.getElementById('yardimIcerik');
+    hedef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
   const baslat = async () => {
@@ -308,10 +321,15 @@
       });
     }
 
-    // Hash değişiminde yeniden yükle
+    // Hash değişiminde: rota değiştiyse sayfayı yükle; yalnızca sayfa içi anchor
+    // değiştiyse (TOC tıklaması) yeniden yükleme yapma, sadece o başlığa kaydır.
     window.addEventListener('hashchange', () => {
       const yeni = rotaOku();
-      sayfaYukle(yeni);
+      if (yeni === _aktifRota) {
+        anchorKaydir();
+      } else {
+        sayfaYukle(yeni);
+      }
     });
   };
 
