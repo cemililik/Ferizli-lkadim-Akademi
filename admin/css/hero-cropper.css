@@ -1,0 +1,214 @@
+/* ============================================================
+   hero-cropper.css — Hero görseli kırpma modalı (hk- namespace)
+   Kendi modal backdrop'unu içerir; başka modal sistemine dokunmaz.
+============================================================ */
+
+.hk-arkaplan {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(8, 18, 40, 0.62);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--bosluk-4);
+  overflow-y: auto;
+  animation: hk-fade 160ms var(--easing-standard, ease);
+}
+@keyframes hk-fade { from { opacity: 0; } to { opacity: 1; } }
+
+.hk-kart {
+  background: #fff;
+  width: min(960px, 100%);
+  max-height: 94vh;
+  border-radius: var(--yuvarlak-lg, 16px);
+  box-shadow: 0 30px 60px -15px rgba(8, 20, 50, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ---- Header ---- */
+.hk-bas {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--bosluk-4);
+  padding: var(--bosluk-5) var(--bosluk-6);
+  border-bottom: 1px solid var(--renk-cizgi);
+}
+.hk-bas__baslik { margin: 0 0 2px; font-size: var(--yazi-xl); }
+.hk-bas__alt { margin: 0; font-size: var(--yazi-sm); color: var(--renk-yazi-acik); }
+.hk-kapat {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  display: inline-flex; align-items: center; justify-content: center;
+  border-radius: var(--yuvarlak);
+  background: var(--renk-arka-yumusak);
+  color: var(--renk-yazi-acik);
+  transition: background var(--gecis-hizli, 150ms);
+}
+.hk-kapat:hover { background: var(--renk-cizgi); }
+.hk-kapat svg { width: 20px; height: 20px; }
+
+/* ---- Gövde ---- */
+.hk-govde {
+  display: flex;
+  gap: var(--bosluk-6);
+  padding: var(--bosluk-6);
+  overflow-y: auto;
+}
+.hk-sol { flex: 1 1 420px; min-width: 260px; }
+.hk-sag { flex: 0 0 auto; }
+
+/* ---- Tuval (crop alanı) ---- */
+.hk-tuval-sar {
+  position: relative;
+  width: 100%;
+  background: #0a3d80;
+  border-radius: var(--yuvarlak);
+  overflow: hidden;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.08);
+  aspect-ratio: 16 / 9;
+}
+.hk-tuval { display: block; touch-action: none; cursor: grab; }
+.hk-tuval-yukleniyor {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--renk-yazi); font-weight: 600;
+}
+
+/* ---- Araçlar (zoom) ---- */
+.hk-arac {
+  display: flex;
+  align-items: center;
+  gap: var(--bosluk-3);
+  margin-top: var(--bosluk-4);
+}
+.hk-arac__btn {
+  width: 34px; height: 34px;
+  flex-shrink: 0;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; line-height: 1;
+  border: 1px solid var(--renk-cizgi-koyu);
+  border-radius: var(--yuvarlak);
+  background: #fff; color: var(--renk-yazi);
+}
+.hk-arac__btn:hover { background: var(--renk-arka-yumusak); }
+.hk-arac__btn:active { transform: scale(0.94); }
+.hk-arac__kaydir { flex: 1; accent-color: var(--renk-birincil); }
+.hk-arac__sifirla {
+  flex-shrink: 0;
+  font-size: var(--yazi-sm); font-weight: 600;
+  color: var(--renk-birincil);
+  padding: 6px 10px; border-radius: var(--yuvarlak);
+}
+.hk-arac__sifirla:hover { background: var(--pastel-mavi); }
+
+.hk-ipucu {
+  margin: var(--bosluk-3) 0 0;
+  font-size: var(--yazi-sm);
+  color: var(--renk-yazi-acik);
+  line-height: 1.5;
+}
+.hk-uyari {
+  margin: var(--bosluk-3) 0 0;
+  font-size: var(--yazi-sm);
+  color: var(--renk-uyari-koyu, #92400e);
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: var(--yuvarlak);
+  padding: var(--bosluk-2) var(--bosluk-3);
+}
+
+/* ---- Cihaz önizlemeleri ---- */
+.hk-sag__baslik {
+  font-size: var(--yazi-sm);
+  font-weight: 700;
+  color: var(--renk-yazi);
+  margin-bottom: var(--bosluk-4);
+}
+.hk-onzler {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bosluk-5) var(--bosluk-4);
+  align-items: flex-end;
+  justify-content: center;
+}
+.hk-onz { margin: 0; text-align: center; }
+.hk-onz__cerceve {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--yuvarlak-sm, 6px);
+  box-shadow: 0 4px 14px -4px rgba(8, 20, 50, 0.3);
+  background: #0a3d80;
+}
+.hk-onz--web .hk-onz__cerceve    { width: 200px; aspect-ratio: 2 / 1; }
+.hk-onz--tablet .hk-onz__cerceve { width: 158px; aspect-ratio: 6 / 5; }
+.hk-onz--mobil .hk-onz__cerceve  { width: 124px; aspect-ratio: 33 / 50; }
+.hk-onz__cv { width: 100%; height: 100%; display: block; }
+
+/* Hero benzeri overlay (gradient + örnek metin) — gerçek görünümün minyatürü */
+.hk-onz__katman {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: flex-start; justify-content: center;
+  gap: 3px;
+  padding: 8px;
+  background: linear-gradient(90deg, rgba(8, 18, 40, 0.62), rgba(8, 18, 40, 0.42) 55%, rgba(8, 18, 40, 0.28));
+  color: #fff;
+  text-align: left;
+}
+.hk-onz__rozet {
+  font-size: 6px; line-height: 1;
+  padding: 2px 5px;
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  border-radius: 999px;
+}
+.hk-onz__baslik {
+  font-family: var(--yazi-aile-baslik);
+  font-size: 10px; font-weight: 800; line-height: 1.1;
+  max-width: 90%;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+.hk-onz__btn {
+  font-size: 6px; font-weight: 600;
+  padding: 3px 7px;
+  background: var(--renk-vurgu);
+  border-radius: 4px;
+  margin-top: 2px;
+}
+.hk-onz__ad {
+  margin-top: var(--bosluk-2);
+  font-size: var(--yazi-xs);
+  font-weight: 600;
+  color: var(--renk-yazi-acik);
+}
+
+/* ---- Footer ---- */
+.hk-alt {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--bosluk-3);
+  padding: var(--bosluk-4) var(--bosluk-6);
+  border-top: 1px solid var(--renk-cizgi);
+  background: var(--renk-arka-yumusak);
+}
+
+/* ---- Responsive: dar ekranda govde tek sütun ---- */
+@media (max-width: 760px) {
+  .hk-govde { flex-direction: column; }
+  .hk-sag { flex: 1 1 auto; }
+  .hk-onzler { gap: var(--bosluk-4); }
+}
+@media (max-width: 420px) {
+  .hk-bas, .hk-govde { padding: var(--bosluk-4); }
+  .hk-alt { padding: var(--bosluk-3) var(--bosluk-4); }
+  .hk-onz--web .hk-onz__cerceve    { width: 170px; }
+  .hk-onz--tablet .hk-onz__cerceve { width: 132px; }
+  .hk-onz--mobil .hk-onz__cerceve  { width: 104px; }
+}
