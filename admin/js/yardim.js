@@ -260,31 +260,42 @@
 
     // İçeriği görünür alana getir (mobilde sidebar açıksa kapansın)
     document.getElementById('yardimSidebar')?.classList.remove('acik');
-    icerikYer.scrollIntoView({ behavior: 'smooth', block: 'start' });
-    // Hash içinde #section varsa o başlığa kaydır
-    if (location.hash.includes('#', 1)) {
-      const id = location.hash.split('#').pop();
-      const el = document.getElementById(id);
-      if (el) setTimeout(() => el.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+    // Hash'te anchor varsa doğrudan o başlığa; yoksa içeriğin başına.
+    const { anchor } = hashCozumle();
+    const hedefEl = anchor ? document.getElementById(anchor) : null;
+    if (hedefEl) {
+      // Yeni render edildiği için bir frame bekle, sonra anında kaydır.
+      setTimeout(() => hedefEl.scrollIntoView({ block: 'start' }), 60);
+    } else {
+      icerikYer.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
 
-  // Hash router
-  const rotaOku = () => {
-    const h = location.hash.replace(/^#\/?/, '');
-    if (!h || !h.includes('/')) return VARSAYILAN_ROTA;
-    // Sayfa içi anchor için bölümü ayır (#/duyurular/yeni-duyuru#header → duyurular/yeni-duyuru)
-    return h.split('#')[0];
+  // Hash'i { rota, anchor } olarak çöz. Desteklenen formatlar:
+  //   #/bolum/sayfa#baslik → { rota:'bolum/sayfa', anchor:'baslik' }
+  //   #/bolum/sayfa        → { rota:'bolum/sayfa', anchor:'' }
+  //   #baslik  (çıplak)    → { rota: mevcut sayfa,  anchor:'baslik' }  ← ASLA ilk sayfaya atlamaz
+  //   (boş)                → { rota: varsayılan,    anchor:'' }
+  const hashCozumle = () => {
+    const ham = location.hash.replace(/^#\/?/, '');
+    if (!ham) return { rota: VARSAYILAN_ROTA, anchor: '' };
+    if (ham.includes('/')) {
+      const k = ham.indexOf('#');
+      return k === -1
+        ? { rota: ham, anchor: '' }
+        : { rota: ham.slice(0, k), anchor: ham.slice(k + 1) };
+    }
+    // Çıplak anchor (#baslik): mevcut sayfada kal, sadece kaydır — ilk sayfaya DÜŞME.
+    return { rota: _aktifRota || VARSAYILAN_ROTA, anchor: ham };
   };
 
-  // Geçerli hash'teki #<baslik> anchor'ına kaydır (aynı sayfada TOC tıklaması).
-  // Anchor yoksa içeriğin başına gider.
-  const anchorKaydir = () => {
-    const parcalar = location.hash.split('#');   // ["", "/bolum/sayfa", "baslik"?]
-    const id = parcalar.length > 2 ? parcalar[parcalar.length - 1] : '';
-    const el = id ? document.getElementById(id) : null;
+  // Verilen anchor id'sine kaydır; yoksa içeriğin başına.
+  // 'auto' (anında): TOC tıklamasında güvenilir; smooth animasyona bağımlı değil.
+  // scroll-margin-top (CSS, 80px) sticky üst bar offset'ini halleder.
+  const anchorKaydir = (anchor) => {
+    const el = anchor ? document.getElementById(anchor) : null;
     const hedef = el || document.getElementById('yardimIcerik');
-    hedef?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    hedef?.scrollIntoView({ block: 'start' });
   };
 
   const baslat = async () => {
@@ -309,7 +320,7 @@
     }
 
     const idx = await indexYukle();
-    const ilkRota = rotaOku();
+    const ilkRota = hashCozumle().rota;
     sidebarRender(idx, ilkRota);
     await sayfaYukle(ilkRota);
 
@@ -324,11 +335,11 @@
     // Hash değişiminde: rota değiştiyse sayfayı yükle; yalnızca sayfa içi anchor
     // değiştiyse (TOC tıklaması) yeniden yükleme yapma, sadece o başlığa kaydır.
     window.addEventListener('hashchange', () => {
-      const yeni = rotaOku();
-      if (yeni === _aktifRota) {
-        anchorKaydir();
+      const { rota, anchor } = hashCozumle();
+      if (rota === _aktifRota) {
+        anchorKaydir(anchor);          // aynı sayfa: yeniden yükleme yok, sadece kaydır
       } else {
-        sayfaYukle(yeni);
+        sayfaYukle(rota);              // farklı sayfa: yükle (anchor varsa sayfaYukle sonunda kaydırır)
       }
     });
   };
