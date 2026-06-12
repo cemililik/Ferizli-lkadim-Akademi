@@ -6,6 +6,11 @@
 (() => {
   'use strict';
 
+  // Güvenli HTML kaçışı (diğer render dosyalarıyla tutarlı — XSS önleme)
+  const esc = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+
   /* Kategoriyi hedefKitle metninden çıkar. Override: program.kategoriler dizisi */
   const kategoriCikar = (p) => {
     if (Array.isArray(p.kategoriler) && p.kategoriler.length) return p.kategoriler;
@@ -29,13 +34,13 @@
   };
 
   const kartHtml = (p) => `
-    <article class="program-karti" data-kategoriler="${(p._kategoriler || []).join(' ')}">
-      <div class="program-karti__ikon" aria-hidden="true">${p.ikon || '📘'}</div>
-      <h3 class="program-karti__baslik">${p.ad}</h3>
-      <div class="program-karti__kitle">${p.hedefKitle || ''}</div>
-      <p class="program-karti__aciklama">${p.kisaAciklama || ''}</p>
+    <article class="program-karti" data-kategoriler="${esc((p._kategoriler || []).join(' '))}">
+      <div class="program-karti__ikon" aria-hidden="true">${esc(p.ikon || '📘')}</div>
+      <h3 class="program-karti__baslik">${esc(p.ad)}</h3>
+      <div class="program-karti__kitle">${esc(p.hedefKitle || '')}</div>
+      <p class="program-karti__aciklama">${esc(p.kisaAciklama || '')}</p>
       <ul class="program-karti__ozellikler">
-        ${(p.ozellikler || []).map(o => `<li>${o}</li>`).join('')}
+        ${(p.ozellikler || []).map(o => `<li>${esc(o)}</li>`).join('')}
       </ul>
     </article>
   `;
@@ -72,12 +77,17 @@
   const baslat = async () => {
     const yer = document.querySelector('[data-program-yer]');
     if (!yer) return;
+    // Yükleniyor iskeleti (CLS + boş-beyaz flash önleme)
+    yer.innerHTML = Array.from({ length: 3 }, () => `<div class="iskelet-kart" aria-hidden="true"><div class="iskelet iskelet-daire"></div><div class="iskelet iskelet-baslik"></div><div class="iskelet iskelet-satir"></div><div class="iskelet iskelet-satir iskelet-satir--kisa"></div></div>`).join('');
+    yer.setAttribute('aria-busy', 'true');
     try {
       const cevap = await fetch('/api/programlar');
+      if (!cevap.ok) throw new Error(`HTTP ${cevap.status}`);
       const veri = await cevap.json();
       const liste = veri.programlar || [];
       // Her programa türetilmiş _kategoriler iliştir
       liste.forEach(p => { p._kategoriler = kategoriCikar(p); });
+      yer.removeAttribute('aria-busy');
       yer.innerHTML = liste.map(kartHtml).join('');
       // Data'da bulunan tüm benzersiz kategoriler — sabit sırada (ortaokul → lise)
       const tumKategoriler = ['ortaokul', 'lise']
@@ -85,7 +95,8 @@
       cipleriRender(tumKategoriler);
     } catch (e) {
       console.error('Programlar yüklenemedi:', e);
-      yer.innerHTML = '<p class="bos-durum">Programlar yüklenemedi.</p>';
+      yer.removeAttribute('aria-busy');
+      yer.innerHTML = '<p class="bos-durum">Programlar yüklenemedi. Lütfen birazdan tekrar deneyin.</p>';
     }
   };
 

@@ -792,3 +792,31 @@ body {
   max-height: 400px;
   overflow-y: auto;
 }
+
+/* Cevap tablosu satır-içi işlem butonları (görüntüle / sil) — eskiden tanımsız sınıf
+   olduğu için stilsiz/amatör görünüyordu. */
+.cevap-tablo__min-dugme {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--yuvarlak, 8px);
+  border: 1px solid var(--renk-cizgi, #e6ecf3);
+  background: #fff;
+  color: var(--renk-yazi-acik, #4a5568);
+  cursor: pointer;
+  transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+}
+.cevap-tablo__min-dugme + .cevap-tablo__min-dugme { margin-left: 6px; }
+.cevap-tablo__min-dugme:hover {
+  border-color: var(--renk-birincil, #1565c0);
+  color: var(--renk-birincil, #1565c0);
+  background: var(--pastel-mavi, #f1f7fd);
+}
+.cevap-tablo__min-dugme:active { transform: scale(0.95); }
+.cevap-tablo__min-dugme--tehlike:hover {
+  border-color: var(--renk-hata, #991b1b);
+  color: var(--renk-hata, #991b1b);
+  background: #fef2f2;
+}

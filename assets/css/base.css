@@ -21,7 +21,7 @@
   --pastel-mavi-koyu: #e2edf7;        /* eski #d6e7f5 */
   --pastel-pembe: #fdf4f5;            /* eski #fdebec — daha açık */
   --pastel-pembe-koyu: #f9e0e3;       /* eski #f9d6d8 */
-  --pastel-krem: #fafaf8;             /* eski #fdf8ee — vintage tonu kalktı */
+  --pastel-krem: #f7f5f0;             /* sıcak krem — beyaz bölümlerden gözle ayrışsın (eski #fafaf8 ≈ beyazdı) */
   --pastel-yesil: #eff8f1;            /* eski #e8f5e9 */
   --pastel-mor: #f5f1fa;              /* eski #f0ebf7 */
   --pastel-toprak: #f8f4ef;           /* eski #f6efe7 */
@@ -41,6 +41,7 @@
   --renk-uyari: #f59e0b;
   --renk-hata: #991b1b;
   --renk-whatsapp: #25d366;
+  --renk-whatsapp-koyu: #1ebe57;      /* hover — magic-hex yerine token */
   --renk-instagram-bas: #f09433;
   --renk-instagram-son: #bc1888;
   --renk-telefon: #2563eb;
@@ -89,6 +90,8 @@
   --golge-lg: 0 20px 40px -10px rgb(21 30 60 / 0.15), 0 8px 16px -6px rgb(21 30 60 / 0.08);
   --golge-xl: 0 30px 60px -15px rgb(21 30 60 / 0.22);
   --golge-renk: 0 8px 24px -8px rgb(21 101 192 / 0.25);  /* mavi tinted */
+  /* Tek kanon kart-hover gölgesi — eskiden 13 yerde elle 'rgb(15 23 42)' kopyalanıyordu */
+  --golge-kart-hover: 0 4px 8px -2px rgb(21 30 60 / 0.07), 0 8px 16px -4px rgb(21 30 60 / 0.05);
 
   /* Geçişler — SPRINT 4: easing sabitleri.
      Varsayılan `ease` yerine cubic-bezier (Material/iOS standard) ile daha "modern" his.
@@ -228,8 +231,14 @@ p:last-child { margin-bottom: 0; }
 .bolum-koyu {
   background-color: var(--renk-arka-koyu);
   color: var(--renk-arka);
+  /* Koyu zeminde metin token'larını yeniden eşle — içerideki bileşenler
+     (kart metni, lead, soluk metin) otomatik doğru kontrast alsın. */
+  --renk-yazi: #ffffff;
+  --renk-yazi-acik: rgba(255, 255, 255, 0.82);
+  --renk-yazi-soluk: rgba(255, 255, 255, 0.62);
 }
-.bolum-koyu h1, .bolum-koyu h2, .bolum-koyu h3, .bolum-koyu h4 { color: var(--renk-arka); }
+.bolum-koyu h1, .bolum-koyu h2, .bolum-koyu h3,
+.bolum-koyu h4, .bolum-koyu h5, .bolum-koyu h6 { color: #ffffff; }
 
 /* Pastel renklerin ince üst kenarı (geçiş daha yumuşak) */
 .bolum-yumusak, .bolum-krem, .bolum-pembe, .bolum-mor {
@@ -272,14 +281,31 @@ p:last-child { margin-bottom: 0; }
 /* Giriş paragrafı (lead) — bolum-içi başlık altı açıklayıcı metin için */
 .metin-girisi {
   color: var(--renk-yazi-acik);
-  font-size: var(--yazi-lg);
+  /* Gövde/lead mobilde hafif küçülsün (başlıklar zaten clamp'li; ölçek tutarlı kalsın) */
+  font-size: clamp(var(--yazi-base), 0.6vw + 0.95rem, var(--yazi-lg));
+  line-height: 1.55;          /* büyük metin → daha sıkı satır arası */
+  max-width: 68ch;            /* okuma ölçüsü — uzun satırları kelepçele (~60-75ch ideal) */
   margin-block: var(--bosluk-5);
 }
 
-/* Focus-visible (klavye erişilebilirliği) */
+/* Okuma ölçüsü yardımcı sınıfı — uzun gövde/lead bloklarına uygula.
+   Merkezli kullanımda .metin-merkez ile birlikte ortalanır. */
+.metin-olcu { max-width: 68ch; }
+.metin-merkez > .metin-olcu, .metin-olcu.metin-merkez { margin-inline: auto; }
+
+/* Çok satırlı (pre-line) içerik — inline 'white-space:pre-line' yerine yardımcı sınıf */
+.metin-satirli { white-space: pre-line; }
+
+/* Focus-visible (klavye erişilebilirliği)
+   İki-tonlu halka: koyu dış OUTLINE + beyaz iç box-shadow. Eski tek-kırmızı outline,
+   kırmızı CTA (--renk-vurgu) zemininde kırmızı-üstüne-kırmızı kalıp kayboluyordu (WCAG 2.4.7).
+   Dış halkayı OUTLINE ile çiziyoruz: outline, overflow:hidden atalarda KIRPILMAZ (box-shadow
+   kırpılır) — kart içindeki linklerde halka kesilmesin. Beyaz iç box-shadow ayrım verir.
+   Koyu outline kırmızı/mavi/beyaz zeminlerde, beyaz iç halka da koyu (footer) zeminde taşır. */
 :focus-visible {
-  outline: 3px solid var(--renk-vurgu);
+  outline: 2px solid var(--renk-yazi);
   outline-offset: 2px;
+  box-shadow: 0 0 0 4px #ffffff;
   border-radius: var(--yuvarlak-sm);
 }
 
