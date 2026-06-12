@@ -33,6 +33,22 @@ const API = (() => {
     if (ct.includes('application/json')) {
       try { veri = await r.json(); } catch {}
     }
+    // auth/* (login, me) ve şifre-değiştir 401'leri 'yanlış şifre/oturum yok' gibi
+    // beklenen ALAN hatalarıdır — bunları 'oturum doldu' diye yutup login'e atmayız.
+    const yolNorm = yol.replace(/^\/+/, '');
+    const oturumDoldu401 = !yolNorm.startsWith('auth/') && !yolNorm.includes('sifre-degistir');
+    if (r.status === 401 && oturumDoldu401) {
+      // Gerçek oturum sonlanması — sessiz başarısızlık (yazılan içerik kaybı) yerine
+      // kullanıcıyı bir kez uyar ve giriş ekranına al.
+      if (!window.__OTURUM_UYARISI__) {
+        window.__OTURUM_UYARISI__ = true;
+        alert('Oturum süreniz doldu. Güvenlik için tekrar giriş yapmanız gerekiyor.');
+        location.href = '/admin/';
+      }
+      const err = new Error('Oturum süresi doldu.');
+      err.status = 401;
+      throw err;
+    }
     if (!r.ok) {
       const err = new Error(veri.hata || `Hata (HTTP ${r.status})`);
       err.status = r.status;

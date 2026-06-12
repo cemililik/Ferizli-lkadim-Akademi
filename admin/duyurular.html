@@ -277,13 +277,13 @@
           baslik: 'Yeni Duyuru',
           tarih: ADMIN.bugunISO(),
           kategori: 'genel',
-          yayinda: true,
+          yayinda: false,   // TASLAK olarak oluştur — boş placeholder canlı siteye düşmesin
         });
         await yukle();
         secilenId = r.id;
         listeRender();
         formRender();
-        ADMIN.toast('Yeni duyuru oluşturuldu', 'basari');
+        ADMIN.toast('Taslak duyuru oluşturuldu — düzenleyip "Yayında"yı işaretleyin', 'basari');
       } catch (e) {
         ADMIN.toast(e.message, 'hata');
       }
@@ -293,6 +293,12 @@
       const d = duyurular.find(x => x.id === secilenId);
       if (!d) return;
       const f = document.getElementById('duyuruForm');
+      // Yerel zorunlu-alan doğrulaması — boş başlıkla kayıt/yayın engellensin
+      if (!f.baslik.value.trim()) {
+        f.baslik.focus();
+        ADMIN.toast('Başlık boş olamaz.', 'hata');
+        return;
+      }
       const btn = f.querySelector('button[type="submit"]');
       const veri = {
         baslik: f.baslik.value.trim(),

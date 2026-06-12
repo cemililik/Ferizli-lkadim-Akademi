@@ -353,7 +353,7 @@
 .float-ikon svg { width: 26px; height: 26px; }
 
 .float-ikon--whatsapp { background: var(--renk-whatsapp); }
-.float-ikon--whatsapp:hover { background: #1ebe57; }
+.float-ikon--whatsapp:hover { background: var(--renk-whatsapp-koyu); }
 .float-ikon--instagram {
   /* SPRINT 2: 5-stop Instagram brand gradient (2010 dönemi marka guide)
      yerine, Instagram'ın güncel resmi pembe-kırmızı tonu solid (#e1306c).

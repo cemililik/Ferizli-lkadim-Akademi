@@ -9,12 +9,23 @@
   position: relative;
   overflow: hidden;
   background: #0a3d80;  /* görsel yüklenene kadar zemin rengi */
+  /* JS hero'yu doldurana kadar LCP alanını rezerve et → CLS (içerik gelince zıplama) sıfırlanır.
+     Render sonrası .hero-slider__sahne aynı min-height'i verdiğinden fazladan boşluk oluşmaz. */
+  min-height: clamp(460px, 78vh, 720px);
+  min-height: clamp(460px, 78dvh, 720px);
+}
+@media (max-width: 640px) {
+  .hero { min-height: clamp(420px, 64vh, 560px); min-height: clamp(420px, 64dvh, 560px); }
 }
 .hero-slider { position: relative; width: 100%; }
+/* CLS rezervasyonu .hero üzerinde (min-height) yapılıyor — :empty whitespace+yorum
+   yüzünden güvenilmez olduğundan burada kullanılmadı. */
 .hero-slider__sahne {
   position: relative;
   width: 100%;
+  /* vh fallback (eski tarayıcı) + dvh: iOS/Android adres çubuğu gizlenince hero zıplamasın */
   min-height: clamp(460px, 78vh, 720px);
+  min-height: clamp(460px, 78dvh, 720px);
 }
 .hero-slayt {
   position: absolute;
@@ -58,13 +69,15 @@
   align-items: center;
   gap: 8px;
   padding: 7px 16px;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.28);
+  /* Soyut/parlak hero zemininde de okunsun diye opaklık biraz artırıldı */
+  background: rgba(255, 255, 255, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.35);
   border-radius: var(--yuvarlak-tam);
   font-size: var(--yazi-sm);
   font-weight: 500;
   margin-bottom: var(--bosluk-5);
   backdrop-filter: blur(4px);
+  text-shadow: 0 1px 8px rgba(0, 0, 0, 0.25);
 }
 .hero-slayt__rozet svg { width: 16px; height: 16px; flex-shrink: 0; }
 
@@ -123,6 +136,8 @@
   border-radius: var(--yuvarlak-tam);
   background: rgba(255, 255, 255, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.65);
+  /* Parlak hero zemininde noktalar kaybolmasın */
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.35);
   transition: all var(--gecis-hizli);
 }
 /* Görünür nokta 12px kalır; etrafına ~44px görünmez dokunma alanı
@@ -139,7 +154,7 @@
 @media (max-width: 640px) {
   .hero-slider__ok { display: none; }
   /* Mobilde hero biraz alçalsın → altındaki bölümün ucu görünür (scroll ipucu) */
-  .hero-slider__sahne { min-height: clamp(420px, 64vh, 560px); }
+  .hero-slider__sahne { min-height: clamp(420px, 64vh, 560px); min-height: clamp(420px, 64dvh, 560px); }
   .hero-slayt__baslik { max-width: 100%; }
   .hero-slayt__cta { flex-direction: column; align-items: stretch; }
   .hero-slayt__cta .dugme { width: 100%; }
@@ -204,6 +219,12 @@
   width: 22px; height: 22px;
   stroke-width: 2;
 }
+/* Marka kırmızısını ikincil aksan olarak dağıt — çift sıradaki özellik ikonları kırmızı zemin
+   (logonun ikinci rengi). Sayfa tek-renk mavi monotonluğundan çıksın (~70/30 mavi/kırmızı). */
+.neden-biz__izgara .ozellik:nth-child(even) .ozellik__ikon {
+  background: var(--pastel-pembe);
+  color: var(--renk-vurgu);
+}
 .ozellik__baslik {
   font-size: var(--yazi-base);
   font-weight: 700;
@@ -266,8 +287,13 @@
   object-fit: cover;
   border: 0;
 }
-/* Tanıtım video bölümü gizliyse (admin video ID girmemişse), iki sütunu tek sütuna düşür */
-.iki-sutun:has(> .tanitim-video[hidden]) { grid-template-columns: 1fr; }
+/* Tanıtım video bölümü gizliyse (admin video ID girmemişse), iki sütunu tek sütuna düşür.
+   Metin tam-genişlik yayılıp asimetrik beyaz boşluk bırakmasın diye ölçü sınırla + ortala. */
+.iki-sutun:has(> .tanitim-video[hidden]) {
+  grid-template-columns: 1fr;
+  max-width: 760px;
+  margin-inline: auto;
+}
 
 /* ---------- Programlar izgarası ---------- */
 .program-karti {
@@ -285,9 +311,7 @@
 /* SPRINT 3: Gradient top-bar (scaleX 0→1) ve rotate ikon — Material 2018 dili.
    Kaldırıldı. Hover sadece shadow lift = sade modern dil (.kart ile uyumlu). */
 .program-karti:hover {
-  box-shadow:
-    0 4px 8px -2px rgb(15 23 42 / 0.06),
-    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  box-shadow: var(--golge-kart-hover);
 }
 
 .program-karti__ikon {
@@ -357,9 +381,7 @@
 }
 .kadro-karti:hover {
   /* SPRINT 3: translateY kaldırıldı — sadece shadow lift */
-  box-shadow:
-    0 4px 8px -2px rgb(15 23 42 / 0.06),
-    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  box-shadow: var(--golge-kart-hover);
 }
 .kadro-karti__foto {
   /* SPRINT 5: 120px → 144px (modern boyut), gradient → soft mavi.
@@ -440,6 +462,7 @@
   border-collapse: collapse;
   width: 100%;
   font-size: var(--yazi-sm);
+  font-variant-numeric: tabular-nums;   /* saat sütunları dikey hizalansın */
   margin-top: var(--bosluk-1);
 }
 .calisma-saatleri th,
@@ -536,6 +559,7 @@
   max-height: 80vh;
   object-fit: contain;
   border-radius: var(--yuvarlak);
+  transition: opacity 200ms ease;   /* yükleme fade-in — galeri.js opacity'i toggle eder */
 }
 .galeri-lightbox__baslik {
   color: white;
@@ -564,15 +588,20 @@
 .galeri-lightbox__kapa:hover,
 .galeri-lightbox__yon:hover { background: rgba(255, 255, 255, 0.25); }
 
-.galeri-lightbox__kapa { top: var(--bosluk-4); right: var(--bosluk-4); }
+/* Kapatma butonu çentik/safe-area'yı ezmesin (viewport-fit=cover ile) */
+.galeri-lightbox__kapa {
+  top: max(var(--bosluk-4), env(safe-area-inset-top));
+  right: max(var(--bosluk-4), env(safe-area-inset-right));
+}
 .galeri-lightbox__yon { top: 50%; transform: translateY(-50%); width: 52px; height: 52px; font-size: 32px; }
-.galeri-lightbox__yon--sol { left: var(--bosluk-4); }
-.galeri-lightbox__yon--sag { right: var(--bosluk-4); }
+.galeri-lightbox__yon--sol { left: max(var(--bosluk-4), env(safe-area-inset-left)); }
+.galeri-lightbox__yon--sag { right: max(var(--bosluk-4), env(safe-area-inset-right)); }
 
 @media (max-width: 640px) {
-  .galeri-lightbox__yon { width: 40px; height: 40px; font-size: 24px; }
-  .galeri-lightbox__yon--sol { left: var(--bosluk-2); }
-  .galeri-lightbox__yon--sag { right: var(--bosluk-2); }
+  /* Dokunma hedefi 44px altına inmesin (WCAG 2.5.8) */
+  .galeri-lightbox__yon { width: 44px; height: 44px; font-size: 26px; }
+  .galeri-lightbox__yon--sol { left: max(var(--bosluk-2), env(safe-area-inset-left)); }
+  .galeri-lightbox__yon--sag { right: max(var(--bosluk-2), env(safe-area-inset-right)); }
 }
 
 /* ---------- Blog: arama + filtre çubuğu ---------- */
@@ -675,9 +704,7 @@
 }
 .blog-kart:hover {
   /* SPRINT 3: translateY kaldırıldı — sadece shadow lift */
-  box-shadow:
-    0 4px 8px -2px rgb(15 23 42 / 0.06),
-    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  box-shadow: var(--golge-kart-hover);
 }
 .blog-kart__gorsel {
   display: block;
@@ -952,26 +979,8 @@
   margin-bottom: var(--bosluk-8);
   flex-wrap: wrap;
 }
-.duyuru-filtre__dugme {
-  display: inline-flex;
-  align-items: center;
-  min-height: 44px;                       /* dokunma hedefi (8→12px dikey padding) */
-  padding: var(--bosluk-3) var(--bosluk-4);
-  background: var(--renk-arka-yumusak);
-  color: var(--renk-yazi-acik);
-  border-radius: var(--yuvarlak-tam);
-  font-size: var(--yazi-sm);
-  font-weight: 500;
-  border: 1.5px solid transparent;
-  transition: all var(--gecis-hizli);
-}
-.duyuru-filtre__dugme:hover { background: var(--renk-cizgi); }
-.duyuru-filtre__dugme:active { transform: scale(0.97); transition-duration: 80ms; }
-.duyuru-filtre__dugme.aktif {
-  background: var(--renk-birincil);
-  color: white;
-  border-color: var(--renk-birincil);
-}
+/* Filtre düğmeleri artık tek kanon .cip / .cip--aktif bileşenini kullanıyor
+   (duyurular.js + galeri.js). Eski .duyuru-filtre__dugme ikinci-sistem stilleri kaldırıldı. */
 
 /* ---------- CTA bölümü ---------- */
 .cta-bolumu {
@@ -1118,12 +1127,10 @@
   transition: box-shadow var(--gecis);
 }
 .gorus-karti:hover {
-  box-shadow:
-    0 4px 8px -2px rgb(15 23 42 / 0.06),
-    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  box-shadow: var(--golge-kart-hover);
 }
 .gorus-karti__yildiz {
-  color: #f59e0b;
+  color: var(--renk-uyari);          /* magic-hex #f59e0b yerine token */
   letter-spacing: 2px;
   font-size: var(--yazi-sm);
 }
@@ -1199,4 +1206,12 @@
   padding: 0 var(--bosluk-5) var(--bosluk-5);
   color: var(--renk-yazi-acik);
   line-height: 1.7;
+}
+/* Açılışta sert "snap" yerine yumuşak iç-içe geçiş (reduced-motion'da global kural sıfırlar) */
+.sss-oge[open] .sss-oge__cevap {
+  animation: sss-ac 260ms var(--easing-decelerate);
+}
+@keyframes sss-ac {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: none; }
 }

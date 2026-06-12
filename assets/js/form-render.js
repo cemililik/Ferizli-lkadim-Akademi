@@ -38,6 +38,27 @@
     .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 
+  /* Onay (checkbox-tek) etiketinde okunabilir link üret.
+     - Açık tanım: alan.link + alan.linkMetin (etiket içindeki o ifade anchor olur)
+     - KVKK otomatik tespit: alan.link yoksa ve metin 'KVKK' içeriyorsa /kvkk.html'e bağla.
+     Geri kalan metin esc() ile kaçırılır; yalnız bilinen ifade anchor'a çevrilir (XSS güvenli). */
+  const onayEtiketHtml = (alan) => {
+    const metin = String(alan.etiket || '');
+    let link = alan.link;
+    let linkMetin = alan.linkMetin;
+    if (!link && /kvkk/i.test(metin)) {
+      link = '/kvkk.html';
+      const m = metin.match(/KVKK[^.,;]*?(?:Aydınlatma Metni|Metni|Aydınlatma)/i);
+      linkMetin = (m && m[0]) || 'KVKK Aydınlatma Metni';
+    }
+    if (link && linkMetin && metin.includes(linkMetin)) {
+      const i = metin.indexOf(linkMetin);
+      const anchor = `<a href="${esc(link)}" target="_blank" rel="noopener" class="form-onay__link">${esc(linkMetin)}</a>`;
+      return esc(metin.slice(0, i)) + anchor + esc(metin.slice(i + linkMetin.length));
+    }
+    return esc(metin);
+  };
+
   /* ============================================
      ALAN RENDER
   ============================================ */
@@ -92,7 +113,7 @@
           </label>
         `).join('');
         return `
-          <fieldset class="form-grup form-grup--grup">
+          <fieldset class="form-grup form-grup--grup" data-alan-tip="radio" data-alan-id="${esc(alan.id)}">
             <legend class="form-etiket">${esc(alan.etiket)}${yildiz}</legend>
             <div role="radiogroup" aria-label="${esc(alan.etiket)}">${radios}</div>
             ${yardim}
@@ -115,12 +136,12 @@
         `;
 
       case 'checkbox-tek':
-        // Tek checkbox: onay (KVKK gibi)
+        // Tek checkbox: onay (KVKK gibi) — etikette okunabilir link (onayEtiketHtml)
         return `
           <div class="form-grup">
             <label class="form-onay" for="${id}">
               <input type="checkbox" id="${id}" name="${esc(alan.id)}" value="evet" ${zorunlu}>
-              <span>${esc(alan.etiket)}${yildiz}</span>
+              <span>${onayEtiketHtml(alan)}${yildiz}</span>
             </label>
             ${yardim}
           </div>
@@ -156,14 +177,22 @@
       case 'number':
       case 'url':
       case 'text':
-      default:
+      default: {
+        const tipAttr = alan.tip === 'baslik' ? 'text' : alan.tip;
+        let ekstra = '';
+        if (alan.tip === 'number') ekstra += ' inputmode="numeric"';
+        // Ad/isim alanlarını otomatik autocomplete="name" ile işaretle (mobil veli sürtünmesi azalır)
+        const ac = alan.autocomplete
+          || ((/(^|-)ad(-?soyad)?$/i.test(alan.id) || /isim|name/i.test(alan.id)) ? 'name' : '');
+        if (ac) ekstra += ` autocomplete="${esc(ac)}"`;
         return `
           <div class="form-grup">
             <label class="form-etiket" for="${id}">${esc(alan.etiket)}${yildiz}</label>
-            <input class="form-girdi" type="${alan.tip === 'baslik' ? 'text' : alan.tip}" id="${id}" name="${esc(alan.id)}"${placeholder} ${zorunlu}>
+            <input class="form-girdi" type="${tipAttr}" id="${id}" name="${esc(alan.id)}"${placeholder}${ekstra} ${zorunlu}>
             ${yardim}
           </div>
         `;
+      }
     }
   };
 
@@ -172,12 +201,14 @@
   ============================================ */
   const formRender = (yer, form) => {
     const alanlarHtml = (form.alanlar || []).map(alanHtml).join('');
+    // Dönüşüm-odaklı gönder metni + kırmızı (vurgu) CTA — site CTA diliyle hizalı.
+    const gonderMetin = esc(form.gonderMetin || ((form.id === 'basvuru' || form.varsayilan) ? 'Ön Kaydımı Tamamla' : 'Gönder'));
     yer.innerHTML = `
       <form id="dinamikForm" class="kart kart--form" novalidate>
         ${form.aciklama ? `<p class="form-aciklama">${esc(form.aciklama)}</p>` : ''}
         ${alanlarHtml}
-        <button type="submit" class="dugme dugme--birincil dugme--buyuk dugme--blok form-aksiyon">
-          Gönder
+        <button type="submit" class="dugme dugme--vurgu dugme--buyuk dugme--blok form-aksiyon">
+          ${gonderMetin}
         </button>
         <p class="form-not">
           <span class="form-zorunlu" aria-hidden="true">*</span> işaretli alanlar zorunludur.
@@ -198,8 +229,9 @@
   // tanımları components.css'te.
   const alanHataIsaretle = (formEl, alan, mesaj = 'Bu alan zorunludur.') => {
     if (alan.tip === 'checkbox' || alan.tip === 'radio') {
-      const grup = formEl.querySelector(`[data-alan-tip="checkbox"][data-alan-id="${alan.id}"]`)
-        || formEl.querySelector(`[role="radiogroup"][aria-label="${alan.etiket}"]`)
+      // data-alan-id ile seç (güvenli slug); ham etiketi seçiciye gömmek "/" gibi
+      // özel karakterlerde querySelector SyntaxError üretiyordu.
+      const grup = formEl.querySelector(`[data-alan-id="${alan.id}"]`)
         || formEl.querySelector(`[name="${alan.id}"]`)?.closest('.form-grup');
       if (!grup) return;
       grup.setAttribute('aria-invalid', 'true');
@@ -247,6 +279,102 @@
     if (kutu) kutu.remove();
   };
 
+  /* Tek alanın hatasını temizle (canlı doğrulama düzelince) */
+  const alanHataTemizleTek = (formEl, alan) => {
+    let hedef;
+    if (alan.tip === 'checkbox' || alan.tip === 'radio') {
+      hedef = formEl.querySelector(`[data-alan-id="${alan.id}"]`)
+        || formEl.querySelector(`[name="${alan.id}"]`)?.closest('.form-grup');
+    } else {
+      hedef = formEl.querySelector(`[name="${alan.id}"]`);
+    }
+    if (!hedef) return;
+    hedef.removeAttribute('aria-invalid');
+    const grup = (hedef.matches && hedef.matches('.form-grup, fieldset'))
+      ? hedef : (hedef.closest('.form-grup') || hedef.parentElement);
+    if (grup) {
+      grup.removeAttribute('aria-invalid');
+      const s = grup.querySelector('.form-yardim--hata');
+      if (s) s.remove();
+    }
+  };
+
+  /* Saf (yan-etkisiz) doğrulama — hem submit hem canlı doğrulama kullanır.
+     Hata varsa mesaj, yoksa null döner. */
+  const alanHatasi = (alan, formEl) => {
+    if (alan.tip === 'baslik') return null;
+    if (alan.tip === 'checkbox') {
+      const secili = formEl.querySelectorAll(`[name="${alan.id}"]:checked`);
+      return (alan.zorunlu && secili.length === 0) ? 'En az bir seçim yapın.' : null;
+    }
+    if (alan.tip === 'checkbox-tek') {
+      const el = formEl.querySelector(`[name="${alan.id}"]`);
+      return (alan.zorunlu && el && !el.checked) ? 'Bu kutuyu işaretlemelisiniz.' : null;
+    }
+    if (alan.tip === 'radio') {
+      const sec = formEl.querySelector(`[name="${alan.id}"]:checked`);
+      return (alan.zorunlu && !sec) ? 'Bir seçenek belirleyin.' : null;
+    }
+    const el = formEl.querySelector(`[name="${alan.id}"]`);
+    if (!el) return null;
+    const val = el.value.trim();
+    if (alan.zorunlu && !val) return 'Bu alan zorunludur.';
+    if (val !== '' && alan.tip === 'tel') {
+      const temiz = val.replace(/[\s()\-]/g, '');
+      if (!/^\+?[0-9]{10,15}$/.test(temiz)) return 'Geçerli bir telefon numarası girin. Örnek: 0549 355 61 54';
+    }
+    if (val !== '' && alan.tip === 'email') {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) return 'Geçerli bir e-posta adresi girin.';
+    }
+    return null;
+  };
+
+  /* Alan değerini kayıt için topla */
+  const alanDegerTopla = (alan, formEl) => {
+    if (alan.tip === 'checkbox') {
+      return Array.from(formEl.querySelectorAll(`[name="${alan.id}"]:checked`)).map(i => i.value);
+    }
+    if (alan.tip === 'checkbox-tek') {
+      const el = formEl.querySelector(`[name="${alan.id}"]`);
+      return el && el.checked ? 'evet' : 'hayır';
+    }
+    if (alan.tip === 'radio') {
+      const sec = formEl.querySelector(`[name="${alan.id}"]:checked`);
+      return sec ? sec.value : '';
+    }
+    const el = formEl.querySelector(`[name="${alan.id}"]`);
+    return el ? el.value.trim() : '';
+  };
+
+  /* İlk hatalı alanın odaklanacak elementi */
+  const ilkHataElBul = (alan, formEl) => {
+    if (alan.tip === 'checkbox' || alan.tip === 'radio') {
+      return formEl.querySelector(`[data-alan-id="${alan.id}"]`)
+        || formEl.querySelector(`[name="${alan.id}"]`);
+    }
+    return formEl.querySelector(`[name="${alan.id}"]`);
+  };
+
+  /* Canlı doğrulama — yalnız ilk başarısız submit'TEN SONRA devreye girer
+     (kullanıcı yazarken erkenden nag etmeyelim). Yazarken hatayı temizler,
+     alandan çıkınca (blur) yeniden değerlendirir. */
+  const canliDogrulamaBagla = (form, formEl) => {
+    if (formEl.dataset.canli === '1') return;
+    formEl.dataset.canli = '1';
+    const alanBul = (name) => (form.alanlar || []).find(a => a.id === name);
+    formEl.addEventListener('input', (e) => {
+      const alan = alanBul(e.target.name);
+      if (alan && !alanHatasi(alan, formEl)) alanHataTemizleTek(formEl, alan);
+    });
+    formEl.addEventListener('blur', (e) => {
+      const alan = alanBul(e.target.name);
+      if (!alan) return;
+      const mesaj = alanHatasi(alan, formEl);
+      if (mesaj) alanHataIsaretle(formEl, alan, mesaj);
+      else alanHataTemizleTek(formEl, alan);
+    }, true);
+  };
+
   /* ============================================
      SUBMIT
   ============================================ */
@@ -255,70 +383,25 @@
     alanHatalariTemizle(formEl);
     genelHataTemizle(formEl);
 
-    // Veri topla
+    // Veri topla + doğrula (saf alanHatasi / alanDegerTopla yardımcılarıyla)
     const veriler = {};
     let hataVar = false;
     let ilkHataEl = null;
 
     for (const alan of (form.alanlar || [])) {
       if (alan.tip === 'baslik') continue;
-
-      if (alan.tip === 'checkbox') {
-        const secili = Array.from(formEl.querySelectorAll(`[name="${alan.id}"]:checked`))
-          .map(i => i.value);
-        if (alan.zorunlu && secili.length === 0) {
-          hataVar = true;
-          alanHataIsaretle(formEl, alan, 'En az bir seçim yapın.');
-          if (!ilkHataEl) ilkHataEl = formEl.querySelector(`[data-alan-id="${alan.id}"]`);
-        }
-        veriler[alan.id] = secili;
-      } else if (alan.tip === 'checkbox-tek') {
-        const el = formEl.querySelector(`[name="${alan.id}"]`);
-        if (alan.zorunlu && !el.checked) {
-          hataVar = true;
-          alanHataIsaretle(formEl, alan, 'Bu kutuyu işaretlemelisiniz.');
-          if (!ilkHataEl) ilkHataEl = el;
-        }
-        veriler[alan.id] = el.checked ? 'evet' : 'hayır';
-      } else if (alan.tip === 'radio') {
-        const sec = formEl.querySelector(`[name="${alan.id}"]:checked`);
-        if (alan.zorunlu && !sec) {
-          hataVar = true;
-          alanHataIsaretle(formEl, alan, 'Bir seçenek belirleyin.');
-          if (!ilkHataEl) {
-            ilkHataEl = formEl.querySelector(`[role="radiogroup"][aria-label="${alan.etiket}"]`)
-              || formEl.querySelector(`[name="${alan.id}"]`);
-          }
-        }
-        veriler[alan.id] = sec ? sec.value : '';
-      } else {
-        const el = formEl.querySelector(`[name="${alan.id}"]`);
-        if (!el) continue;
-        const val = el.value.trim();
-        if (alan.zorunlu && !val) {
-          hataVar = true;
-          alanHataIsaretle(formEl, alan, 'Bu alan zorunludur.');
-          if (!ilkHataEl) ilkHataEl = el;
-        } else if (val !== '' && alan.tip === 'tel') {
-          // Sadece rakam, boşluk, +, -, () izinli — min 10 karakter
-          const temiz = val.replace(/[\s()\-]/g, '');
-          if (!/^\+?[0-9]{10,15}$/.test(temiz)) {
-            hataVar = true;
-            alanHataIsaretle(formEl, alan, 'Geçerli bir telefon numarası girin. Örnek: 0549 355 61 54');
-            if (!ilkHataEl) ilkHataEl = el;
-          }
-        } else if (val !== '' && alan.tip === 'email') {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) {
-            hataVar = true;
-            alanHataIsaretle(formEl, alan, 'Geçerli bir e-posta adresi girin.');
-            if (!ilkHataEl) ilkHataEl = el;
-          }
-        }
-        veriler[alan.id] = val;
+      const mesaj = alanHatasi(alan, formEl);
+      if (mesaj) {
+        hataVar = true;
+        alanHataIsaretle(formEl, alan, mesaj);
+        if (!ilkHataEl) ilkHataEl = ilkHataElBul(alan, formEl);
       }
+      veriler[alan.id] = alanDegerTopla(alan, formEl);
     }
 
     if (hataVar) {
+      // İlk başarısız denemeden sonra canlı (blur/yazarken) doğrulamayı aç
+      canliDogrulamaBagla(form, formEl);
       if (ilkHataEl) {
         ilkHataEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         if (typeof ilkHataEl.focus === 'function') ilkHataEl.focus();
@@ -338,6 +421,12 @@
 
       // Teşekkür ekranı — formu yerinde değiştir, scroll + focus ile bildir
       const tesekkur = form.tesekkurMesaji || 'Başvurunuz alındı. En kısa sürede sizinle iletişime geçeceğiz.';
+      // Başarı ekranına WhatsApp ikincil aksiyonu (ayarlardan) + beklenti yönetimi
+      const _ay = window.__SITE_AYARLAR__ || {};
+      const _wa = _ay.iletisim && _ay.iletisim.whatsapp;
+      const _waBtn = _wa
+        ? `<a href="https://wa.me/${esc(_wa)}?text=${encodeURIComponent(_ay.whatsappMesaj || '')}" target="_blank" rel="noopener" class="dugme dugme--whatsapp">WhatsApp'tan Yaz</a>`
+        : '';
       const yeni = document.createElement('div');
       yeni.className = 'kart form-tesekkur';
       yeni.setAttribute('role', 'status');
@@ -352,7 +441,11 @@
         </div>
         <h2>Teşekkür Ederiz!</h2>
         <p class="form-tesekkur__metin">${esc(tesekkur)}</p>
-        <a href="/index.html" class="dugme dugme--birincil">Ana Sayfaya Dön</a>
+        <p class="form-not" style="margin-bottom: var(--bosluk-6);">Genellikle aynı gün içinde size geri dönüyoruz.</p>
+        <div class="dugme-grubu dugme-grubu--merkez">
+          ${_waBtn}
+          <a href="/index.html" class="dugme dugme--cerceve">Ana Sayfaya Dön</a>
+        </div>
       `;
       formEl.parentNode.replaceChild(yeni, formEl);
       // Scroll + focus: smooth animasyon, sticky header'ı scroll-padding-top ile aşar

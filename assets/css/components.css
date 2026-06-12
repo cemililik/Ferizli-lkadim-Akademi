@@ -72,7 +72,7 @@
   color: white;
 }
 .dugme--whatsapp:hover {
-  background-color: #1ebe57;
+  background-color: var(--renk-whatsapp-koyu);
   color: white;
   transform: translateY(-2px);
   box-shadow: var(--golge-md);
@@ -156,9 +156,7 @@
   transition: box-shadow 200ms var(--easing-standard);
 }
 .kart:hover {
-  box-shadow:
-    0 4px 8px -2px rgb(15 23 42 / 0.06),
-    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  box-shadow: var(--golge-kart-hover);
   /* translateY KALDIRILDI — shadow lift hareketi tek başına yeterli.
      border-color HOVER'da değişmiyor — sakin görünüm. */
 }
@@ -389,6 +387,13 @@
   height: 20px;
   accent-color: var(--renk-birincil);
 }
+/* Onay metnindeki okunabilir link (KVKK gibi) */
+.form-onay__link {
+  color: var(--renk-birincil);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
 
 /* Submit alanı — düğmenin form-grup'tan bağımsız üst boşluğu */
 .form-aksiyon { margin-top: var(--bosluk-6); }
@@ -521,6 +526,11 @@
   background: white;
   color: var(--renk-birincil);
 }
+/* Krem bölümde rozet zemini beyazla ayrışsın — pastel-pembe krem üstünde eriyordu */
+.bolum-krem .serit-baslik {
+  background: #ffffff;
+  border: 1px solid var(--renk-cizgi);
+}
 
 /* ---------- İstatistik kutusu ---------- */
 .istatistik {
@@ -532,16 +542,29 @@
   transition: all var(--gecis);
 }
 .istatistik:hover {
-  transform: translateY(-4px);
+  /* SPRINT sonrası rötuş: border-color:transparent kaldırıldı (kenar aniden
+     silinmesin); lift -4px → -2px ile diğer kartların sakin diliyle hizalandı. */
+  transform: translateY(-2px);
   box-shadow: var(--golge-renk);
-  border-color: transparent;
 }
+/* İkon kutusu — JS render ediyordu ama CSS'i yoktu (boyut/hizalama tanımsızdı). */
+.istatistik__ikon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: var(--bosluk-2);
+  font-size: 1.75rem;            /* emoji fallback */
+  color: var(--renk-birincil);
+  line-height: 1;
+}
+.istatistik__ikon svg { width: 30px; height: 30px; }
 .istatistik__sayi {
   display: block;
   font-family: var(--yazi-aile-baslik);
   /* Sabit 48px yerine clamp — küçük ekranda 36px'e iner (dikey yoğunluk) */
   font-size: clamp(var(--yazi-4xl), 9vw, var(--yazi-5xl));
   font-weight: 800;
+  font-variant-numeric: tabular-nums;   /* count-up sırasında yatay titremeyi önler */
   background: linear-gradient(135deg, var(--renk-birincil), var(--renk-vurgu));
   -webkit-background-clip: text;
   background-clip: text;
@@ -568,9 +591,7 @@
 }
 .duyuru-karti:hover {
   /* SPRINT 3: translateY kaldırıldı — sadece shadow lift */
-  box-shadow:
-    0 4px 8px -2px rgb(15 23 42 / 0.06),
-    0 8px 16px -4px rgb(15 23 42 / 0.04);
+  box-shadow: var(--golge-kart-hover);
 }
 .duyuru-karti--onemli {
   /* SPRINT 3: border-left:4px (2012 WordPress blog tarzı) kaldırıldı.
@@ -665,6 +686,35 @@
 }
 .bos-durum--buyuk .bos-durum__ikon svg {
   width: 88px; height: 88px;
+}
+
+/* ---------- İskelet (skeleton) — yükleniyor durumu ----------
+   Liste/ızgaralar fetch beklerken boş-beyaz kalmasın; yükseklik rezerve edilip
+   shimmer gösterilir → CLS önlenir, "yükleniyor" hissi verilir.
+   prefers-reduced-motion'da animasyon kapanır (global kural + lokal güvence). */
+@keyframes iskelet-parlama {
+  0%   { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.iskelet {
+  background: linear-gradient(90deg, var(--renk-cizgi) 25%, #eef2f7 37%, var(--renk-cizgi) 63%);
+  background-size: 200% 100%;
+  animation: iskelet-parlama 1.4s ease infinite;
+  border-radius: var(--yuvarlak-sm);
+}
+.iskelet-kart {
+  background: white;
+  border: 1px solid var(--renk-cizgi);
+  border-radius: var(--yuvarlak-md);
+  padding: var(--bosluk-6);
+  min-height: 230px;
+}
+.iskelet-daire { width: 56px; height: 56px; border-radius: var(--yuvarlak-md); margin-bottom: var(--bosluk-4); }
+.iskelet-baslik { height: 22px; width: 70%; margin-bottom: var(--bosluk-4); }
+.iskelet-satir { height: 13px; margin-bottom: var(--bosluk-3); }
+.iskelet-satir--kisa { width: 55%; }
+@media (prefers-reduced-motion: reduce) {
+  .iskelet { animation: none; }
 }
 
 /* ---------- Yasal/uzun metin listeleri (kvkk gibi) ---------- */

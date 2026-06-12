@@ -20,7 +20,7 @@
 
   const kartHtml = (k) => {
     const fotoIcerik = k.foto
-      ? `<img src="${esc(k.foto)}" alt="${esc(k.ad)}" loading="lazy" decoding="async" width="320" height="320">`
+      ? `<img src="${esc(k.foto)}" alt="${esc(k.ad)}" loading="lazy" decoding="async" width="320" height="320" onerror="this.style.display='none'">`
       : PLACEHOLDER_SVG;
     const mottoBlok = k.motto
       ? `<p class="kadro-karti__motto">"${esc(k.motto)}"</p>`
@@ -41,10 +41,15 @@
   const baslat = async () => {
     const yer = document.querySelector('[data-kadro-yer]');
     if (!yer) return;
+    // Yükleniyor iskeleti (CLS + boş-beyaz flash önleme)
+    yer.innerHTML = Array.from({ length: 4 }, () => `<div class="iskelet-kart" aria-hidden="true" style="text-align:center"><div class="iskelet" style="width:144px;height:144px;border-radius:50%;margin:0 auto var(--bosluk-4)"></div><div class="iskelet iskelet-baslik" style="margin-inline:auto"></div><div class="iskelet iskelet-satir iskelet-satir--kisa" style="margin-inline:auto"></div></div>`).join('');
+    yer.setAttribute('aria-busy', 'true');
     try {
       const cevap = await fetch('/api/kadro');
+      if (!cevap.ok) throw new Error(`HTTP ${cevap.status}`);
       const veri = await cevap.json();
       const liste = veri.kadro || [];
+      yer.removeAttribute('aria-busy');
       if (liste.length === 0) {
         yer.innerHTML = '<p class="bos-durum">Kadro bilgileri yakında eklenecek.</p>';
         return;
@@ -52,7 +57,8 @@
       yer.innerHTML = liste.map(kartHtml).join('');
     } catch (e) {
       console.error('Kadro yüklenemedi:', e);
-      yer.innerHTML = '<p class="bos-durum">Kadro bilgileri yüklenemedi.</p>';
+      yer.removeAttribute('aria-busy');
+      yer.innerHTML = '<p class="bos-durum">Kadro bilgileri yüklenemedi. Lütfen birazdan tekrar deneyin.</p>';
     }
   };
 

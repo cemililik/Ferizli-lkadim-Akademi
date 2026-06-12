@@ -6,6 +6,7 @@
       "aciklama": "Bilgilerinizi bırakın, en kısa sürede sizinle iletişime geçelim.",
       "tip": "yerli",
       "tesekkurMesaji": "Başvurunuz alındı. En kısa sürede sizinle iletişime geçeceğiz.",
+      "gonderMetin": "Ön Kaydımı Tamamla",
       "yayinda": true,
       "varsayilan": true,
       "olusturulma": "2026-05-12",
@@ -43,7 +44,7 @@
           "id": "program",
           "tip": "radio",
           "etiket": "İlgilendiğiniz Program",
-          "zorunlu": false,
+          "zorunlu": true,
           "secenekler": [
             "LGS Hazırlık",
             "YKS Hazırlık",
@@ -87,6 +88,8 @@
           "id": "kvkk",
           "tip": "checkbox-tek",
           "etiket": "KVKK Aydınlatma Metni'ni okudum ve kişisel verilerimin işlenmesine onay veriyorum.",
+          "link": "/kvkk.html",
+          "linkMetin": "KVKK Aydınlatma Metni",
           "zorunlu": true
         }
       ]

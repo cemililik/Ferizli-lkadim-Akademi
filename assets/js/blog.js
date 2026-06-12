@@ -146,7 +146,7 @@
     const tarih = y.yayin_tarihi ? tarihTr(y.yayin_tarihi) : '';
     const sure = okumaSuresi('', y.ozet);
     const gorsel = y.kapak_gorseli
-      ? `<a href="${url}" class="blog-kart__gorsel" aria-hidden="true"><img src="${esc(y.kapak_gorseli)}" alt="" loading="lazy"></a>`
+      ? `<a href="${url}" class="blog-kart__gorsel" aria-hidden="true"><img src="${esc(y.kapak_gorseli)}" alt="" loading="lazy" onerror="this.closest('.blog-kart__gorsel')?.remove()"></a>`
       : '';
     const yazarUrl = y.yazar_kullanici_adi
       ? `/blog.html?yazar=${encodeURIComponent(y.yazar_kullanici_adi)}`
@@ -253,7 +253,7 @@
       : '';
 
     const gorsel = y.kapak_gorseli
-      ? `<img src="${esc(y.kapak_gorseli)}" alt="" class="blog-detay__kapak">`
+      ? `<img src="${esc(y.kapak_gorseli)}" alt="" class="blog-detay__kapak" onerror="this.style.display='none'">`
       : '';
 
     // Önceki/sonraki yazı navigasyonu

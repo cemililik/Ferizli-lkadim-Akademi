@@ -262,7 +262,7 @@
       }
     }
     // Floating-icons partial yoksa veya tüm ikonlar gizliyse konteyner'ı kaldır
-    const floatYer = document.getElementById('floatIkonlar') || document.querySelector('.floating-icons');
+    const floatYer = document.querySelector('.float-ikonlar');
     if (floatYer) {
       const gorunenler = floatYer.querySelectorAll('[data-float]:not([hidden])');
       if (gorunenler.length === 0) floatYer.hidden = true;
@@ -499,6 +499,20 @@
       return;
     }
 
+    // LCP: aktif (ilk) slaytın görselini erkenden indirmeye başla. Görsel CSS değişkeniyle
+    // enjekte edildiğinden tarayıcının preload-tarayıcısı göremiyor; el ile preload ediyoruz.
+    // CSS arka planı gorselTemiz() ile aynı karakterleri temizler — preload aynı URL'i
+    // kullanmazsa tarayıcı eşleştirmesi tutmaz (boşa istek + LCP preload'u kaçar).
+    const ilkGorsel = (slaytlar[0] && slaytlar[0].gorsel)
+      ? String(slaytlar[0].gorsel).replace(/["'()\\]/g, '')
+      : '';
+    if (ilkGorsel) {
+      const pl = document.createElement('link');
+      pl.rel = 'preload'; pl.as = 'image'; pl.href = ilkGorsel;
+      pl.setAttribute('fetchpriority', 'high');
+      document.head.appendChild(pl);
+    }
+
     const linkCoz = (link) => {
       if (!link || link === '#') return '#';
       if (link === 'whatsapp') {
@@ -514,7 +528,8 @@
 
     const slaytHtml = (s, i) => {
       const bg = gorselTemiz(s.gorsel);
-      const overlay = Math.max(0, Math.min(90, Number(s.overlayKoyuluk ?? 50))) / 100;
+      // Alt sınır 25: overlay hiç olmazsa %25 kalsın → başlık/rozet/buton kontrastı garanti
+      const overlay = Math.max(25, Math.min(90, Number(s.overlayKoyuluk ?? 50))) / 100;
       const basTag = i === 0 ? 'h1' : 'h2';
       const b1 = (s.butonMetin || '').trim();
       const b2 = (s.buton2Metin || '').trim();
@@ -546,8 +561,8 @@
         <button class="hero-slider__ok hero-slider__ok--sonraki" type="button" aria-label="Sonraki slayt">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="9 18 15 12 9 6"/></svg>
         </button>
-        <div class="hero-slider__noktalar" role="tablist" aria-label="Slayt seçimi">
-          ${slaytlar.map((s, i) => `<button class="hero-slider__nokta${i === 0 ? ' aktif' : ''}" type="button" role="tab" aria-selected="${i === 0 ? 'true' : 'false'}" tabindex="${i === 0 ? '0' : '-1'}" aria-label="Slayt ${i + 1}"></button>`).join('')}
+        <div class="hero-slider__noktalar" role="group" aria-label="Slayt seçimi">
+          ${slaytlar.map((s, i) => `<button class="hero-slider__nokta${i === 0 ? ' aktif' : ''}" type="button" aria-label="${i + 1}. slayda git"${i === 0 ? ' aria-current="true"' : ''}></button>`).join('')}
         </div>` : ''}
     `;
 
@@ -566,12 +581,14 @@
         const a = idx === aktif;
         el.classList.toggle('aktif', a);
         el.setAttribute('aria-hidden', a ? 'false' : 'true');
+        // Pasif slayttaki bağlantı/butonlar tab sırasından çıksın (görünmez odak önleme)
+        el.querySelectorAll('a, button').forEach(f => { f.tabIndex = a ? 0 : -1; });
       });
       noktaEl.forEach((el, idx) => {
         const a = idx === aktif;
         el.classList.toggle('aktif', a);
-        el.setAttribute('aria-selected', a ? 'true' : 'false');
-        el.tabIndex = a ? 0 : -1;   // roving tabindex (tablist a11y)
+        if (a) el.setAttribute('aria-current', 'true');
+        else el.removeAttribute('aria-current');
       });
     };
     const sonraki = () => goster(aktif + 1);
@@ -614,6 +631,8 @@
       baslatOto();
     }, { passive: true });
 
+    // İlk durumu normalize et — pasif slayt butonlarını tab sırasından çıkar
+    goster(0);
     baslatOto();
   };
 
@@ -717,7 +736,7 @@
       const adBas = (g.ad || '?').toString().trim().charAt(0).toUpperCase();
       return `
         <figure class="gorus-karti">
-          <div class="gorus-karti__yildiz" aria-hidden="true">★★★★★</div>
+          <div class="gorus-karti__yildiz"><span class="sr-only">5 üzerinden 5 yıldız</span><span aria-hidden="true">★★★★★</span></div>
           <blockquote class="gorus-karti__metin">${escapeHtml(g.metin)}</blockquote>
           <figcaption class="gorus-karti__kisi">
             <div class="gorus-karti__avatar" aria-hidden="true">${g.foto ? `<img src="${escapeHtml(g.foto)}" alt="">` : escapeHtml(adBas)}</div>
@@ -785,23 +804,23 @@
 
   // Ana çalıştırıcı
   const baslat = async () => {
-    // 1. Partial'ları yükle (paralel)
+    // 1. Ayarlar fetch'ini HEMEN başlat — partial'ları beklemesin. API round-trip'i
+    //    partial yüklemeleriyle örtüşür (~1 round-trip kazanç, daha hızlı ilk render).
+    const ayarlarSozu = fetch('/api/ayarlar')
+      .then(r => r.json())
+      .then(v => v.ayarlar || {})
+      .catch(e => { console.warn('Ayarlar yüklenemedi:', e); return {}; });
+
+    // 2. Partial'ları paralel yükle
     await Promise.all([
       partialYukle('#siteHeaderYer', '/partials/header.html'),
       partialYukle('#siteFooterYer', '/partials/footer.html'),
       partialYukle('#floatIkonlarYer', '/partials/floating-icons.html')
     ]);
 
-    // 2. Ayarları yükle (PHP API'den)
-    let ayarlar = {};
-    try {
-      const cevap = await fetch('/api/ayarlar');
-      const veri = await cevap.json();
-      ayarlar = veri.ayarlar || {};
-      window.__SITE_AYARLAR__ = ayarlar;
-    } catch (e) {
-      console.warn('Ayarlar yüklenemedi:', e);
-    }
+    // Ayarları bekle (büyük olasılıkla partial'lar yüklenirken çoktan geldi)
+    const ayarlar = await ayarlarSozu;
+    window.__SITE_AYARLAR__ = ayarlar;
 
     // 3. Bağla & başlat
     // ÖNEMLİ: modulleriUygula veriBagla'dan ÖNCE gelir — eğer sayfa modülü kapalıysa
